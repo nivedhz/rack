@@ -72,8 +72,6 @@ impl NewCommand {
         println!();
         let description = self.get_description();
         let path = self.get_path().join(DIR_PATH);
-        println!("description: {}", description);
-        println!("path: {}", path.display());
         fs::create_dir_all(&path).expect("Failed to create directory");
         fs::write(path.join("description"), description).expect("Failed to write description");
 
