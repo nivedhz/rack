@@ -9,6 +9,6 @@ fn main() {
     let args = args::Cli::parse();
 
     match args.command {
-        args::Commands::New { flags } => new::initialize_rev_dir(flags),
+        args::Commands::New { flags, dir_path } => new::initialize_rev_dir(dir_path, flags),
     }
 }
