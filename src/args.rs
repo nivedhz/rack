@@ -24,6 +24,4 @@ pub enum Commands {
 pub struct NewFlags {
     #[arg(short, long)]
     pub default: bool,
-    #[arg(short, long)]
-    pub name: Option<String>,
 }
