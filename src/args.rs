@@ -12,6 +12,8 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     New {
+        #[arg(default_value = ".")]
+        dir_path: PathBuf,
         #[command(flatten)]
         flags: NewFlags,
     },
@@ -23,5 +25,5 @@ pub struct NewFlags {
     #[arg(short, long)]
     pub default: bool,
     #[arg(short, long)]
-    pub path: Option<PathBuf>,
+    pub name: Option<String>,
 }
