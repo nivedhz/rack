@@ -1,21 +1,15 @@
 use std::{
-    env,
+    env, fs,
     path::{Path, PathBuf},
 };
 
 use inquire::{Text, validator::Validation};
 
-use crate::args::NewFlags;
+use crate::{args::NewFlags, constants::DIR_PATH};
 
 pub fn initialize_rev_dir(dir_path: PathBuf, flags: NewFlags) {
-    println!();
     let command = NewCommand::new(flags, dir_path);
-    let name = command.get_name();
-    let description = command.get_description();
-    let path = command.get_path();
-    println!("name: {}", name);
-    println!("description: {}", description);
-    println!("path: {}", path.display());
+    command.init();
 }
 
 pub struct NewCommand {
@@ -25,41 +19,6 @@ pub struct NewCommand {
 impl NewCommand {
     fn new(flags: NewFlags, dir_path: PathBuf) -> Self {
         Self { flags, dir_path }
-    }
-    fn get_name(&self) -> String {
-        if self.flags.default {
-            format!(
-                "{}",
-                env::current_dir()
-                    .expect("Failed to get current directory")
-                    .file_name()
-                    .expect("Failed to get current directory name")
-                    .display()
-            )
-        } else {
-            match self.flags.name.clone() {
-                Some(name) => name,
-                None => {
-                    let name = Text::new("Name: ")
-                        .with_placeholder("my project")
-                        .prompt()
-                        .expect("Prompt cancelled by the user");
-                    println!();
-                    if name.trim().is_empty() || name.trim() == "." {
-                        format!(
-                            "{}",
-                            env::current_dir()
-                                .expect("Failed to get current directory")
-                                .file_name()
-                                .expect("Failed to get current directory name")
-                                .display()
-                        )
-                    } else {
-                        name
-                    }
-                }
-            }
-        }
     }
     fn get_description(&self) -> String {
         let desc_validation = |input: &str| {
@@ -84,6 +43,7 @@ impl NewCommand {
         } else {
             let description = Text::new("Description")
                 .with_validator(desc_validation)
+                .with_help_message("leave empty for default description")
                 .prompt()
                 .expect("Prompt cancelled by the user");
             println!();
@@ -107,5 +67,16 @@ impl NewCommand {
         } else {
             std::path::absolute(PathBuf::from(&self.dir_path)).expect("Failed to get absolute path")
         }
+    }
+    fn init(&self) {
+        println!();
+        let description = self.get_description();
+        let path = self.get_path().join(DIR_PATH);
+        println!("description: {}", description);
+        println!("path: {}", path.display());
+        fs::create_dir_all(&path).expect("Failed to create directory");
+        fs::write(path.join("description"), description).expect("Failed to write description");
+
+        println!("Initialized a new rack repository in {}", path.display());
     }
 }
