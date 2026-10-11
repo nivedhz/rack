@@ -1,80 +1,104 @@
-use std::{
-    env, fs,
-    path::{Path, PathBuf},
-};
-
-use inquire::{Text, validator::Validation};
+use tracing::info;
 
 use crate::{args::NewFlags, constants::DIR_PATH};
-
-pub fn initialize_rev_dir(dir_path: PathBuf, flags: NewFlags) {
-    let command = NewCommand::new(flags, dir_path);
-    command.init();
-}
+use std::{
+    env,
+    fs::{self, File},
+    io::Write,
+    path::{Path, PathBuf, absolute},
+};
 
 pub struct NewCommand {
     flags: NewFlags,
     dir_path: PathBuf,
 }
 impl NewCommand {
-    fn new(flags: NewFlags, dir_path: PathBuf) -> Self {
+    pub fn new(flags: NewFlags, dir_path: PathBuf) -> Self {
         Self { flags, dir_path }
-    }
-    fn get_description(&self) -> String {
-        let desc_validation = |input: &str| {
-            if input.chars().count() > 140 {
-                Ok(Validation::Invalid(
-                    "You're only allowed 140 characters".into(),
-                ))
-            } else {
-                Ok(Validation::Valid)
-            }
-        };
-
-        if self.flags.default {
-            format!(
-                "Default description generated for \"{}\"",
-                env::current_dir()
-                    .expect("Failed to get current directory")
-                    .file_name()
-                    .expect("Failed to get current directory name")
-                    .display()
-            )
-        } else {
-            let description = Text::new("Description")
-                .with_validator(desc_validation)
-                .with_help_message("leave empty for default description")
-                .prompt()
-                .expect("Prompt cancelled by the user");
-            println!();
-            if description.is_empty() {
-                format!(
-                    "Default description generated for \"{}\"",
-                    env::current_dir()
-                        .expect("Failed to get current directory")
-                        .file_name()
-                        .expect("Failed to get current directory name")
-                        .display()
-                )
-            } else {
-                description
-            }
-        }
     }
     fn get_path(&self) -> PathBuf {
         if self.flags.default || self.dir_path == Path::new(".") {
-            std::path::absolute(PathBuf::from(".")).expect("Failed to get absolute path")
+            match env::current_dir() {
+                Ok(p) => p,
+                Err(_) => {
+                    eprintln!("Failed to get current directory!");
+                    std::process::exit(1);
+                }
+            }
         } else {
-            std::path::absolute(PathBuf::from(&self.dir_path)).expect("Failed to get absolute path")
+            match absolute(&self.dir_path) {
+                Ok(p) => p,
+                Err(_) => {
+                    eprintln!("Failed to get absolute path!");
+                    std::process::exit(1);
+                }
+            }
         }
     }
-    fn init(&self) {
+    pub fn init(&self) {
         println!();
-        let description = self.get_description();
-        let path = self.get_path().join(DIR_PATH);
-        fs::create_dir_all(&path).expect("Failed to create directory");
-        fs::write(path.join("description"), description).expect("Failed to write description");
+        RackFolder::new(self.get_path().join(DIR_PATH)).init();
+    }
+}
 
-        println!("Initialized a new rack repository in {}", path.display());
+struct RackFolder {
+    path: PathBuf,
+}
+impl RackFolder {
+    fn new(path: PathBuf) -> Self {
+        Self { path }
+    }
+    fn init(&self) {
+        self.create_rack_dir();
+        self.create_hump_file();
+    }
+    fn create_rack_dir(&self) {
+        let path = self.path.clone();
+        let exist_status = fs::exists(&path).unwrap_or(false) && path.is_dir();
+
+        match fs::create_dir_all(&path) {
+            Ok(_) => {
+                if exist_status {
+                    println!("Reinitialized a rack repository in {}", path.display());
+                } else {
+                    println!("Initialized a new rack repository in {}", path.display());
+                }
+            }
+            Err(e) => match e.kind() {
+                std::io::ErrorKind::AlreadyExists => {
+                    println!("Reinitialized a rack repository in {}", path.display())
+                }
+                _ => {
+                    eprintln!("Failed to create rack directory!");
+                    std::process::exit(1);
+                }
+            },
+        }
+    }
+    fn create_hump_file(&self) {
+        let path = self.path.clone();
+        match File::create(path.join("HUMP")) {
+            Ok(mut f) => {
+                info!("Created hump file in {}", path.display());
+                match f.write_all(b"hump: hump/baby/bonkers") {
+                    Ok(_) => {}
+                    Err(e) => {
+                        println!("Failed to write the hump file in {}", e);
+                        eprintln!("Failed to create hump file!");
+                        std::process::exit(1);
+                    }
+                }
+                info!("Wrote the hump file in {}", path.display())
+            }
+            Err(e) => match e.kind() {
+                std::io::ErrorKind::AlreadyExists => {
+                    println!("Reinitialized a hump file in {}", path.display())
+                }
+                e => {
+                    eprintln!("Failed to create hump file! {}", e);
+                    std::process::exit(1);
+                }
+            },
+        }
     }
 }
