@@ -50,7 +50,7 @@ impl RackFolder {
     }
     fn init(&self) {
         self.create_rack_dir();
-        self.create_hump_file();
+        self.create_baby_file();
         self.create_hump_dir();
     }
     fn create_rack_dir(&self) {
@@ -76,11 +76,11 @@ impl RackFolder {
             },
         }
     }
-    fn create_hump_file(&self) {
+    fn create_baby_file(&self) {
         let path = self.path.clone();
-        match File::create(path.join("HUMP")) {
+        match File::create(path.join("BABY")) {
             Ok(mut f) => {
-                info!("Created hump file in {}", path.display());
+                info!("Created baby file in {}", path.display());
                 match f.write_all(b"hump: hump/baby/bonkers") {
                     Ok(_) => {}
                     Err(e) => {
@@ -89,14 +89,14 @@ impl RackFolder {
                         std::process::exit(1);
                     }
                 }
-                info!("Wrote the hump file in {}", path.display())
+                info!("Wrote the baby file in {}", path.display())
             }
             Err(e) => match e.kind() {
                 std::io::ErrorKind::AlreadyExists => {
-                    println!("Reinitialized a hump file in {}", path.display())
+                    println!("Reinitialized a baby file in {}", path.display())
                 }
                 e => {
-                    eprintln!("Failed to create hump file! {}", e);
+                    eprintln!("Failed to create baby file! {}", e);
                     std::process::exit(1);
                 }
             },
@@ -104,17 +104,8 @@ impl RackFolder {
     }
     fn create_hump_dir(&self) {
         let path = self.path.clone();
-        if fs::create_dir(path.join("hump")).is_ok() {
+        if fs::create_dir_all(path.join("hump/baby")).is_ok() {
             info!("Created hump directory in {}", path.display());
-            match fs::create_dir(path.join("hump/baby")) {
-                Ok(_) => {
-                    info!("Created hump/baby directory in {}", path.display());
-                }
-                Err(e) => {
-                    eprintln!("Failed to create hump/baby directory! {}", e);
-                    std::process::exit(1);
-                }
-            }
             if let Ok(mut f) = fs::File::create(path.join("hump/baby/bonkers"))
                 && let Ok(_) = f.write_all(b"bonkers")
             {
