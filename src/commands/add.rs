@@ -39,7 +39,8 @@ impl AddCommand {
         if !dir_path.exists() {
             fs::create_dir(&dir_path).unwrap();
         }
+        let compressed_file_contents = zstd::stream::encode_all(&file_content[..], 3).unwrap();
         let file_path = dir_path.join(hex::encode(file_name));
-        fs::write(file_path, file_content).unwrap();
+        fs::write(file_path, compressed_file_contents).unwrap();
     }
 }
