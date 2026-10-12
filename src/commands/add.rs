@@ -1,12 +1,10 @@
+use crate::constants::DIR_PATH;
+use sha3::{Digest, Sha3_256};
 use std::{
     fs,
     path::{Path, PathBuf},
     process,
 };
-
-use sha3::{Digest, Sha3_256};
-
-use crate::constants::DIR_PATH;
 
 pub struct AddCommand {
     path: PathBuf,
@@ -17,7 +15,9 @@ impl AddCommand {
         Self { path }
     }
     pub fn init(&self) {
-        if self.path.to_str().unwrap().trim().is_empty() {
+        if let Some(path_string) = self.path.to_str()
+            && path_string.trim().is_empty()
+        {
             eprintln!("fatal: empty path");
             process::exit(1);
         }
@@ -29,19 +29,41 @@ impl AddCommand {
     }
     fn create_goods_entry(&self) {
         let file_name = self.path.clone();
-        let file_content = fs::read(file_name).unwrap();
+        let file_content = match fs::read(&file_name) {
+            Ok(f) => f,
+            Err(e) => {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            }
+        };
         let mut hasher = Sha3_256::new();
         hasher.update(&file_content);
         let hash = hex::encode(hasher.finalize());
-        println!("{:?}", hash);
         let (dir_name, file_name) = hash.split_at(2);
-        println!("{} {}", dir_name, file_name);
         let dir_path = Path::new(DIR_PATH).join(Path::new("goods").join(dir_name));
         if !dir_path.exists() {
-            fs::create_dir(&dir_path).unwrap();
+            match fs::create_dir_all(&dir_path) {
+                Ok(_) => (),
+                Err(e) => {
+                    eprintln!("fatal: {}", e);
+                    process::exit(1);
+                }
+            }
         }
-        let compressed_file_contents = zstd::stream::encode_all(&file_content[..], 3).unwrap();
+        let compressed_file_contents = match zstd::stream::encode_all(&file_content[..], 3) {
+            Ok(f) => f,
+            Err(e) => {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            }
+        };
         let file_path = dir_path.join(file_name);
-        fs::write(file_path, compressed_file_contents).unwrap();
+        match fs::write(&file_path, compressed_file_contents) {
+            Ok(_) => (),
+            Err(e) => {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            }
+        }
     }
 }
