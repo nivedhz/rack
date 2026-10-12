@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use crate::commands::new::NewCommand;
+use crate::commands::{add::AddCommand, new::NewCommand};
 
 mod args;
 mod commands;
@@ -13,6 +13,9 @@ fn main() {
     match args.command {
         args::Commands::New { flags, dir_path } => {
             NewCommand::new(flags, dir_path).init();
+        }
+        args::Commands::Add { path } => {
+            AddCommand::new(path).init();
         }
     }
 }
