@@ -17,6 +17,10 @@ pub enum Commands {
         #[command(flatten)]
         flags: NewFlags,
     },
+    Add {
+        #[arg(default_value = ".")]
+        path: PathBuf,
+    },
 }
 
 #[derive(clap::Args, Debug)]
