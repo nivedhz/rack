@@ -21,7 +21,7 @@ impl NewCommand {
             match env::current_dir() {
                 Ok(p) => p,
                 Err(_) => {
-                    eprintln!("Failed to get current directory!");
+                    eprintln!("fatal: failed to get current directory!");
                     std::process::exit(1);
                 }
             }
@@ -29,7 +29,7 @@ impl NewCommand {
             match absolute(&self.dir_path) {
                 Ok(p) => p,
                 Err(_) => {
-                    eprintln!("Failed to get absolute path!");
+                    eprintln!("fatal: failed to get absolute path!");
                     std::process::exit(1);
                 }
             }
@@ -71,7 +71,7 @@ impl RackFolder {
                     println!("Reinitialized a rack repository in {}", path.display())
                 }
                 _ => {
-                    eprintln!("Failed to create rack directory!");
+                    eprintln!("fatal: failed to create rack directory!");
                     std::process::exit(1);
                 }
             },
@@ -84,9 +84,8 @@ impl RackFolder {
                 info!("Created baby file in {}", path.display());
                 match f.write_all(b"hump: hump/baby/bonkers") {
                     Ok(_) => {}
-                    Err(e) => {
-                        println!("Failed to write the hump file in {}", e);
-                        eprintln!("Failed to create hump file!");
+                    Err(_) => {
+                        eprintln!("fatal: failed to create hump file!");
                         std::process::exit(1);
                     }
                 }
@@ -97,7 +96,7 @@ impl RackFolder {
                     println!("Reinitialized a baby file in {}", path.display())
                 }
                 e => {
-                    eprintln!("Failed to create baby file! {}", e);
+                    eprintln!("fatal: failed to create baby file! {}", e);
                     std::process::exit(1);
                 }
             },
@@ -118,6 +117,9 @@ impl RackFolder {
         let path = self.path.clone();
         if fs::create_dir_all(path.join("goods")).is_ok() {
             info!("Created goods directory in {}", path.display());
+        } else {
+            eprintln!("fatal: failed to create goods directory!");
+            std::process::exit(1);
         }
     }
 }
