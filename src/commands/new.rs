@@ -52,6 +52,7 @@ impl RackFolder {
         self.create_rack_dir();
         self.create_baby_file();
         self.create_hump_dir();
+        self.create_goods_dir();
     }
     fn create_rack_dir(&self) {
         let path = self.path.clone();
@@ -111,6 +112,12 @@ impl RackFolder {
             {
                 info!("Created hump/baby/bonkers in {}", path.display());
             }
+        }
+    }
+    fn create_goods_dir(&self) {
+        let path = self.path.clone();
+        if fs::create_dir_all(path.join("goods")).is_ok() {
+            info!("Created goods directory in {}", path.display());
         }
     }
 }
