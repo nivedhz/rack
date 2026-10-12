@@ -32,15 +32,16 @@ impl AddCommand {
         let file_content = fs::read(file_name).unwrap();
         let mut hasher = Sha3_256::new();
         hasher.update(&file_content);
-        let hash = hasher.finalize();
+        let hash = hex::encode(hasher.finalize());
+        println!("{:?}", hash);
         let (dir_name, file_name) = hash.split_at(2);
-        println!("{} {}", hex::encode(dir_name), hex::encode(file_name));
-        let dir_path = Path::new(DIR_PATH).join(Path::new("goods").join(hex::encode(dir_name)));
+        println!("{} {}", dir_name, file_name);
+        let dir_path = Path::new(DIR_PATH).join(Path::new("goods").join(dir_name));
         if !dir_path.exists() {
             fs::create_dir(&dir_path).unwrap();
         }
         let compressed_file_contents = zstd::stream::encode_all(&file_content[..], 3).unwrap();
-        let file_path = dir_path.join(hex::encode(file_name));
+        let file_path = dir_path.join(file_name);
         fs::write(file_path, compressed_file_contents).unwrap();
     }
 }
