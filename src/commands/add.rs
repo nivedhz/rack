@@ -33,7 +33,8 @@ impl AddCommand {
         let mut hasher = Sha3_256::new();
         hasher.update(&file_content);
         let hash = hasher.finalize();
-        let (dir_name, file_name) = hash.split_at(4);
+        let (dir_name, file_name) = hash.split_at(2);
+        println!("{} {}", hex::encode(dir_name), hex::encode(file_name));
         let dir_path = Path::new(DIR_PATH).join(Path::new("goods").join(hex::encode(dir_name)));
         if !dir_path.exists() {
             fs::create_dir(&dir_path).unwrap();
