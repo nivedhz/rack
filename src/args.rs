@@ -18,7 +18,6 @@ pub enum Commands {
         flags: NewFlags,
     },
     Add {
-        #[arg(default_value = ".")]
         path: PathBuf,
     },
 }
