@@ -51,6 +51,7 @@ impl RackFolder {
     fn init(&self) {
         self.create_rack_dir();
         self.create_hump_file();
+        self.create_hump_dir();
     }
     fn create_rack_dir(&self) {
         let path = self.path.clone();
@@ -99,6 +100,26 @@ impl RackFolder {
                     std::process::exit(1);
                 }
             },
+        }
+    }
+    fn create_hump_dir(&self) {
+        let path = self.path.clone();
+        if fs::create_dir(path.join("hump")).is_ok() {
+            info!("Created hump directory in {}", path.display());
+            match fs::create_dir(path.join("hump/baby")) {
+                Ok(_) => {
+                    info!("Created hump/baby directory in {}", path.display());
+                }
+                Err(e) => {
+                    eprintln!("Failed to create hump/baby directory! {}", e);
+                    std::process::exit(1);
+                }
+            }
+            if let Ok(mut f) = fs::File::create(path.join("hump/baby/bonkers"))
+                && let Ok(_) = f.write_all(b"bonkers")
+            {
+                info!("Created hump/baby/bonkers in {}", path.display());
+            }
         }
     }
 }
