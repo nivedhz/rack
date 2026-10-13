@@ -58,10 +58,10 @@ impl RackFolder {
         self.create_goods_dir();
     }
     fn create_rack_dir(&self) {
-        let path = self.path.clone();
-        let exist_status = fs::exists(&path).unwrap_or(false) && path.is_dir();
+        let path = &self.path;
+        let exist_status = fs::exists(path).unwrap_or(false) && path.is_dir();
 
-        match fs::create_dir_all(&path) {
+        match fs::create_dir_all(path) {
             Ok(_) => {
                 if exist_status {
                     println!("Reinitialized a rack repository in {}", path.display());
@@ -81,7 +81,7 @@ impl RackFolder {
         }
     }
     fn create_baby_file(&self) {
-        let path = self.path.clone();
+        let path = &self.path;
         match File::create(path.join("BABY")) {
             Ok(mut f) => {
                 info!("Created baby file in {}", path.display());
@@ -103,7 +103,7 @@ impl RackFolder {
         }
     }
     fn create_hump_dir(&self) -> std::io::Result<()> {
-        let path = self.path.clone();
+        let path = &self.path;
         if fs::create_dir_all(path.join("hump/baby")).is_ok() {
             info!("Created hump directory in {}", path.display());
             let mut file = File::create(path.join("hump/baby/bonkers"))?;
@@ -113,7 +113,7 @@ impl RackFolder {
         Ok(())
     }
     fn create_goods_dir(&self) {
-        let path = self.path.clone();
+        let path = &self.path;
         if fs::create_dir_all(path.join("goods")).is_ok() {
             info!("Created goods directory in {}", path.display());
         } else {

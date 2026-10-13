@@ -31,8 +31,8 @@ impl InsertCommand {
         self.create_panty_list_entry();
     }
     fn create_goods_entry(&self) {
-        let file_name = self.path.clone();
-        let file_content = match fs::read(&file_name) {
+        let file_name = &self.path;
+        let file_content = match fs::read(file_name) {
             Ok(f) => f,
             Err(e) => {
                 eprintln!("fatal: {}", e);
@@ -64,12 +64,12 @@ impl InsertCommand {
         });
     }
     fn create_panty_list_entry(&self) {
-        let relative_file_name = self.path.clone();
-        let file_metadata = fs::metadata(&relative_file_name).unwrap_or_else(|e| {
+        let relative_file_name = &self.path;
+        let file_metadata = fs::metadata(relative_file_name).unwrap_or_else(|e| {
             eprintln!("fatal: {}", e);
             process::exit(1);
         });
-        let file_content = match fs::read(&relative_file_name) {
+        let file_content = match fs::read(relative_file_name) {
             Ok(f) => f,
             Err(e) => {
                 eprintln!("fatal: {}", e);
