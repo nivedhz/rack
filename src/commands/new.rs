@@ -8,11 +8,11 @@ use std::{
     path::{Path, PathBuf, absolute},
 };
 
-pub struct NewCommand {
+pub struct DeflowerCommand {
     flags: NewFlags,
     dir_path: PathBuf,
 }
-impl NewCommand {
+impl DeflowerCommand {
     pub fn new(flags: NewFlags, dir_path: PathBuf) -> Self {
         Self { flags, dir_path }
     }

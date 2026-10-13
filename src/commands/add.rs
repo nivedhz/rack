@@ -8,11 +8,11 @@ use std::{
     process,
 };
 
-pub struct AddCommand {
+pub struct InsertCommand {
     path: PathBuf,
 }
 
-impl AddCommand {
+impl InsertCommand {
     pub fn new(path: PathBuf) -> Self {
         Self { path }
     }

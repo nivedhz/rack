@@ -11,15 +11,17 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    New {
+    /// Initilalize a new rack repository
+    Deflower {
         #[arg(default_value = ".")]
         dir_path: PathBuf,
         #[command(flatten)]
         flags: NewFlags,
     },
-    Add {
-        path: PathBuf,
-    },
+    /// Add file to the rack
+    Insert { path: PathBuf },
+    /// View the current status of the rack repository
+    Expose,
 }
 
 #[derive(clap::Args, Debug)]

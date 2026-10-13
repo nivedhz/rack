@@ -1,6 +1,6 @@
 use clap::Parser;
 
-use crate::commands::{add::AddCommand, new::NewCommand};
+use crate::commands::{add::InsertCommand, new::DeflowerCommand, status::ExposeCommand};
 
 mod args;
 mod commands;
@@ -11,11 +11,12 @@ fn main() {
     tracing_subscriber::fmt::init();
 
     match args.command {
-        args::Commands::New { flags, dir_path } => {
-            NewCommand::new(flags, dir_path).init();
+        args::Commands::Deflower { flags, dir_path } => {
+            DeflowerCommand::new(flags, dir_path).init();
         }
-        args::Commands::Add { path } => {
-            AddCommand::new(path).init();
+        args::Commands::Insert { path } => {
+            InsertCommand::new(path).init();
         }
+        args::Commands::Expose => ExposeCommand::new().init(),
     }
 }
