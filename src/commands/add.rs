@@ -42,13 +42,10 @@ impl AddCommand {
         let (dir_name, file_name) = hash.split_at(2);
         let dir_path = Path::new(DIR_PATH).join(Path::new("goods").join(dir_name));
         if !dir_path.exists() {
-            match fs::create_dir_all(&dir_path) {
-                Ok(_) => (),
-                Err(e) => {
-                    eprintln!("fatal: {}", e);
-                    process::exit(1);
-                }
-            }
+            fs::create_dir(&dir_path).unwrap_or_else(|e| {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            });
         }
         let compressed_file_contents = match zstd::stream::encode_all(&file_content[..], 3) {
             Ok(f) => f,
@@ -58,12 +55,9 @@ impl AddCommand {
             }
         };
         let file_path = dir_path.join(file_name);
-        match fs::write(&file_path, compressed_file_contents) {
-            Ok(_) => (),
-            Err(e) => {
-                eprintln!("fatal: {}", e);
-                process::exit(1);
-            }
-        }
+        fs::write(&file_path, compressed_file_contents).unwrap_or_else(|e| {
+            eprintln!("fatal: {}", e);
+            process::exit(1);
+        });
     }
 }

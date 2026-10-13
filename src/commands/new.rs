@@ -51,7 +51,10 @@ impl RackFolder {
     fn init(&self) {
         self.create_rack_dir();
         self.create_baby_file();
-        self.create_hump_dir();
+        self.create_hump_dir().unwrap_or_else(|e| {
+            eprintln!("fatal: failed to create hump directory! {}", e);
+            std::process::exit(1);
+        });
         self.create_goods_dir();
     }
     fn create_rack_dir(&self) {
@@ -82,13 +85,10 @@ impl RackFolder {
         match File::create(path.join("BABY")) {
             Ok(mut f) => {
                 info!("Created baby file in {}", path.display());
-                match f.write_all(b"hump: hump/baby/bonkers") {
-                    Ok(_) => {}
-                    Err(_) => {
-                        eprintln!("fatal: failed to create hump file!");
-                        std::process::exit(1);
-                    }
-                }
+                f.write_all(b"hump: hump/baby/bonkers").unwrap_or_else(|e| {
+                    eprintln!("fatal: failed to create baby file! {}", e);
+                    std::process::exit(1);
+                });
                 info!("Wrote the baby file in {}", path.display())
             }
             Err(e) => match e.kind() {
@@ -102,16 +102,15 @@ impl RackFolder {
             },
         }
     }
-    fn create_hump_dir(&self) {
+    fn create_hump_dir(&self) -> std::io::Result<()> {
         let path = self.path.clone();
         if fs::create_dir_all(path.join("hump/baby")).is_ok() {
             info!("Created hump directory in {}", path.display());
-            if let Ok(mut f) = fs::File::create(path.join("hump/baby/bonkers"))
-                && let Ok(_) = f.write_all(b"bonkers")
-            {
-                info!("Created hump/baby/bonkers in {}", path.display());
-            }
+            let mut file = File::create(path.join("hump/baby/bonkers"))?;
+            file.write_all(b"bonkers")?;
+            info!("Created hump/baby/bonkers in {}", path.display());
         }
+        Ok(())
     }
     fn create_goods_dir(&self) {
         let path = self.path.clone();
