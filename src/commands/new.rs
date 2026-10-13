@@ -6,6 +6,7 @@ use std::{
     fs::{self, File},
     io::Write,
     path::{Path, PathBuf, absolute},
+    process,
 };
 
 pub struct DeflowerCommand {
@@ -22,7 +23,7 @@ impl DeflowerCommand {
                 Ok(p) => p,
                 Err(_) => {
                     eprintln!("fatal: failed to get current directory!");
-                    std::process::exit(1);
+                    process::exit(1);
                 }
             }
         } else {
@@ -30,7 +31,7 @@ impl DeflowerCommand {
                 Ok(p) => p,
                 Err(_) => {
                     eprintln!("fatal: failed to get absolute path!");
-                    std::process::exit(1);
+                    process::exit(1);
                 }
             }
         }
@@ -53,7 +54,7 @@ impl RackFolder {
         self.create_baby_file();
         self.create_hump_dir().unwrap_or_else(|e| {
             eprintln!("fatal: failed to create hump directory! {}", e);
-            std::process::exit(1);
+            process::exit(1);
         });
         self.create_goods_dir();
     }
@@ -75,7 +76,7 @@ impl RackFolder {
                 }
                 _ => {
                     eprintln!("fatal: failed to create rack directory!");
-                    std::process::exit(1);
+                    process::exit(1);
                 }
             },
         }
@@ -87,7 +88,7 @@ impl RackFolder {
                 info!("Created baby file in {}", path.display());
                 f.write_all(b"hump: hump/baby/bonkers").unwrap_or_else(|e| {
                     eprintln!("fatal: failed to create baby file! {}", e);
-                    std::process::exit(1);
+                    process::exit(1);
                 });
                 info!("Wrote the baby file in {}", path.display())
             }
@@ -97,7 +98,7 @@ impl RackFolder {
                 }
                 e => {
                     eprintln!("fatal: failed to create baby file! {}", e);
-                    std::process::exit(1);
+                    process::exit(1);
                 }
             },
         }
@@ -118,7 +119,7 @@ impl RackFolder {
             info!("Created goods directory in {}", path.display());
         } else {
             eprintln!("fatal: failed to create goods directory!");
-            std::process::exit(1);
+            process::exit(1);
         }
     }
 }
