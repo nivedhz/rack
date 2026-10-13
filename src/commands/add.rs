@@ -1,7 +1,9 @@
 use crate::constants::DIR_PATH;
 use sha3::{Digest, Sha3_256};
 use std::{
-    fs,
+    fs::{self},
+    io::{Read, Write},
+    os::unix::fs::MetadataExt,
     path::{Path, PathBuf},
     process,
 };
@@ -26,6 +28,7 @@ impl AddCommand {
             process::exit(1);
         }
         self.create_goods_entry();
+        self.create_panty_list_entry();
     }
     fn create_goods_entry(&self) {
         let file_name = self.path.clone();
@@ -59,5 +62,76 @@ impl AddCommand {
             eprintln!("fatal: {}", e);
             process::exit(1);
         });
+    }
+    fn create_panty_list_entry(&self) {
+        let relative_file_name = self.path.clone();
+        let file_metadata = fs::metadata(&relative_file_name).unwrap_or_else(|e| {
+            eprintln!("fatal: {}", e);
+            process::exit(1);
+        });
+        let file_content = match fs::read(&relative_file_name) {
+            Ok(f) => f,
+            Err(e) => {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            }
+        };
+        let mut hasher = Sha3_256::new();
+        hasher.update(&file_content);
+        let hash = hex::encode(hasher.finalize());
+
+        let entry = format!(
+            "{} {} {} {} {}\n",
+            file_metadata.len(),
+            relative_file_name.to_str().unwrap_or_default(),
+            hash,
+            file_metadata.ctime_nsec(),
+            file_metadata.mtime_nsec()
+        );
+        let mut panty_list_file = fs::File::options()
+            .create(true)
+            .read(true)
+            .append(true)
+            .truncate(false)
+            .open(Path::new(DIR_PATH).join("panty-list"))
+            .unwrap_or_else(|e| {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            });
+        let mut read_buf: Vec<u8> = Vec::new();
+        panty_list_file
+            .read_to_end(&mut read_buf)
+            .unwrap_or_else(|e| {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            });
+        let file_content = String::from_utf8_lossy(&read_buf[..]).to_string();
+        for contents in file_content.trim().split("\n") {
+            let file_name = contents.split(" ").nth(1).unwrap_or_default();
+            let m_time = contents.split(" ").nth(4).unwrap_or_default();
+            if file_name == relative_file_name.to_str().unwrap_or_default() {
+                if m_time == file_metadata.mtime_nsec().to_string() {
+                    eprintln!("info: file already added");
+                    return;
+                } else {
+                    let new_content = file_content.trim().replace(contents, entry.as_str());
+                    fs::write(
+                        Path::new(DIR_PATH).join("panty-list"),
+                        new_content.as_bytes(),
+                    )
+                    .unwrap_or_else(|e| {
+                        eprintln!("fatal: {}", e);
+                        process::exit(1);
+                    });
+                    return;
+                }
+            }
+        }
+        panty_list_file
+            .write_all(entry.as_bytes())
+            .unwrap_or_else(|e| {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            });
     }
 }
