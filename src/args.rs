@@ -1,9 +1,9 @@
+use crate::constants::LONG_ABOUT;
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
-
 #[derive(Parser)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, about, long_about = LONG_ABOUT)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
