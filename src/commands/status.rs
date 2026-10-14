@@ -29,26 +29,29 @@ impl ExposeCommand {
             }
         };
         let rack_folder = match self.find_upwards(&current_dir, DIR_PATH) {
-            Some(rack_folder) => rack_folder,
+            Some(f) => match f.parent() {
+                Some(p) => &p.to_path_buf(),
+                None => {
+                    eprintln!("fatal: could not find rack repository");
+                    process::exit(1)
+                }
+            },
             None => {
                 eprintln!("fatal: not inside a rack repository");
                 process::exit(1)
             }
         };
-        let rack_repository_dir = match rack_folder.parent() {
-            Some(rack_repository_dir) => rack_repository_dir,
-            None => {
-                eprintln!("fatal: could not find rack repository");
-                process::exit(1)
-            }
-        };
-        let mut files: Vec<FileStatus> = Vec::new();
+
         let mut ignore_dirs: Vec<PathBuf> =
             self.read_rack_ignore().iter().map(PathBuf::from).collect();
         ignore_dirs.push(PathBuf::from(DIR_PATH));
+
         let indexed_files: Vec<PathBuf> =
             self.get_indexed_files().iter().map(PathBuf::from).collect();
-        self.get_file_recursively(rack_repository_dir, &mut files, ignore_dirs, indexed_files);
+
+        let mut files: Vec<FileStatus> = Vec::new();
+        self.get_file_recursively(rack_folder, &mut files, ignore_dirs, indexed_files);
+
         let unindexed_files = files
             .iter()
             .filter(|f| !f.is_indexed)
@@ -58,7 +61,7 @@ impl ExposeCommand {
             .filter(|f| f.is_indexed)
             .collect::<Vec<&FileStatus>>();
 
-        println!();
+        println!("\n");
         if !indexed_files.is_empty() {
             println!("Changes to be commited:");
             for file in indexed_files {
@@ -69,7 +72,7 @@ impl ExposeCommand {
                 );
             }
         }
-        println!();
+        println!("\n");
         if !unindexed_files.is_empty() {
             println!("Changes not staged for commit:");
             for file in unindexed_files {
