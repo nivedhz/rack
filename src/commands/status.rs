@@ -22,7 +22,7 @@ impl ExposeCommand {
     }
     fn get_all_files(&self) {
         let current_dir = match std::env::current_dir() {
-            Ok(current_dir) => current_dir,
+            Ok(p) => p,
             Err(_) => {
                 eprintln!("fatal: could not get current directory");
                 process::exit(1)
@@ -92,7 +92,7 @@ impl ExposeCommand {
         indexed_files: Vec<PathBuf>,
     ) {
         let entries = match fs::read_dir(dir) {
-            Ok(entries) => entries,
+            Ok(r) => r,
             Err(_) => {
                 eprintln!("fatal: could not read directory");
                 process::exit(1)
@@ -100,7 +100,7 @@ impl ExposeCommand {
         };
         for entry in entries {
             let entry = match entry {
-                Ok(entry) => entry,
+                Ok(de) => de,
                 Err(_) => {
                     eprintln!("fatal: could not read directory");
                     process::exit(1)
@@ -124,7 +124,7 @@ impl ExposeCommand {
                     );
                 } else {
                     let path_file_name = match path.file_name() {
-                        Some(path_file_name) => path_file_name,
+                        Some(s) => s,
                         None => {
                             eprintln!("fatal: could not read directory");
                             process::exit(1)
@@ -152,7 +152,7 @@ impl ExposeCommand {
     }
     fn read_rack_ignore(&self) -> Vec<String> {
         let value = match fs::read_to_string(".rackignore") {
-            Ok(value) => value,
+            Ok(s) => s,
             Err(_) => return Vec::new(),
         };
         let entries: Vec<&str> = value.split("\n").collect();
@@ -160,7 +160,7 @@ impl ExposeCommand {
     }
     fn get_indexed_files(&self) -> Vec<String> {
         let value = match fs::read_to_string(Path::new(DIR_PATH).join("panty-list")) {
-            Ok(value) => value,
+            Ok(s) => s,
             Err(_) => return Vec::new(),
         };
         value
