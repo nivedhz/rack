@@ -12,11 +12,11 @@ fn main() {
 
     match args.command {
         args::Commands::Deflower { flags, dir_path } => {
-            DeflowerCommand::new(flags, dir_path).init();
+            DeflowerCommand::new(flags, dir_path).run();
         }
         args::Commands::Insert { path } => {
-            InsertCommand::new(path).init();
+            InsertCommand::new(path).run();
         }
-        args::Commands::Expose => ExposeCommand::new().init(),
+        args::Commands::Expose => ExposeCommand::new().run(),
     }
 }

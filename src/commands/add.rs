@@ -16,7 +16,7 @@ impl InsertCommand {
     pub fn new(path: PathBuf) -> Self {
         Self { path }
     }
-    pub fn init(&self) {
+    pub fn run(&self) {
         if let Some(path_string) = self.path.to_str()
             && path_string.trim().is_empty()
         {
