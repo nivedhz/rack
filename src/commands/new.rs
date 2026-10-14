@@ -36,7 +36,7 @@ impl DeflowerCommand {
             }
         }
     }
-    pub fn init(&self) {
+    pub fn run(&self) {
         println!();
         RackFolder::new(self.get_path().join(DIR_PATH)).init();
     }
@@ -57,6 +57,7 @@ impl RackFolder {
             process::exit(1);
         });
         self.create_goods_dir();
+        self.create_rack_ignore_file();
     }
     fn create_rack_dir(&self) {
         let path = &self.path;
@@ -121,5 +122,23 @@ impl RackFolder {
             eprintln!("fatal: failed to create goods directory!");
             process::exit(1);
         }
+    }
+    fn create_rack_ignore_file(&self) {
+        let path = match self.path.parent() {
+            Some(p) => p,
+            None => {
+                eprintln!("fatal: failed to get parent directory!");
+                process::exit(1);
+            }
+        };
+        let mut file = File::create(path.join(".rackignore")).unwrap_or_else(|e| {
+            eprintln!("fatal: failed to create .rackignore file! {}", e);
+            process::exit(1);
+        });
+        file.write_all(b"# Enter the relative or absolute paths of the files or directories you want to ignore.\n")
+            .unwrap_or_else(|e| {
+                eprintln!("fatal: failed to write to .gitignore file! {}", e);
+                process::exit(1);
+            });
     }
 }
