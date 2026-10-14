@@ -150,7 +150,7 @@ impl ExposeCommand {
     fn read_rack_ignore(&self) -> Vec<String> {
         let value = match fs::read_to_string(".rackignore") {
             Ok(value) => value,
-            Err(_) => "".to_string(),
+            Err(_) => return Vec::new(),
         };
         let entries: Vec<&str> = value.split("\n").collect();
         entries.iter().map(|s| s.to_string()).collect()
@@ -158,7 +158,7 @@ impl ExposeCommand {
     fn get_indexed_files(&self) -> Vec<String> {
         let value = match fs::read_to_string(Path::new(DIR_PATH).join("panty-list")) {
             Ok(value) => value,
-            Err(_) => "".to_string(),
+            Err(_) => return Vec::new(),
         };
         value
             .trim()
