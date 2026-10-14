@@ -71,8 +71,8 @@ impl ExposeCommand {
                     file.file_path.display().to_string().green()
                 );
             }
+            println!();
         }
-        println!();
         if !unindexed_files.is_empty() {
             println!("Changes not staged for commit:");
             for file in unindexed_files {
