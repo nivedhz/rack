@@ -123,16 +123,23 @@ impl ExposeCommand {
                         indexed_files.clone(),
                     );
                 } else {
-                    let path_file_name = match path.file_name() {
-                        Some(s) => s,
-                        None => {
+                    let base_path = match std::env::current_dir() {
+                        Ok(p) => p,
+                        Err(_) => {
+                            eprintln!("fatal: could not get current directory");
+                            process::exit(1)
+                        }
+                    };
+                    let relative_path = match path.strip_prefix(base_path) {
+                        Ok(p) => p,
+                        Err(_) => {
                             eprintln!("fatal: could not read directory");
                             process::exit(1)
                         }
                     };
                     files.push(FileStatus {
-                        is_indexed: indexed_files.contains(&PathBuf::from(path_file_name)),
-                        file_path: PathBuf::from(path_file_name),
+                        is_indexed: indexed_files.contains(&PathBuf::from(relative_path)),
+                        file_path: PathBuf::from(relative_path),
                     });
                 }
             }
