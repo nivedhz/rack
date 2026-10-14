@@ -61,7 +61,7 @@ impl ExposeCommand {
             .filter(|f| f.is_indexed)
             .collect::<Vec<&FileStatus>>();
 
-        println!("\n");
+        println!();
         if !indexed_files.is_empty() {
             println!("Changes to be commited:");
             for file in indexed_files {
@@ -72,7 +72,7 @@ impl ExposeCommand {
                 );
             }
         }
-        println!("\n");
+        println!();
         if !unindexed_files.is_empty() {
             println!("Changes not staged for commit:");
             for file in unindexed_files {
