@@ -21,7 +21,13 @@ impl ExposeCommand {
         self.get_all_files();
     }
     fn get_all_files(&self) {
-        let current_dir = std::env::current_dir().unwrap();
+        let current_dir = match std::env::current_dir() {
+            Ok(current_dir) => current_dir,
+            Err(_) => {
+                eprintln!("fatal: could not get current directory");
+                process::exit(1)
+            }
+        };
         let rack_folder = match self.find_upwards(&current_dir, DIR_PATH) {
             Some(rack_folder) => rack_folder,
             None => {
@@ -82,8 +88,21 @@ impl ExposeCommand {
         ignore_dirs: Vec<PathBuf>,
         indexed_files: Vec<PathBuf>,
     ) {
-        for entry in fs::read_dir(dir).unwrap() {
-            let entry = entry.unwrap();
+        let entries = match fs::read_dir(dir) {
+            Ok(entries) => entries,
+            Err(_) => {
+                eprintln!("fatal: could not read directory");
+                process::exit(1)
+            }
+        };
+        for entry in entries {
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(_) => {
+                    eprintln!("fatal: could not read directory");
+                    process::exit(1)
+                }
+            };
             let path = entry.path();
             if path == Path::new("target") || path == Path::new(".git") {
                 continue;
@@ -101,10 +120,16 @@ impl ExposeCommand {
                         indexed_files.clone(),
                     );
                 } else {
+                    let path_file_name = match path.file_name() {
+                        Some(path_file_name) => path_file_name,
+                        None => {
+                            eprintln!("fatal: could not read directory");
+                            process::exit(1)
+                        }
+                    };
                     files.push(FileStatus {
-                        is_indexed: indexed_files
-                            .contains(&PathBuf::from(&path.file_name().unwrap())),
-                        file_path: PathBuf::from(path.file_name().unwrap()),
+                        is_indexed: indexed_files.contains(&PathBuf::from(path_file_name)),
+                        file_path: PathBuf::from(path_file_name),
                     });
                 }
             }
@@ -123,12 +148,18 @@ impl ExposeCommand {
         None
     }
     fn read_rack_ignore(&self) -> Vec<String> {
-        let value = fs::read_to_string(".rackignore").unwrap();
+        let value = match fs::read_to_string(".rackignore") {
+            Ok(value) => value,
+            Err(_) => "".to_string(),
+        };
         let entries: Vec<&str> = value.split("\n").collect();
         entries.iter().map(|s| s.to_string()).collect()
     }
     fn get_indexed_files(&self) -> Vec<String> {
-        let value = fs::read_to_string(Path::new(DIR_PATH).join("panty-list")).unwrap();
+        let value = match fs::read_to_string(Path::new(DIR_PATH).join("panty-list")) {
+            Ok(value) => value,
+            Err(_) => "".to_string(),
+        };
         value
             .trim()
             .split("\n")
