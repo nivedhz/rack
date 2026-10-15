@@ -61,8 +61,8 @@ impl InsertCommand {
         let file_name = &self.path;
         let file_content = match fs::read(file_name) {
             Ok(f) => f,
-            Err(e) => {
-                eprintln!("fatal: {}", e);
+            Err(_) => {
+                eprintln!("fatal: could not read goods file");
                 process::exit(1);
             }
         };
@@ -78,21 +78,21 @@ impl InsertCommand {
             }
         };
         if !dir_path.exists() {
-            fs::create_dir(&dir_path).unwrap_or_else(|e| {
-                eprintln!("fatal: {}", e);
+            fs::create_dir(&dir_path).unwrap_or_else(|_| {
+                eprintln!("fatal: could not create goods directory");
                 process::exit(1);
             });
         }
         let compressed_file_contents = match zstd::stream::encode_all(&file_content[..], 3) {
             Ok(f) => f,
-            Err(e) => {
-                eprintln!("fatal: {}", e);
+            Err(_) => {
+                eprintln!("fatal: could not compress the goods entry file");
                 process::exit(1);
             }
         };
         let file_path = dir_path.join(file_name);
-        fs::write(&file_path, compressed_file_contents).unwrap_or_else(|e| {
-            eprintln!("fatal: {}", e);
+        fs::write(&file_path, compressed_file_contents).unwrap_or_else(|_| {
+            eprintln!("fatal: could not write the goods entry file");
             process::exit(1);
         });
     }
@@ -120,16 +120,16 @@ impl InsertCommand {
         let relative_file_name = &self.path;
         let canonical_file_name = match fs::canonicalize(relative_file_name) {
             Ok(f) => f,
-            Err(e) => {
-                eprintln!("fatal: {}", e);
+            Err(_) => {
+                eprintln!("fatal: coult not get the canonical file name");
                 process::exit(1);
             }
         };
         let absolute_path = current_dir.join(canonical_file_name);
         let relative_path_from_root = match absolute_path.strip_prefix(rack_repo_dir) {
             Ok(f) => f,
-            Err(e) => {
-                eprintln!("fatal: {}", e);
+            Err(_) => {
+                eprintln!("fatal: could not get relative path from root");
                 process::exit(1);
             }
         };
@@ -139,8 +139,8 @@ impl InsertCommand {
         });
         let file_content = match fs::read(relative_file_name) {
             Ok(f) => f,
-            Err(e) => {
-                eprintln!("fatal: {}", e);
+            Err(_) => {
+                eprintln!("fatal: coult not read the file contents for the panty list entry");
                 process::exit(1);
             }
         };
@@ -169,15 +169,15 @@ impl InsertCommand {
             .append(true)
             .truncate(false)
             .open(&panty_list_path)
-            .unwrap_or_else(|e| {
-                eprintln!("fatal: {}", e);
+            .unwrap_or_else(|_| {
+                eprintln!("fatal: could not open the panty list file");
                 process::exit(1);
             });
         let mut read_buf: Vec<u8> = Vec::new();
         panty_list_file
             .read_to_end(&mut read_buf)
-            .unwrap_or_else(|e| {
-                eprintln!("fatal: {}", e);
+            .unwrap_or_else(|_| {
+                eprintln!("fatal: could not read the panty list file");
                 process::exit(1);
             });
         let file_content = String::from_utf8_lossy(&read_buf[..]).to_string();
@@ -190,8 +190,8 @@ impl InsertCommand {
                     return;
                 } else {
                     let new_content = file_content.trim().replace(contents, entry.as_str());
-                    fs::write(panty_list_path, new_content.as_bytes()).unwrap_or_else(|e| {
-                        eprintln!("fatal: {}", e);
+                    fs::write(panty_list_path, new_content.as_bytes()).unwrap_or_else(|_| {
+                        eprintln!("fatal: could not write the panty list file");
                         process::exit(1);
                     });
                     return;
@@ -200,8 +200,8 @@ impl InsertCommand {
         }
         panty_list_file
             .write_all(entry.as_bytes())
-            .unwrap_or_else(|e| {
-                eprintln!("fatal: {}", e);
+            .unwrap_or_else(|_| {
+                eprintln!("fatal: could not write the panty list file");
                 process::exit(1);
             });
     }

@@ -50,8 +50,8 @@ impl RackFolder {
     fn init(&self) {
         self.create_rack_dir();
         self.create_baby_file();
-        self.create_hump_dir().unwrap_or_else(|e| {
-            eprintln!("fatal: failed to create hump directory! {}", e);
+        self.create_hump_dir().unwrap_or_else(|_| {
+            eprintln!("fatal: failed to create hump directory!");
             process::exit(1);
         });
         self.create_goods_dir();
@@ -84,8 +84,8 @@ impl RackFolder {
         let path = &self.path;
         match File::create(path.join("BABY")) {
             Ok(mut f) => {
-                f.write_all(b"hump: hump/baby/bonkers").unwrap_or_else(|e| {
-                    eprintln!("fatal: failed to create baby file! {}", e);
+                f.write_all(b"hump: hump/baby/bonkers").unwrap_or_else(|_| {
+                    eprintln!("fatal: failed to create baby file!");
                     process::exit(1);
                 });
             }
@@ -93,8 +93,8 @@ impl RackFolder {
                 std::io::ErrorKind::AlreadyExists => {
                     println!("Reinitialized a baby file in {}", path.display())
                 }
-                e => {
-                    eprintln!("fatal: failed to create baby file! {}", e);
+                _ => {
+                    eprintln!("fatal: failed to create baby file!");
                     process::exit(1);
                 }
             },
@@ -124,13 +124,13 @@ impl RackFolder {
                 process::exit(1);
             }
         };
-        let mut file = File::create(path.join(".rackignore")).unwrap_or_else(|e| {
-            eprintln!("fatal: failed to create .rackignore file! {}", e);
+        let mut file = File::create(path.join(".rackignore")).unwrap_or_else(|_| {
+            eprintln!("fatal: failed to create .rackignore file!");
             process::exit(1);
         });
         file.write_all(b"# Enter the relative or absolute paths of the files or directories you want to ignore.\n")
-            .unwrap_or_else(|e| {
-                eprintln!("fatal: failed to write to .gitignore file! {}", e);
+            .unwrap_or_else(|_| {
+                eprintln!("fatal: failed to write to .gitignore file!");
                 process::exit(1);
             });
     }
