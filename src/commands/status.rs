@@ -194,6 +194,9 @@ impl ExposeCommand {
             Ok(s) => s,
             Err(_) => return Vec::new(),
         };
+        if value.trim().is_empty() {
+            return Vec::new();
+        }
         value
             .trim()
             .split("\n")
