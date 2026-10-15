@@ -91,6 +91,13 @@ impl ExposeCommand {
         ignore_dirs: Vec<PathBuf>,
         indexed_files: Vec<PathBuf>,
     ) {
+        let current_dir = match std::env::current_dir() {
+            Ok(p) => p,
+            Err(_) => {
+                eprintln!("fatal: could not get current directory");
+                process::exit(1)
+            }
+        };
         let entries = match fs::read_dir(dir) {
             Ok(r) => r,
             Err(_) => {
@@ -107,15 +114,33 @@ impl ExposeCommand {
                 }
             };
             let path = entry.path();
-            if path == Path::new("target") || path == Path::new(".git") {
+            let base_path = match self.find_upwards(&current_dir, DIR_PATH) {
+                Some(p) => match p.parent() {
+                    Some(p) => p.to_path_buf(),
+                    None => {
+                        eprintln!("fatal: could not find rack repository");
+                        process::exit(1)
+                    }
+                },
+                None => {
+                    eprintln!("fatal: could not find rack repository");
+                    process::exit(1)
+                }
+            };
+            let relative_path = match path.strip_prefix(base_path) {
+                Ok(p) => p,
+                Err(_) => {
+                    eprintln!("fatal: coult not get relative path");
+                    process::exit(1)
+                }
+            };
+            if let Some(path_name) = path.file_name()
+                && (ignore_dirs.contains(&PathBuf::from(path_name))
+                    || ignore_dirs.contains(&PathBuf::from(relative_path)))
+            {
                 continue;
             } else {
                 if path.is_dir() {
-                    if let Some(dir_name) = path.file_name()
-                        && ignore_dirs.contains(&PathBuf::from(dir_name))
-                    {
-                        continue;
-                    }
                     self.get_file_recursively(
                         &path,
                         files,
@@ -123,20 +148,6 @@ impl ExposeCommand {
                         indexed_files.clone(),
                     );
                 } else {
-                    let base_path = match std::env::current_dir() {
-                        Ok(p) => p,
-                        Err(_) => {
-                            eprintln!("fatal: could not get current directory");
-                            process::exit(1)
-                        }
-                    };
-                    let relative_path = match path.strip_prefix(base_path) {
-                        Ok(p) => p,
-                        Err(_) => {
-                            eprintln!("fatal: could not read directory");
-                            process::exit(1)
-                        }
-                    };
                     files.push(FileStatus {
                         is_indexed: indexed_files.contains(&PathBuf::from(relative_path)),
                         file_path: PathBuf::from(relative_path),
@@ -162,7 +173,7 @@ impl ExposeCommand {
             Ok(s) => s,
             Err(_) => return Vec::new(),
         };
-        let entries: Vec<&str> = value.split("\n").collect();
+        let entries: Vec<&str> = value.trim().split("\n").collect();
         entries.iter().map(|s| s.to_string()).collect()
     }
     fn get_indexed_files(&self) -> Vec<String> {
