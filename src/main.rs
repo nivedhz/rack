@@ -8,7 +8,6 @@ mod constants;
 
 fn main() {
     let args = args::Cli::parse();
-    tracing_subscriber::fmt::init();
 
     match args.command {
         args::Commands::Deflower { flags, dir_path } => {

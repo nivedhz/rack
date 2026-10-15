@@ -1,5 +1,3 @@
-use tracing::info;
-
 use crate::{args::NewFlags, constants::DIR_PATH};
 use std::{
     env,
@@ -86,12 +84,10 @@ impl RackFolder {
         let path = &self.path;
         match File::create(path.join("BABY")) {
             Ok(mut f) => {
-                info!("Created baby file in {}", path.display());
                 f.write_all(b"hump: hump/baby/bonkers").unwrap_or_else(|e| {
                     eprintln!("fatal: failed to create baby file! {}", e);
                     process::exit(1);
                 });
-                info!("Wrote the baby file in {}", path.display())
             }
             Err(e) => match e.kind() {
                 std::io::ErrorKind::AlreadyExists => {
@@ -107,17 +103,14 @@ impl RackFolder {
     fn create_hump_dir(&self) -> std::io::Result<()> {
         let path = &self.path;
         if fs::create_dir_all(path.join("hump/baby")).is_ok() {
-            info!("Created hump directory in {}", path.display());
             let mut file = File::create(path.join("hump/baby/bonkers"))?;
             file.write_all(b"bonkers")?;
-            info!("Created hump/baby/bonkers in {}", path.display());
         }
         Ok(())
     }
     fn create_goods_dir(&self) {
         let path = &self.path;
         if fs::create_dir_all(path.join("goods")).is_ok() {
-            info!("Created goods directory in {}", path.display());
         } else {
             eprintln!("fatal: failed to create goods directory!");
             process::exit(1);
