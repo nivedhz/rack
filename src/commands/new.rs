@@ -81,6 +81,9 @@ impl RackFolder {
             .path
             .parent()
             .context("could not find rack repository")?;
+        if path.join(".rackignore").exists() {
+            return Ok(());
+        }
         let mut file = File::create(path.join(".rackignore"))?;
         file.write_all(b"# Enter the relative or absolute paths of the files or directories you want to ignore.\n")?;
         Ok(())
