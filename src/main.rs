@@ -1,21 +1,8 @@
-use clap::Parser;
-
-use crate::commands::{add::InsertCommand, new::DeflowerCommand, status::ExposeCommand};
-
-mod args;
-mod commands;
-mod constants;
+use rack::run;
 
 fn main() {
-    let args = args::Cli::parse();
-
-    match args.command {
-        args::Commands::Deflower { flags, dir_path } => {
-            DeflowerCommand::new(flags, dir_path).run();
-        }
-        args::Commands::Insert { path } => {
-            InsertCommand::new(path).run();
-        }
-        args::Commands::Expose => ExposeCommand::new().run(),
+    if let Err(error) = run() {
+        eprintln!("fatal: {error}");
+        std::process::exit(1);
     }
 }

@@ -1,10 +1,11 @@
+use anyhow::{Context, Result};
+
 use crate::{args::NewFlags, constants::DIR_PATH};
 use std::{
     env,
     fs::{self, File},
     io::Write,
     path::{Path, PathBuf, absolute},
-    process,
 };
 
 pub struct DeflowerCommand {
@@ -15,28 +16,17 @@ impl DeflowerCommand {
     pub fn new(flags: NewFlags, dir_path: PathBuf) -> Self {
         Self { flags, dir_path }
     }
-    fn get_path(&self) -> PathBuf {
+    fn get_path(&self) -> Result<PathBuf> {
         if self.flags.default || self.dir_path == Path::new(".") {
-            match env::current_dir() {
-                Ok(p) => p,
-                Err(_) => {
-                    eprintln!("fatal: failed to get current directory!");
-                    process::exit(1);
-                }
-            }
+            Ok(env::current_dir()?)
         } else {
-            match absolute(&self.dir_path) {
-                Ok(p) => p,
-                Err(_) => {
-                    eprintln!("fatal: failed to get absolute path!");
-                    process::exit(1);
-                }
-            }
+            Ok(absolute(&self.dir_path)?)
         }
     }
-    pub fn run(&self) {
+    pub fn run(&self) -> Result<()> {
         println!();
-        RackFolder::new(self.get_path().join(DIR_PATH)).init();
+        RackFolder::new(self.get_path()?.join(DIR_PATH)).init()?;
+        Ok(())
     }
 }
 
@@ -47,58 +37,31 @@ impl RackFolder {
     fn new(path: PathBuf) -> Self {
         Self { path }
     }
-    fn init(&self) {
-        self.create_rack_dir();
-        self.create_baby_file();
-        self.create_hump_dir().unwrap_or_else(|_| {
-            eprintln!("fatal: failed to create hump directory!");
-            process::exit(1);
-        });
-        self.create_goods_dir();
-        self.create_rack_ignore_file();
+    fn init(&self) -> Result<()> {
+        self.create_rack_dir()?;
+        self.create_baby_file()?;
+        self.create_hump_dir()?;
+        self.create_goods_dir()?;
+        self.create_rack_ignore_file()?;
+        Ok(())
     }
-    fn create_rack_dir(&self) {
+    fn create_rack_dir(&self) -> Result<()> {
         let path = &self.path;
-        let exist_status = fs::exists(path).unwrap_or(false) && path.is_dir();
+        let exist_status = fs::exists(path)? && path.is_dir();
 
-        match fs::create_dir_all(path) {
-            Ok(_) => {
-                if exist_status {
-                    println!("Reinitialized a rack repository in {}", path.display());
-                } else {
-                    println!("Initialized a new rack repository in {}", path.display());
-                }
-            }
-            Err(e) => match e.kind() {
-                std::io::ErrorKind::AlreadyExists => {
-                    println!("Reinitialized a rack repository in {}", path.display())
-                }
-                _ => {
-                    eprintln!("fatal: failed to create rack directory!");
-                    process::exit(1);
-                }
-            },
+        fs::create_dir_all(path)?;
+        if exist_status {
+            println!("Reinitialized a rack repository in {}", path.display());
+        } else {
+            println!("Initialized a new rack repository in {}", path.display());
         }
+        Ok(())
     }
-    fn create_baby_file(&self) {
+    fn create_baby_file(&self) -> Result<()> {
         let path = &self.path;
-        match File::create(path.join("BABY")) {
-            Ok(mut f) => {
-                f.write_all(b"hump: hump/baby/bonkers").unwrap_or_else(|_| {
-                    eprintln!("fatal: failed to create baby file!");
-                    process::exit(1);
-                });
-            }
-            Err(e) => match e.kind() {
-                std::io::ErrorKind::AlreadyExists => {
-                    println!("Reinitialized a baby file in {}", path.display())
-                }
-                _ => {
-                    eprintln!("fatal: failed to create baby file!");
-                    process::exit(1);
-                }
-            },
-        }
+        let mut file = File::create(path.join("BABY"))?;
+        file.write_all(b"hump: hump/baby/bonkers")?;
+        Ok(())
     }
     fn create_hump_dir(&self) -> std::io::Result<()> {
         let path = &self.path;
@@ -108,30 +71,18 @@ impl RackFolder {
         }
         Ok(())
     }
-    fn create_goods_dir(&self) {
+    fn create_goods_dir(&self) -> Result<()> {
         let path = &self.path;
-        if fs::create_dir_all(path.join("goods")).is_ok() {
-        } else {
-            eprintln!("fatal: failed to create goods directory!");
-            process::exit(1);
-        }
+        fs::create_dir_all(path.join("goods"))?;
+        Ok(())
     }
-    fn create_rack_ignore_file(&self) {
-        let path = match self.path.parent() {
-            Some(p) => p,
-            None => {
-                eprintln!("fatal: failed to get parent directory!");
-                process::exit(1);
-            }
-        };
-        let mut file = File::create(path.join(".rackignore")).unwrap_or_else(|_| {
-            eprintln!("fatal: failed to create .rackignore file!");
-            process::exit(1);
-        });
-        file.write_all(b"# Enter the relative or absolute paths of the files or directories you want to ignore.\n")
-            .unwrap_or_else(|_| {
-                eprintln!("fatal: failed to write to .gitignore file!");
-                process::exit(1);
-            });
+    fn create_rack_ignore_file(&self) -> Result<()> {
+        let path = self
+            .path
+            .parent()
+            .context("could not find rack repository")?;
+        let mut file = File::create(path.join(".rackignore"))?;
+        file.write_all(b"# Enter the relative or absolute paths of the files or directories you want to ignore.\n")?;
+        Ok(())
     }
 }
