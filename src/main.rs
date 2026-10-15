@@ -2,7 +2,7 @@ use rack::run;
 
 fn main() {
     if let Err(error) = run() {
-        eprintln!("fatal: {error}");
+        eprintln!("{error}");
         std::process::exit(1);
     }
 }
