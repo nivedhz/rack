@@ -63,7 +63,7 @@ impl RackFolder {
         file.write_all(b"hump: hump/baby/bonkers")?;
         Ok(())
     }
-    fn create_hump_dir(&self) -> std::io::Result<()> {
+    fn create_hump_dir(&self) -> Result<()> {
         let path = &self.path;
         if fs::create_dir_all(path.join("hump/baby")).is_ok() {
             let mut file = File::create(path.join("hump/baby/bonkers"))?;
