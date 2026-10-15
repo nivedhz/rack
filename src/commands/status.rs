@@ -1,6 +1,6 @@
 use colored::*;
 use std::{
-    fs,
+    env, fs,
     path::{Path, PathBuf},
     process,
 };
@@ -21,14 +21,7 @@ impl ExposeCommand {
         self.get_all_files();
     }
     fn get_all_files(&self) {
-        let current_dir = match std::env::current_dir() {
-            Ok(p) => p,
-            Err(_) => {
-                eprintln!("fatal: could not get current directory");
-                process::exit(1)
-            }
-        };
-        let rack_folder = match self.find_upwards(&current_dir, DIR_PATH) {
+        let rack_folder = match self.find_rack_dir() {
             Some(f) => match f.parent() {
                 Some(p) => &p.to_path_buf(),
                 None => {
@@ -91,13 +84,6 @@ impl ExposeCommand {
         ignore_dirs: Vec<PathBuf>,
         indexed_files: Vec<PathBuf>,
     ) {
-        let current_dir = match std::env::current_dir() {
-            Ok(p) => p,
-            Err(_) => {
-                eprintln!("fatal: could not get current directory");
-                process::exit(1)
-            }
-        };
         let entries = match fs::read_dir(dir) {
             Ok(r) => r,
             Err(_) => {
@@ -114,7 +100,7 @@ impl ExposeCommand {
                 }
             };
             let path = entry.path();
-            let base_path = match self.find_upwards(&current_dir, DIR_PATH) {
+            let base_path = match self.find_rack_dir() {
                 Some(p) => match p.parent() {
                     Some(p) => p.to_path_buf(),
                     None => {
@@ -156,12 +142,19 @@ impl ExposeCommand {
             }
         }
     }
-    fn find_upwards(&self, start_dir: &Path, target_name: &str) -> Option<PathBuf> {
-        for ancestor in start_dir.ancestors() {
+    fn find_rack_dir(&self) -> Option<PathBuf> {
+        let current_dir = match env::current_dir() {
+            Ok(p) => p,
+            Err(_) => {
+                eprintln!("fatal: could not get current directory");
+                process::exit(1)
+            }
+        };
+        for ancestor in current_dir.ancestors() {
             if ancestor == Path::new("/") {
                 return None;
             }
-            let path = ancestor.join(target_name);
+            let path = ancestor.join(DIR_PATH);
             if path.exists() && path.is_dir() {
                 return Some(path);
             }
@@ -169,7 +162,20 @@ impl ExposeCommand {
         None
     }
     fn read_rack_ignore(&self) -> Vec<String> {
-        let value = match fs::read_to_string(".rackignore") {
+        let rack_repo_root_path = match self.find_rack_dir() {
+            Some(f) => match f.parent() {
+                Some(p) => p.to_path_buf(),
+                None => {
+                    eprintln!("fatal: could not find rack repository");
+                    process::exit(1)
+                }
+            },
+            None => {
+                eprintln!("fatal: not inside a rack repository");
+                process::exit(1)
+            }
+        };
+        let value = match fs::read_to_string(rack_repo_root_path.join(".rackignore")) {
             Ok(s) => s,
             Err(_) => return Vec::new(),
         };
@@ -177,7 +183,14 @@ impl ExposeCommand {
         entries.iter().map(|s| s.to_string()).collect()
     }
     fn get_indexed_files(&self) -> Vec<String> {
-        let value = match fs::read_to_string(Path::new(DIR_PATH).join("panty-list")) {
+        let rack_dir = match self.find_rack_dir() {
+            Some(f) => f,
+            None => {
+                eprintln!("fatal: not inside a rack repository");
+                process::exit(1)
+            }
+        };
+        let value = match fs::read_to_string(rack_dir.join("panty-list")) {
             Ok(s) => s,
             Err(_) => return Vec::new(),
         };

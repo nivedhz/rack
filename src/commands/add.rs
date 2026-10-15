@@ -1,6 +1,7 @@
 use crate::constants::DIR_PATH;
 use sha3::{Digest, Sha3_256};
 use std::{
+    env,
     fs::{self},
     io::{Read, Write},
     os::unix::fs::MetadataExt,
@@ -17,18 +18,44 @@ impl InsertCommand {
         Self { path }
     }
     pub fn run(&self) {
+        let rack_dir = match self.find_rack_dir() {
+            Some(f) => f,
+            None => {
+                eprintln!("fatal: not inside a rack repository");
+                process::exit(1)
+            }
+        };
         if let Some(path_string) = self.path.to_str()
             && path_string.trim().is_empty()
         {
             eprintln!("fatal: empty path");
             process::exit(1);
         }
-        if !Path::new(DIR_PATH).exists() {
+        if !rack_dir.exists() {
             eprintln!("fatal: not a rack repository");
             process::exit(1);
         }
         self.create_goods_entry();
         self.create_panty_list_entry();
+    }
+    fn find_rack_dir(&self) -> Option<PathBuf> {
+        let current_dir = match env::current_dir() {
+            Ok(p) => p,
+            Err(_) => {
+                eprintln!("fatal: could not get current directory");
+                process::exit(1)
+            }
+        };
+        for ancestor in current_dir.ancestors() {
+            if ancestor == Path::new("/") {
+                return None;
+            }
+            let path = ancestor.join(DIR_PATH);
+            if path.exists() && path.is_dir() {
+                return Some(path);
+            }
+        }
+        None
     }
     fn create_goods_entry(&self) {
         let file_name = &self.path;
@@ -43,7 +70,13 @@ impl InsertCommand {
         hasher.update(&file_content);
         let hash = hex::encode(hasher.finalize());
         let (dir_name, file_name) = hash.split_at(2);
-        let dir_path = Path::new(DIR_PATH).join(Path::new("goods").join(dir_name));
+        let dir_path = match self.find_rack_dir() {
+            Some(f) => f.join("goods").join(dir_name),
+            None => {
+                eprintln!("fatal: not inside a rack repository");
+                process::exit(1)
+            }
+        };
         if !dir_path.exists() {
             fs::create_dir(&dir_path).unwrap_or_else(|e| {
                 eprintln!("fatal: {}", e);
@@ -64,7 +97,42 @@ impl InsertCommand {
         });
     }
     fn create_panty_list_entry(&self) {
+        let rack_repo_dir = match self.find_rack_dir() {
+            Some(f) => match f.parent() {
+                Some(p) => p.to_path_buf(),
+                None => {
+                    eprintln!("fatal: could not find rack repository");
+                    process::exit(1)
+                }
+            },
+            None => {
+                eprintln!("fatal: not inside a rack repository");
+                process::exit(1)
+            }
+        };
+        let current_dir = match env::current_dir() {
+            Ok(p) => p,
+            Err(_) => {
+                eprintln!("fatal: could not get current directory");
+                process::exit(1)
+            }
+        };
         let relative_file_name = &self.path;
+        let canonical_file_name = match fs::canonicalize(relative_file_name) {
+            Ok(f) => f,
+            Err(e) => {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            }
+        };
+        let absolute_path = current_dir.join(canonical_file_name);
+        let relative_path_from_root = match absolute_path.strip_prefix(rack_repo_dir) {
+            Ok(f) => f,
+            Err(e) => {
+                eprintln!("fatal: {}", e);
+                process::exit(1);
+            }
+        };
         let file_metadata = fs::metadata(relative_file_name).unwrap_or_else(|e| {
             eprintln!("fatal: {}", e);
             process::exit(1);
@@ -83,17 +151,24 @@ impl InsertCommand {
         let entry = format!(
             "{} {} {} {} {}\n",
             file_metadata.len(),
-            relative_file_name.to_str().unwrap_or_default(),
+            relative_path_from_root.to_str().unwrap_or_default(),
             hash,
             file_metadata.ctime_nsec(),
             file_metadata.mtime_nsec()
         );
+        let panty_list_path = match self.find_rack_dir() {
+            Some(f) => f.join("panty-list"),
+            None => {
+                eprintln!("fatal: not inside a rack repository");
+                process::exit(1)
+            }
+        };
         let mut panty_list_file = fs::File::options()
             .create(true)
             .read(true)
             .append(true)
             .truncate(false)
-            .open(Path::new(DIR_PATH).join("panty-list"))
+            .open(&panty_list_path)
             .unwrap_or_else(|e| {
                 eprintln!("fatal: {}", e);
                 process::exit(1);
@@ -115,11 +190,7 @@ impl InsertCommand {
                     return;
                 } else {
                     let new_content = file_content.trim().replace(contents, entry.as_str());
-                    fs::write(
-                        Path::new(DIR_PATH).join("panty-list"),
-                        new_content.as_bytes(),
-                    )
-                    .unwrap_or_else(|e| {
+                    fs::write(panty_list_path, new_content.as_bytes()).unwrap_or_else(|e| {
                         eprintln!("fatal: {}", e);
                         process::exit(1);
                     });
