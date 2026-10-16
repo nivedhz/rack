@@ -15,8 +15,6 @@ pub enum Commands {
     Deflower {
         #[arg(default_value = ".")]
         dir_path: PathBuf,
-        #[command(flatten)]
-        flags: NewFlags,
     },
     /// Add file to the rack
     Insert { path: PathBuf },
@@ -27,11 +25,4 @@ pub enum Commands {
         #[arg(short, long)]
         message: String,
     },
-}
-
-#[derive(clap::Args, Debug)]
-#[group(required = false, multiple = false)]
-pub struct NewFlags {
-    #[arg(short, long)]
-    pub default: bool,
 }

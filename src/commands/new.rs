@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 
-use crate::{args::NewFlags, constants::DIR_PATH};
+use crate::constants::DIR_PATH;
 use std::{
     env,
     fs::{self, File},
@@ -9,15 +9,14 @@ use std::{
 };
 
 pub struct DeflowerCommand {
-    flags: NewFlags,
     dir_path: PathBuf,
 }
 impl DeflowerCommand {
-    pub fn new(flags: NewFlags, dir_path: PathBuf) -> Self {
-        Self { flags, dir_path }
+    pub fn new(dir_path: PathBuf) -> Self {
+        Self { dir_path }
     }
     fn get_path(&self) -> Result<PathBuf> {
-        if self.flags.default || self.dir_path == Path::new(".") {
+        if self.dir_path == Path::new(".") {
             Ok(env::current_dir()?)
         } else {
             Ok(absolute(&self.dir_path)?)

@@ -13,8 +13,8 @@ pub fn run() -> Result<()> {
     let args = args::Cli::parse();
 
     match args.command {
-        args::Commands::Deflower { flags, dir_path } => {
-            DeflowerCommand::new(flags, dir_path).run()?;
+        args::Commands::Deflower { dir_path } => {
+            DeflowerCommand::new(dir_path).run()?;
         }
         args::Commands::Insert { path } => {
             InsertCommand::new(path).run()?;
