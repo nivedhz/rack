@@ -80,7 +80,10 @@ impl InsertCommand {
         if !dir_path.exists() {
             fs::create_dir(&dir_path)?;
         }
-        let compressed_file_contents = zstd::stream::encode_all(&file_content[..], 3)?;
+        let mut file_type = b"boob".to_vec();
+        file_type.push(0x00);
+        let total_content = [file_type, file_content].concat();
+        let compressed_file_contents = zstd::stream::encode_all(&total_content[..], 3)?;
         let file_path = dir_path.join(file_name);
         fs::write(&file_path, compressed_file_contents)?;
         Ok(())
