@@ -144,6 +144,10 @@ impl ExposeCommand {
         let rack_dir = self
             .find_rack_dir()
             .context("fatal: could not find rack repository")?;
+        if !rack_dir.join("panty-list").exists() {
+            fs::File::create(rack_dir.join("panty-list"))?;
+            return Ok(Vec::new());
+        }
         let value = fs::read_to_string(rack_dir.join("panty-list"))?;
         if value.trim().is_empty() {
             return Ok(Vec::new());
