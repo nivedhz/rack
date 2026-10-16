@@ -29,8 +29,12 @@ impl InsertCommand {
         if !rack_dir.exists() {
             bail!("fatal: not a rack repository")
         }
-        self.create_goods_entry()?;
-        self.create_panty_list_entry()?;
+        if self.path.is_dir() {
+            self.handle_dir(self.path.to_path_buf())?
+        } else {
+            self.create_goods_entry(None)?;
+            self.create_panty_list_entry(None)?;
+        }
         Ok(())
     }
     fn find_rack_dir(&self) -> Option<PathBuf> {
@@ -46,9 +50,24 @@ impl InsertCommand {
         }
         None
     }
-    fn create_goods_entry(&self) -> Result<()> {
-        let file_name = &self.path;
-        let file_content = fs::read(file_name)?;
+    fn handle_dir(&self, path: PathBuf) -> Result<()> {
+        let entries = fs::read_dir(path)?;
+        for entry in entries {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_dir() {
+                self.handle_dir(path)?;
+            } else {
+                self.create_goods_entry(Some(path.clone()))?;
+                self.create_panty_list_entry(Some(path))?;
+            }
+        }
+
+        Ok(())
+    }
+    fn create_goods_entry(&self, path: Option<PathBuf>) -> Result<()> {
+        let path = path.unwrap_or(self.path.clone());
+        let file_content = fs::read(path)?;
         let mut hasher = Sha3_256::new();
         hasher.update(&file_content);
         let hash = hex::encode(hasher.finalize());
@@ -66,7 +85,7 @@ impl InsertCommand {
         fs::write(&file_path, compressed_file_contents)?;
         Ok(())
     }
-    fn create_panty_list_entry(&self) -> Result<()> {
+    fn create_panty_list_entry(&self, file_name: Option<PathBuf>) -> Result<()> {
         let rack_repo_dir = self
             .find_rack_dir()
             .context("fatal: could not find rack repository")?
@@ -74,12 +93,12 @@ impl InsertCommand {
             .context("fatal: could not find rack repository")?
             .to_path_buf();
         let current_dir = env::current_dir()?;
-        let relative_file_name = &self.path;
-        let canonical_file_name = fs::canonicalize(relative_file_name)?;
+        let relative_file_name = file_name.unwrap_or(self.path.clone());
+        let canonical_file_name = fs::canonicalize(&relative_file_name)?;
         let absolute_path = current_dir.join(canonical_file_name);
         let relative_path_from_root = absolute_path.strip_prefix(rack_repo_dir)?;
-        let file_metadata = fs::metadata(relative_file_name)?;
-        let file_content = fs::read(relative_file_name)?;
+        let file_metadata = fs::metadata(&relative_file_name)?;
+        let file_content = fs::read(&relative_file_name)?;
         let mut hasher = Sha3_256::new();
         hasher.update(&file_content);
         let hash = hex::encode(hasher.finalize());
