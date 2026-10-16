@@ -136,6 +136,9 @@ impl ExposeCommand {
             .parent()
             .context("fatal: could not find rack repository")?
             .to_path_buf();
+        if !rack_repo_root_path.join(".rackignore").exists() {
+            return Ok(Vec::new());
+        }
         let value = fs::read_to_string(rack_repo_root_path.join(".rackignore"))?;
         let entries: Vec<&str> = value.trim().lines().collect();
         Ok(entries.iter().map(|s| s.to_string()).collect())
