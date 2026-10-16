@@ -136,10 +136,7 @@ impl ExposeCommand {
             .parent()
             .context("fatal: could not find rack repository")?
             .to_path_buf();
-        if !rack_repo_root_path.join(".rackignore").exists() {
-            return Ok(Vec::new());
-        }
-        let value = fs::read_to_string(rack_repo_root_path.join(".rackignore"))?;
+        let value = fs::read_to_string(rack_repo_root_path.join(".rackignore")).unwrap_or_default();
         let entries: Vec<&str> = value.trim().lines().collect();
         Ok(entries.iter().map(|s| s.to_string()).collect())
     }
@@ -151,7 +148,7 @@ impl ExposeCommand {
             fs::File::create(rack_dir.join("panty-list"))?;
             return Ok(Vec::new());
         }
-        let value = fs::read_to_string(rack_dir.join("panty-list"))?;
+        let value = fs::read_to_string(rack_dir.join("panty-list")).unwrap_or_default();
         if value.trim().is_empty() {
             return Ok(Vec::new());
         }
