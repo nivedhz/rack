@@ -129,7 +129,7 @@ impl InsertCommand {
             let m_time = contents.split_whitespace().nth(4).unwrap_or_default();
             if file_name == relative_file_name.to_str().unwrap_or_default() {
                 if m_time == file_metadata.mtime_nsec().to_string() {
-                    println!("info: file already added");
+                    println!("info: file {} already added", file_name);
                     return Ok(());
                 } else {
                     let new_content = file_content.trim().replace(contents, entry.as_str());
