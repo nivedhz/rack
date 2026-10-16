@@ -22,6 +22,11 @@ pub enum Commands {
     Insert { path: PathBuf },
     /// View the current status of the rack repository
     Expose,
+    /// Commit the added files
+    Commit {
+        #[arg(short, long)]
+        message: String,
+    },
 }
 
 #[derive(clap::Args, Debug)]

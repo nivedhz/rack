@@ -1,7 +1,9 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::commands::{add::InsertCommand, new::DeflowerCommand, status::ExposeCommand};
+use crate::commands::{
+    add::InsertCommand, commit::CommitCommand, new::DeflowerCommand, status::ExposeCommand,
+};
 
 mod args;
 mod commands;
@@ -18,6 +20,7 @@ pub fn run() -> Result<()> {
             InsertCommand::new(path).run()?;
         }
         args::Commands::Expose => ExposeCommand::new().run()?,
+        args::Commands::Commit { message } => CommitCommand::new(message).run()?,
     }
     Ok(())
 }
