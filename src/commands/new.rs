@@ -85,7 +85,7 @@ impl RackFolder {
             return Ok(());
         }
         let mut file = File::create(path.join(".rackignore"))?;
-        file.write_all(b"# Enter the relative or absolute paths of the files or directories you want to ignore.\n")?;
+        file.write_all(b"# Enter the relative or absolute paths of the files or directories you want to ignore.\n# tmp/\n# target\n# .git/")?;
         Ok(())
     }
 }
