@@ -23,7 +23,7 @@ pub enum Commands {
     /// View the current status of the rack repository
     Expose,
     /// Commit the added files
-    Commit {
+    Bang {
         #[arg(short, long)]
         message: String,
     },
