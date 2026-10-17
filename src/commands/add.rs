@@ -50,6 +50,18 @@ impl InsertCommand {
         }
         None
     }
+    fn read_rack_ignore(&self) -> Result<Vec<String>> {
+        let rack_repo_root_path = self
+            .find_rack_dir()
+            .context("fatal: could not find rack repository")?
+            .parent()
+            .context("fatal: could not find rack repository")?
+            .to_path_buf();
+        let value = fs::read_to_string(rack_repo_root_path.join(".rackignore")).unwrap_or_default();
+        let mut entries: Vec<&str> = value.trim().lines().collect();
+        entries.push(".rack/");
+        Ok(entries.iter().map(|s| s.to_string()).collect())
+    }
     fn handle_dir(&self, path: PathBuf) -> Result<()> {
         let entries = fs::read_dir(path)?;
         for entry in entries {
@@ -67,18 +79,33 @@ impl InsertCommand {
     }
     fn create_goods_entry(&self, path: Option<PathBuf>) -> Result<()> {
         let path = path.unwrap_or(self.path.clone());
+        let rack_repo_root_path = self
+            .find_rack_dir()
+            .context("fatal: not in a rack repository")?
+            .parent()
+            .context("fatal: could not find parent")?
+            .to_path_buf();
+        let rack_repo_dir = self
+            .find_rack_dir()
+            .context("fatal: could not find rack repository")?;
+        let full_path = fs::canonicalize(&path)?;
+        let relative_path_from_root = full_path.strip_prefix(&rack_repo_root_path)?;
+        let rack_ignore_entries = self.read_rack_ignore()?;
+        if rack_ignore_entries
+            .iter()
+            .any(|entry| relative_path_from_root.starts_with(entry.trim()))
+        {
+            return Ok(());
+        }
+        println!("{}: added", relative_path_from_root.display());
         let file_content = fs::read(path)?;
         let mut hasher = Sha3_256::new();
         hasher.update(&file_content);
         let hash = hex::encode(hasher.finalize());
         let (dir_name, file_name) = hash.split_at(2);
-        let dir_path = self
-            .find_rack_dir()
-            .context("fatal: could not find rack repository")?
-            .join("goods")
-            .join(dir_name);
+        let dir_path = rack_repo_dir.join("goods").join(dir_name);
         if !dir_path.exists() {
-            fs::create_dir(&dir_path)?;
+            fs::create_dir(&dir_path).unwrap();
         }
         let mut file_type = b"boob".to_vec();
         file_type.push(0x00);
@@ -89,17 +116,23 @@ impl InsertCommand {
         Ok(())
     }
     fn create_panty_list_entry(&self, file_name: Option<PathBuf>) -> Result<()> {
-        let rack_repo_dir = self
+        let rack_repo_root_path = self
             .find_rack_dir()
             .context("fatal: could not find rack repository")?
             .parent()
             .context("fatal: could not find rack repository")?
             .to_path_buf();
-        let current_dir = env::current_dir()?;
-        let relative_file_name = file_name.unwrap_or(self.path.clone());
-        let canonical_file_name = fs::canonicalize(&relative_file_name)?;
-        let absolute_path = current_dir.join(canonical_file_name);
-        let relative_path_from_root = absolute_path.strip_prefix(rack_repo_dir)?;
+        let relative_file_name = file_name.unwrap_or(self.path.clone()); // Cargo.toml
+        let canonical_file_name = fs::canonicalize(&relative_file_name)?; // home/nivedh/work-space/personal/rack/Cargo.toml
+        let relative_path_from_root = canonical_file_name.strip_prefix(rack_repo_root_path)?;
+        let rack_ignore_entries = self.read_rack_ignore()?;
+        if rack_ignore_entries
+            .iter()
+            .any(|entry| relative_path_from_root.starts_with(entry.trim()))
+        {
+            return Ok(());
+        }
+
         let file_metadata = fs::metadata(&relative_file_name)?;
         let file_content = fs::read(&relative_file_name)?;
         let mut hasher = Sha3_256::new();
