@@ -21,8 +21,8 @@ pub fn run(path: PathBuf) -> Result<()> {
     if path.is_dir() {
         handle_dir(path.to_path_buf())?
     } else {
-        create_goods_entry(&path, None).context("fatal: could not create goods entry")?;
-        create_panty_list_entry(&path, None).context("fatal: could not create panty list entry")?;
+        create_goods_entry(&path, None)?;
+        create_panty_list_entry(&path, None)?;
     }
     Ok(())
 }
