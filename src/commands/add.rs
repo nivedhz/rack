@@ -97,7 +97,6 @@ impl InsertCommand {
         {
             return Ok(());
         }
-        println!("{}: added", relative_path_from_root.display());
         let file_content = fs::read(path)?;
         let mut hasher = Sha3_256::new();
         hasher.update(&file_content);
