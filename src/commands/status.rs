@@ -30,8 +30,7 @@ fn get_all_files() -> Result<()> {
 
     let indexed_files: Vec<PathBuf> = get_indexed_files()?.iter().map(PathBuf::from).collect();
 
-    let mut files: Vec<FileStatus> = Vec::new();
-    get_file_recursively(&rack_folder, &mut files, ignore_dirs, indexed_files)?;
+    let files: Vec<FileStatus> = get_file_recursively(&rack_folder, ignore_dirs, indexed_files)?;
 
     let unindexed_files = files
         .iter()
@@ -68,11 +67,11 @@ fn get_all_files() -> Result<()> {
 }
 fn get_file_recursively(
     dir: &Path,
-    files: &mut Vec<FileStatus>,
     ignore_dirs: Vec<PathBuf>,
     indexed_files: Vec<PathBuf>,
-) -> Result<()> {
+) -> Result<Vec<FileStatus>> {
     let entries = fs::read_dir(dir)?;
+    let mut files = Vec::new();
     for entry in entries {
         let entry = entry?;
         let path = entry.path();
@@ -89,7 +88,11 @@ fn get_file_recursively(
             continue;
         } else {
             if path.is_dir() {
-                get_file_recursively(&path, files, ignore_dirs.clone(), indexed_files.clone())?;
+                files.extend(get_file_recursively(
+                    &path,
+                    ignore_dirs.clone(),
+                    indexed_files.clone(),
+                )?);
             } else {
                 files.push(FileStatus {
                     is_indexed: indexed_files.contains(&PathBuf::from(relative_path)),
@@ -98,7 +101,7 @@ fn get_file_recursively(
             }
         }
     }
-    Ok(())
+    Ok(files)
 }
 fn get_indexed_files() -> Result<Vec<String>> {
     let rack_dir = repository::find_rack_dir().context("fatal: could not find rack repository")?;
