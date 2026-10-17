@@ -58,9 +58,7 @@ fn create_goods_entry(path: &Path, recursive_path: Option<&Path>) -> Result<()> 
         return Ok(());
     }
     let file_content = fs::read(path)?;
-    let mut hasher = Sha3_256::new();
-    hasher.update(&file_content);
-    let hash = hex::encode(hasher.finalize());
+    let hash = get_hash(&file_content);
     let (dir_name, file_name) = hash.split_at(2);
     let dir_path = rack_repo_dir.join("goods").join(dir_name);
     if !dir_path.exists() {
@@ -73,6 +71,12 @@ fn create_goods_entry(path: &Path, recursive_path: Option<&Path>) -> Result<()> 
     let file_path = dir_path.join(file_name);
     fs::write(&file_path, compressed_file_contents)?;
     Ok(())
+}
+
+fn get_hash(file_content: &Vec<u8>) -> String {
+    let mut hasher = Sha3_256::new();
+    hasher.update(file_content);
+    hex::encode(hasher.finalize())
 }
 fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()> {
     let rack_repo_root_path = repository::find_rack_dir()
@@ -93,9 +97,7 @@ fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()
 
     let file_metadata = fs::metadata(&relative_file_name)?;
     let file_content = fs::read(&relative_file_name)?;
-    let mut hasher = Sha3_256::new();
-    hasher.update(&file_content);
-    let hash = hex::encode(hasher.finalize());
+    let hash = get_hash(&file_content);
 
     let entry = format!(
         "{} {} {} {} {}\n",
