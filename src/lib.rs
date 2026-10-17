@@ -6,6 +6,7 @@ use crate::commands::{add, commit, new, status};
 mod args;
 mod commands;
 mod constants;
+mod rackignore;
 
 pub fn run() -> Result<()> {
     let args = args::Cli::parse();

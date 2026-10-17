@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::constants::DIR_PATH;
+use crate::{constants::DIR_PATH, rackignore};
 #[derive(Debug)]
 struct FileStatus {
     file_path: PathBuf,
@@ -23,7 +23,10 @@ fn get_all_files() -> Result<()> {
         .context("fatal: could not find rack repository")?
         .to_path_buf();
 
-    let ignore_dirs: Vec<PathBuf> = read_rack_ignore()?.iter().map(PathBuf::from).collect();
+    let ignore_dirs: Vec<PathBuf> = rackignore::read_rack_ignore(&rack_folder.join(DIR_PATH))?
+        .iter()
+        .map(PathBuf::from)
+        .collect();
 
     let indexed_files: Vec<PathBuf> = get_indexed_files()?.iter().map(PathBuf::from).collect();
 
@@ -109,17 +112,6 @@ fn find_rack_dir() -> Option<PathBuf> {
         }
     }
     None
-}
-fn read_rack_ignore() -> Result<Vec<String>> {
-    let rack_repo_root_path = find_rack_dir()
-        .context("fatal: could not find rack repository")?
-        .parent()
-        .context("fatal: could not find rack repository")?
-        .to_path_buf();
-    let value = fs::read_to_string(rack_repo_root_path.join(".rackignore")).unwrap_or_default();
-    let mut entries: Vec<&str> = value.trim().lines().collect();
-    entries.push(DIR_PATH);
-    Ok(entries.iter().map(|s| s.to_string()).collect())
 }
 fn get_indexed_files() -> Result<Vec<String>> {
     let rack_dir = find_rack_dir().context("fatal: could not find rack repository")?;
