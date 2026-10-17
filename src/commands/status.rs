@@ -29,9 +29,8 @@ impl ExposeCommand {
             .context("fatal: could not find rack repository")?
             .to_path_buf();
 
-        let mut ignore_dirs: Vec<PathBuf> =
+        let ignore_dirs: Vec<PathBuf> =
             self.read_rack_ignore()?.iter().map(PathBuf::from).collect();
-        ignore_dirs.push(PathBuf::from(DIR_PATH));
 
         let indexed_files: Vec<PathBuf> = self
             .get_indexed_files()?
@@ -137,7 +136,8 @@ impl ExposeCommand {
             .context("fatal: could not find rack repository")?
             .to_path_buf();
         let value = fs::read_to_string(rack_repo_root_path.join(".rackignore")).unwrap_or_default();
-        let entries: Vec<&str> = value.trim().lines().collect();
+        let mut entries: Vec<&str> = value.trim().lines().collect();
+        entries.push(DIR_PATH);
         Ok(entries.iter().map(|s| s.to_string()).collect())
     }
     fn get_indexed_files(&self) -> Result<Vec<String>> {

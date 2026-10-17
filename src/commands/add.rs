@@ -59,7 +59,7 @@ impl InsertCommand {
             .to_path_buf();
         let value = fs::read_to_string(rack_repo_root_path.join(".rackignore")).unwrap_or_default();
         let mut entries: Vec<&str> = value.trim().lines().collect();
-        entries.push(".rack/");
+        entries.push(DIR_PATH);
         Ok(entries.iter().map(|s| s.to_string()).collect())
     }
     fn handle_dir(&self, path: PathBuf) -> Result<()> {
