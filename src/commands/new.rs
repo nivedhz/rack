@@ -7,84 +7,59 @@ use std::{
     io::Write,
     path::{Path, PathBuf, absolute},
 };
-
-pub struct DeflowerCommand {
-    dir_path: PathBuf,
-}
-impl DeflowerCommand {
-    pub fn new(dir_path: PathBuf) -> Self {
-        Self { dir_path }
-    }
-    fn get_path(&self) -> Result<PathBuf> {
-        if self.dir_path == Path::new(".") {
-            Ok(env::current_dir()?)
-        } else {
-            Ok(absolute(&self.dir_path)?)
-        }
-    }
-    pub fn run(&self) -> Result<()> {
-        println!();
-        RackFolder::new(self.get_path()?.join(DIR_PATH)).init()?;
-        Ok(())
+fn get_path(dir_path: PathBuf) -> Result<PathBuf> {
+    if dir_path == Path::new(".") {
+        Ok(env::current_dir()?)
+    } else {
+        Ok(absolute(dir_path)?)
     }
 }
-
-struct RackFolder {
-    path: PathBuf,
+pub fn run(dir_path: PathBuf) -> Result<()> {
+    println!();
+    rack_dir_init(get_path(dir_path)?.join(DIR_PATH))?;
+    Ok(())
 }
-impl RackFolder {
-    fn new(path: PathBuf) -> Self {
-        Self { path }
-    }
-    fn init(&self) -> Result<()> {
-        self.create_rack_dir()?;
-        self.create_baby_file()?;
-        self.create_hump_dir()?;
-        self.create_goods_dir()?;
-        self.create_rack_ignore_file()?;
-        Ok(())
-    }
-    fn create_rack_dir(&self) -> Result<()> {
-        let path = &self.path;
-        let exist_status = fs::exists(path)? && path.is_dir();
+fn rack_dir_init(path: PathBuf) -> Result<()> {
+    create_rack_dir(&path)?;
+    create_baby_file(&path)?;
+    create_hump_dir(&path)?;
+    create_goods_dir(&path)?;
+    create_rack_ignore_file(&path)?;
+    Ok(())
+}
+fn create_rack_dir(path: &Path) -> Result<()> {
+    let exist_status = fs::exists(path)? && path.is_dir();
 
-        fs::create_dir_all(path)?;
-        if exist_status {
-            println!("Reinitialized a rack repository in {}", path.display());
-        } else {
-            println!("Initialized a new rack repository in {}", path.display());
-        }
-        Ok(())
+    fs::create_dir_all(path)?;
+    if exist_status {
+        println!("Reinitialized a rack repository in {}", path.display());
+    } else {
+        println!("Initialized a new rack repository in {}", path.display());
     }
-    fn create_baby_file(&self) -> Result<()> {
-        let path = &self.path;
-        let mut file = File::create(path.join("BABY"))?;
-        file.write_all(b"hump: hump/baby/bonkers")?;
-        Ok(())
+    Ok(())
+}
+fn create_baby_file(path: &Path) -> Result<()> {
+    let mut file = File::create(path.join("BABY"))?;
+    file.write_all(b"hump: hump/baby/bonkers")?;
+    Ok(())
+}
+fn create_hump_dir(path: &Path) -> Result<()> {
+    if fs::create_dir_all(path.join("hump/baby")).is_ok() {
+        let mut file = File::create(path.join("hump/baby/bonkers"))?;
+        file.write_all(b"bonkers")?;
     }
-    fn create_hump_dir(&self) -> Result<()> {
-        let path = &self.path;
-        if fs::create_dir_all(path.join("hump/baby")).is_ok() {
-            let mut file = File::create(path.join("hump/baby/bonkers"))?;
-            file.write_all(b"bonkers")?;
-        }
-        Ok(())
+    Ok(())
+}
+fn create_goods_dir(path: &Path) -> Result<()> {
+    fs::create_dir_all(path.join("goods"))?;
+    Ok(())
+}
+fn create_rack_ignore_file(path: &Path) -> Result<()> {
+    let path = path.parent().context("could not find rack repository")?;
+    if path.join(".rackignore").exists() {
+        return Ok(());
     }
-    fn create_goods_dir(&self) -> Result<()> {
-        let path = &self.path;
-        fs::create_dir_all(path.join("goods"))?;
-        Ok(())
-    }
-    fn create_rack_ignore_file(&self) -> Result<()> {
-        let path = self
-            .path
-            .parent()
-            .context("could not find rack repository")?;
-        if path.join(".rackignore").exists() {
-            return Ok(());
-        }
-        let mut file = File::create(path.join(".rackignore"))?;
-        file.write_all(b"# Enter the relative or absolute paths of the files or directories you want to ignore.\n# tmp/\n# target\n# .git/")?;
-        Ok(())
-    }
+    let mut file = File::create(path.join(".rackignore"))?;
+    file.write_all(b"# Enter the relative or absolute paths of the files or directories you want to ignore.\n# tmp/\n# target\n# .git/")?;
+    Ok(())
 }
