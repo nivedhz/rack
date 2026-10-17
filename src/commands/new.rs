@@ -9,12 +9,14 @@ use std::{
 
 pub fn run(dir_path: PathBuf) -> Result<()> {
     println!();
-    let path = get_path(dir_path)?.join(DIR_PATH);
-    create_rack_dir(&path)?;
-    create_baby_file(&path)?;
-    create_hump_dir(&path)?;
-    create_goods_dir(&path)?;
-    create_rack_ignore_file(&path)?;
+    let path = get_path(dir_path)
+        .context("fatal: could parse arg path")?
+        .join(DIR_PATH);
+    create_rack_dir(&path).context("fatal: could not create rack directory")?;
+    create_baby_file(&path).context("fatal: could not create baby file")?;
+    create_hump_dir(&path).context("fatal: could not create hump directory")?;
+    create_goods_dir(&path).context("fatal: could not create goods directory")?;
+    create_rack_ignore_file(&path).context("fatal: could not create rackignore file")?;
     Ok(())
 }
 fn get_path(dir_path: PathBuf) -> Result<PathBuf> {

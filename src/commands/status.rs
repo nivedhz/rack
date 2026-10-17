@@ -13,7 +13,7 @@ struct FileStatus {
 }
 
 pub fn run() -> Result<()> {
-    get_all_files()?;
+    get_all_files().context("fatal: could not get files")?;
     Ok(())
 }
 fn get_all_files() -> Result<()> {

@@ -21,8 +21,8 @@ pub fn run(path: PathBuf) -> Result<()> {
     if path.is_dir() {
         handle_dir(path.to_path_buf())?
     } else {
-        create_goods_entry(&path, None)?;
-        create_panty_list_entry(&path, None)?;
+        create_goods_entry(&path, None).context("fatal: could not create goods entry")?;
+        create_panty_list_entry(&path, None).context("fatal: could not create panty list entry")?;
     }
     Ok(())
 }
@@ -64,7 +64,7 @@ fn create_goods_entry(path: &Path, recursive_path: Option<&Path>) -> Result<()> 
     let (dir_name, file_name) = hash.split_at(2);
     let dir_path = rack_repo_dir.join("goods").join(dir_name);
     if !dir_path.exists() {
-        fs::create_dir(&dir_path).unwrap();
+        fs::create_dir_all(&dir_path).context("fatal: could not create/locate rack directory")?;
     }
     let mut file_type = b"boob".to_vec();
     file_type.push(0x00);
