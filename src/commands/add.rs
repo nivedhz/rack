@@ -1,8 +1,7 @@
-use crate::{constants::DIR_PATH, rackignore};
+use crate::{constants::DIR_PATH, rackignore, repository};
 use anyhow::{Context, Result, bail};
 use sha3::{Digest, Sha3_256};
 use std::{
-    env,
     fs::{self},
     io::{Read, Write},
     os::unix::fs::MetadataExt,
@@ -10,7 +9,7 @@ use std::{
 };
 
 pub fn run(path: PathBuf) -> Result<()> {
-    let rack_dir = find_rack_dir().context("fatal: could not find rack repository")?;
+    let rack_dir = repository::find_rack_dir().context("fatal: could not find rack repository")?;
     if let Some(path_string) = path.to_str()
         && path_string.trim().is_empty()
     {
@@ -26,19 +25,6 @@ pub fn run(path: PathBuf) -> Result<()> {
         create_panty_list_entry(&path, None)?;
     }
     Ok(())
-}
-fn find_rack_dir() -> Option<PathBuf> {
-    let current_dir = env::current_dir().ok()?;
-    for ancestor in current_dir.ancestors() {
-        if ancestor == Path::new("/") {
-            return None;
-        }
-        let path = ancestor.join(DIR_PATH);
-        if path.exists() && path.is_dir() {
-            return Some(path);
-        }
-    }
-    None
 }
 fn handle_dir(path: PathBuf) -> Result<()> {
     let entries = fs::read_dir(&path)?;
@@ -57,7 +43,7 @@ fn handle_dir(path: PathBuf) -> Result<()> {
 }
 fn create_goods_entry(path: &Path, recursive_path: Option<&Path>) -> Result<()> {
     let path = recursive_path.unwrap_or(path);
-    let rack_repo_dir = find_rack_dir().context("fatal: not in a rack repository")?;
+    let rack_repo_dir = repository::find_rack_dir().context("fatal: not in a rack repository")?;
     let rack_repo_root_path = rack_repo_dir
         .parent()
         .context("fatal: could not find parent")?
@@ -89,7 +75,7 @@ fn create_goods_entry(path: &Path, recursive_path: Option<&Path>) -> Result<()> 
     Ok(())
 }
 fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()> {
-    let rack_repo_root_path = find_rack_dir()
+    let rack_repo_root_path = repository::find_rack_dir()
         .context("fatal: could not find rack repository")?
         .parent()
         .context("fatal: could not find rack repository")?
@@ -119,7 +105,7 @@ fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()
         file_metadata.ctime_nsec(),
         file_metadata.mtime_nsec()
     );
-    let panty_list_path = find_rack_dir()
+    let panty_list_path = repository::find_rack_dir()
         .context("fatal: could not find rack repository")?
         .join("panty-list");
     let mut panty_list_file = fs::File::options()

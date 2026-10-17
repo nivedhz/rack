@@ -7,6 +7,7 @@ mod args;
 mod commands;
 mod constants;
 mod rackignore;
+mod repository;
 
 pub fn run() -> Result<()> {
     let args = args::Cli::parse();

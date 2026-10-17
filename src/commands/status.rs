@@ -1,11 +1,11 @@
 use anyhow::{Context, Result};
 use colored::*;
 use std::{
-    env, fs,
+    fs,
     path::{Path, PathBuf},
 };
 
-use crate::{constants::DIR_PATH, rackignore};
+use crate::{constants::DIR_PATH, rackignore, repository};
 #[derive(Debug)]
 struct FileStatus {
     file_path: PathBuf,
@@ -17,7 +17,7 @@ pub fn run() -> Result<()> {
     Ok(())
 }
 fn get_all_files() -> Result<()> {
-    let rack_folder = find_rack_dir()
+    let rack_folder = repository::find_rack_dir()
         .context("fatal: could not find rack repository")?
         .parent()
         .context("fatal: could not find rack repository")?
@@ -76,7 +76,7 @@ fn get_file_recursively(
     for entry in entries {
         let entry = entry?;
         let path = entry.path();
-        let base_path = find_rack_dir()
+        let base_path = repository::find_rack_dir()
             .context("fatal: could not find rack repository")?
             .parent()
             .context("fatal: could not find rack repository")?
@@ -100,21 +100,8 @@ fn get_file_recursively(
     }
     Ok(())
 }
-fn find_rack_dir() -> Option<PathBuf> {
-    let current_dir = env::current_dir().ok()?;
-    for ancestor in current_dir.ancestors() {
-        if ancestor == Path::new("/") {
-            return None;
-        }
-        let path = ancestor.join(DIR_PATH);
-        if path.exists() && path.is_dir() {
-            return Some(path);
-        }
-    }
-    None
-}
 fn get_indexed_files() -> Result<Vec<String>> {
-    let rack_dir = find_rack_dir().context("fatal: could not find rack repository")?;
+    let rack_dir = repository::find_rack_dir().context("fatal: could not find rack repository")?;
     if !rack_dir.join("panty-list").exists() {
         fs::File::create(rack_dir.join("panty-list"))?;
         return Ok(Vec::new());

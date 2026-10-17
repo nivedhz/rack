@@ -1,31 +1,28 @@
-use anyhow::{Context, Result};
-
 use crate::constants::DIR_PATH;
+use anyhow::{Context, Result};
 use std::{
     env,
     fs::{self, File},
     io::Write,
     path::{Path, PathBuf, absolute},
 };
-fn get_path(dir_path: PathBuf) -> Result<PathBuf> {
-    if dir_path == Path::new(".") {
-        Ok(env::current_dir()?)
-    } else {
-        Ok(absolute(dir_path)?)
-    }
-}
+
 pub fn run(dir_path: PathBuf) -> Result<()> {
     println!();
-    rack_dir_init(get_path(dir_path)?.join(DIR_PATH))?;
-    Ok(())
-}
-fn rack_dir_init(path: PathBuf) -> Result<()> {
+    let path = get_path(dir_path)?.join(DIR_PATH);
     create_rack_dir(&path)?;
     create_baby_file(&path)?;
     create_hump_dir(&path)?;
     create_goods_dir(&path)?;
     create_rack_ignore_file(&path)?;
     Ok(())
+}
+fn get_path(dir_path: PathBuf) -> Result<PathBuf> {
+    if dir_path == Path::new(".") {
+        Ok(env::current_dir()?)
+    } else {
+        Ok(absolute(dir_path)?)
+    }
 }
 fn create_rack_dir(path: &Path) -> Result<()> {
     let exist_status = fs::exists(path)? && path.is_dir();
