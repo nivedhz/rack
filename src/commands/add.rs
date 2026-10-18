@@ -1,4 +1,4 @@
-use crate::{constants::DIR_PATH, rackignore, repository};
+use crate::{constants::DIR_PATH, repository};
 use anyhow::{Context, Result, bail};
 use sha3::{Digest, Sha3_256};
 use std::{
@@ -50,7 +50,7 @@ fn create_goods_entry(path: &Path, recursive_path: Option<&Path>) -> Result<()> 
         .to_path_buf();
     let full_path = fs::canonicalize(path)?;
     let relative_path_from_root = full_path.strip_prefix(&rack_repo_root_path)?;
-    let rack_ignore_entries = rackignore::read_rack_ignore(&rack_repo_dir)?;
+    let rack_ignore_entries = repository::read_rack_ignore(&rack_repo_dir)?;
     if rack_ignore_entries
         .iter()
         .any(|entry| relative_path_from_root.starts_with(entry.trim()))
@@ -87,7 +87,7 @@ fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()
     let relative_file_name = file_name.unwrap_or(path.to_path_buf());
     let canonical_file_name = fs::canonicalize(&relative_file_name)?;
     let relative_path_from_root = canonical_file_name.strip_prefix(&rack_repo_root_path)?;
-    let rack_ignore_entries = rackignore::read_rack_ignore(&rack_repo_root_path.join(DIR_PATH))?;
+    let rack_ignore_entries = repository::read_rack_ignore(&rack_repo_root_path.join(DIR_PATH))?;
     if rack_ignore_entries
         .iter()
         .any(|entry| relative_path_from_root.starts_with(entry.trim()))

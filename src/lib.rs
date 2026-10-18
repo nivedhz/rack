@@ -6,7 +6,6 @@ use crate::commands::{add, commit, new, status};
 mod args;
 mod commands;
 mod constants;
-mod rackignore;
 mod repository;
 
 pub fn run() -> Result<()> {

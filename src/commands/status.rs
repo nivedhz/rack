@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{constants::DIR_PATH, rackignore, repository};
+use crate::{constants::DIR_PATH, repository};
 #[derive(Debug)]
 struct FileStatus {
     file_path: PathBuf,
@@ -23,7 +23,7 @@ fn get_all_files() -> Result<()> {
         .context("fatal: could not find rack repository")?
         .to_path_buf();
 
-    let ignore_dirs: Vec<PathBuf> = rackignore::read_rack_ignore(&rack_folder.join(DIR_PATH))?
+    let ignore_dirs: Vec<PathBuf> = repository::read_rack_ignore(&rack_folder.join(DIR_PATH))?
         .iter()
         .map(PathBuf::from)
         .collect();
