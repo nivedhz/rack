@@ -29,7 +29,15 @@ pub fn read_panty_list_file() -> Result<Vec<String>> {
         fs::File::open(rack_repo_root_path.join("panty-list")).context("fatal: no file added")?;
     let reader = std::io::BufReader::new(panty_list_file);
     for line in reader.lines() {
-        entries.push(line?);
+        let line = line
+            .context("fatal: could not read line")?
+            .trim()
+            .to_string();
+
+        if line.is_empty() {
+            continue;
+        }
+        entries.push(line);
     }
     Ok(entries)
 }
