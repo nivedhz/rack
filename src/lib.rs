@@ -14,9 +14,7 @@ pub fn run() -> Result<()> {
 
     match args.command {
         args::Commands::Deflower { dir_path } => new::run(dir_path)?,
-        args::Commands::Insert { path } => {
-            add::run(path)?;
-        }
+        args::Commands::Insert { path } => add::run(path)?,
         args::Commands::Expose => status::run()?,
         args::Commands::Bang { message } => commit::run(message)?,
     }
