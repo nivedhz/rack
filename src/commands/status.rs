@@ -109,14 +109,11 @@ fn get_indexed_files() -> Result<Vec<String>> {
         fs::File::create(rack_dir.join("panty-list"))?;
         return Ok(Vec::new());
     }
-    let value = fs::read_to_string(rack_dir.join("panty-list")).unwrap_or_default();
-    if value.trim().is_empty() {
+    let entries = repository::read_panty_list_file()?;
+    if entries.is_empty() {
         return Ok(Vec::new());
     }
-    Ok(value
-        .trim()
-        .split("\n")
-        .collect::<Vec<&str>>()
+    Ok(entries
         .iter()
         .map(|s| s.split(" ").collect::<Vec<&str>>()[1].to_string())
         .collect::<Vec<String>>())
