@@ -79,4 +79,11 @@ fn empty_panty_list() -> Result<()> {
 
     Ok(())
 }
+fn read_baby_bonkers_file() -> Result<String> {
+    let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
+    let baby_bonkers_file = fs::File::open(rack_dir_path.join("hump/baby/bonkers"))?;
+    let mut reader = std::io::BufReader::new(baby_bonkers_file);
+    let mut buf = String::new();
+    reader.read_line(&mut buf)?;
+    Ok(buf)
 }
