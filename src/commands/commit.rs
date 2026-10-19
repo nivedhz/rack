@@ -1,12 +1,22 @@
-use crate::repository;
+use std::{
+    fs,
+    io::{BufRead, Write},
+};
+
 use anyhow::{Context, Result};
 use rand::RngExt;
-use std::fs;
-use std::io::Write;
+
+use crate::repository;
 
 pub fn run(message: String) -> Result<()> {
-    create_commit_dir(&message)?;
-    create_commit_entry(&message)?;
+    let hash = create_commit_hash();
+    let baby_bonkers_entry = read_baby_bonkers_file()?;
+    if baby_bonkers_entry.trim().is_empty() {
+        create_commit_dir().context("fatal: could not create commit dir")?;
+        create_commit_entry(&hash, &message).context("fatal: could not create commit entry")?;
+        write_baby_bonkers_file(&hash).context("fatal: could not write baby bonkers file")?;
+        empty_panty_list().context("fatal: could not empty panty list")?;
+    }
     Ok(())
 }
 
