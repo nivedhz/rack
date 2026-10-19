@@ -10,7 +10,7 @@ use crate::repository;
 
 pub fn run(message: String) -> Result<()> {
     let hash = create_commit_hash();
-    let baby_bonkers_entry = read_baby_bonkers_file()?;
+    let baby_bonkers_entry = repository::read_baby_bonkers_file()?;
     if baby_bonkers_entry.trim().is_empty() {
         create_commit_dir().context("fatal: could not create commit dir")?;
         create_commit_entry(&hash, &message).context("fatal: could not create commit entry")?;
@@ -48,7 +48,7 @@ fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
         repository::read_panty_list_file().context("fatal: could not read panty list")?;
     let mut commit_entry = format!("{} {}\0\n", hash, message);
     for entry in panty_list_entries {
-        commit_entry.push_str(&entry);
+        commit_entry.push_str(&format!("{}\n", entry));
     }
 
     Ok(commit_entry)
@@ -71,11 +71,11 @@ fn write_baby_bonkers_file(hash: &str) -> Result<()> {
 
 fn empty_panty_list() -> Result<()> {
     let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
-    let mut file = fs::File::options()
+    let file = fs::File::options()
         .write(true)
         .truncate(true)
         .open(rack_dir_path.join("panty-list"))?;
-    file.write_all("".as_bytes())?;
+    file.set_len(0)?;
 
     Ok(())
 }
