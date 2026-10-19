@@ -58,9 +58,12 @@ pub fn read_baby_bonkers_file() -> Result<String> {
     if !rack_repo_root_path.join("hump/baby/bonkers").exists() {
         return Ok(String::new());
     }
-    let head_file = fs::File::open(rack_repo_root_path.join("hump/baby/bonkers"))?;
+    let head_file = fs::File::open(rack_repo_root_path.join("hump/baby/bonkers"))
+        .context("fatal: could not find baby bonkers file")?;
     let mut reader = std::io::BufReader::new(head_file);
     let mut buf = String::new();
-    reader.read_line(&mut buf)?;
+    reader
+        .read_line(&mut buf)
+        .context("fatal: could not read line")?;
     Ok(buf)
 }
