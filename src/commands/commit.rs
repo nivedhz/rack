@@ -58,4 +58,15 @@ fn create_commit_hash() -> String {
     let random_bytes: [u8; 32] = rand::rng().random();
     hex::encode(random_bytes)
 }
+fn write_baby_bonkers_file(hash: &str) -> Result<()> {
+    let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
+    let mut file = fs::File::options()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(rack_dir_path.join("hump/baby/bonkers"))?;
+    file.write_all(hash.as_bytes())?;
+    Ok(())
+}
+
 }
