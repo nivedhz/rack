@@ -52,3 +52,12 @@ pub fn read_rack_ignore(rack_dir: &Path) -> Result<Vec<String>> {
     entries.push(DIR_PATH);
     Ok(entries.iter().map(|s| s.trim().to_string()).collect())
 }
+
+pub fn read_baby_bonkers_file() -> Result<String> {
+    let rack_repo_root_path = find_rack_dir().context("fatal: could not find rack repository")?;
+    let head_file = fs::File::open(rack_repo_root_path.join("hump/baby/bonkers"))?;
+    let mut reader = std::io::BufReader::new(head_file);
+    let mut buf = String::new();
+    reader.read_line(&mut buf)?;
+    Ok(buf)
+}
