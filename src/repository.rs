@@ -50,5 +50,5 @@ pub fn read_rack_ignore(rack_dir: &Path) -> Result<Vec<String>> {
     let value = fs::read_to_string(rack_repo_root_path.join(".rackignore")).unwrap_or_default();
     let mut entries: Vec<&str> = value.trim().lines().collect();
     entries.push(DIR_PATH);
-    Ok(entries.iter().map(|s| s.to_string()).collect())
+    Ok(entries.iter().map(|s| s.trim().to_string()).collect())
 }
