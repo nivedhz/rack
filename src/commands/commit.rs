@@ -27,19 +27,20 @@ fn create_commit_dir() -> Result<()> {
     Ok(())
 }
 
-fn create_commit_entry(message: &str) -> Result<()> {
-    let hash = generate_random_hash();
-    let rack_dir_path =
-        repository::find_rack_dir().context("fatal: could not find rack repository")?;
-    let dir_name = hash[..2].to_string();
-    let file_name = hash[2..].to_string();
-    fs::create_dir_all(rack_dir_path.join("commit").join(&dir_name))?;
-    let mut commit_entry_file = fs::File::options()
+fn create_commit_entry(hash: &str, message: &str) -> Result<()> {
+    let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
+    let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
+    fs::create_dir_all(&entry_dir_path).context("fatal: could not create commit entry")?;
+    let mut entry_file = fs::File::options()
         .create(true)
-        .truncate(false)
         .write(true)
-        .open(rack_dir_path.join("commit").join(dir_name).join(file_name))?;
-    commit_entry_file.write_all(message.as_bytes())?;
+        .truncate(true)
+        .open(entry_dir_path.join(&hash[2..]))?;
+    let commit_entry = get_commit_entry(hash, message);
+    entry_file
+        .write_all(commit_entry?.as_bytes())
+        .context("fatal: could not write commit entry")?;
+
     Ok(())
 }
 fn generate_random_hash() -> String {
