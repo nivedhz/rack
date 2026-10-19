@@ -20,12 +20,10 @@ pub fn run(message: String) -> Result<()> {
     Ok(())
 }
 
-fn create_commit_dir(message: &str) -> Result<()> {
-    let rack_dir_path =
-        repository::find_rack_dir().context("fatal: could not find rack repository")?;
+fn create_commit_dir() -> Result<()> {
+    let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
     fs::create_dir_all(rack_dir_path.join("commit"))
         .context("fatal: could not create commit dir")?;
-    println!("bang message: {}", message);
     Ok(())
 }
 
