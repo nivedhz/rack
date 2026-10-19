@@ -55,7 +55,7 @@ fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
 }
 
 fn create_commit_hash() -> String {
-    let random_bytes: [u8; 64] = rand::rng().random();
+    let random_bytes: [u8; 32] = rand::rng().random();
     hex::encode(random_bytes)
 }
 }
