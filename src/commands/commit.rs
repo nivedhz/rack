@@ -43,9 +43,15 @@ fn create_commit_entry(hash: &str, message: &str) -> Result<()> {
 
     Ok(())
 }
-fn generate_random_hash() -> String {
-    let mut rng = rand::rng();
-    let mut bytes = [0; 32];
-    rng.fill(&mut bytes);
-    hex::encode(bytes)
+fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
+    let panty_list_entries =
+        repository::read_panty_list_file().context("fatal: could not read panty list")?;
+    let mut commit_entry = format!("{} {}\0\n", hash, message);
+    for entry in panty_list_entries {
+        commit_entry.push_str(&entry);
+    }
+
+    Ok(commit_entry)
+}
+
 }
