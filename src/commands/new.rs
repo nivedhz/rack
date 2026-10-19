@@ -43,10 +43,7 @@ fn create_baby_file(path: &Path) -> Result<()> {
     Ok(())
 }
 fn create_hump_dir(path: &Path) -> Result<()> {
-    if fs::create_dir_all(path.join("hump/baby")).is_ok() {
-        let mut file = File::create(path.join("hump/baby/bonkers"))?;
-        file.write_all(b"bonkers")?;
-    }
+    fs::create_dir_all(path.join("hump/baby")).context("fatal: could not create hump dir")?;
     Ok(())
 }
 fn create_goods_dir(path: &Path) -> Result<()> {
