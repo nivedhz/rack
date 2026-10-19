@@ -69,4 +69,14 @@ fn write_baby_bonkers_file(hash: &str) -> Result<()> {
     Ok(())
 }
 
+fn empty_panty_list() -> Result<()> {
+    let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
+    let mut file = fs::File::options()
+        .write(true)
+        .truncate(true)
+        .open(rack_dir_path.join("panty-list"))?;
+    file.write_all("".as_bytes())?;
+
+    Ok(())
+}
 }
