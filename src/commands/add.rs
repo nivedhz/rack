@@ -100,12 +100,9 @@ fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()
     let hash = get_hash(&file_content);
 
     let entry = format!(
-        "{} {} {} {} {}\n",
-        file_metadata.len(),
+        "{} {}\n",
         relative_path_from_root.to_str().unwrap_or_default(),
         hash,
-        file_metadata.ctime_nsec(),
-        file_metadata.mtime_nsec()
     );
     let panty_list_path = repository::find_rack_dir()
         .context("fatal: could not find rack repository")?
