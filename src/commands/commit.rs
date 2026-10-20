@@ -39,12 +39,10 @@ fn handle_not_fresh_commit(hash: &str, message: &str) -> Result<()> {
         .collect();
     let curr_file_entry = repository::read_panty_list_file()?;
     let diff_entries = get_diff_entries(&prev_file_entry, &curr_file_entry)?;
-    println!("diff entries: {:?}", diff_entries);
     let mut commit_diff_entry = String::new();
     for entry in diff_entries {
         commit_diff_entry.push_str(&format!("{}\n", entry));
     }
-    println!("{}", commit_diff_entry);
     create_commit_entry_with_head(&commit_diff_entry, message, hash)?;
     write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
     empty_panty_list().context("fatal: could not empty panty list")?;
@@ -157,8 +155,7 @@ fn get_diff_entries(prev_entries: &Vec<String>, curr_entries: &Vec<String>) -> R
         result.entry(filename).or_insert((None, None)).1 = Some(entry.clone());
     }
     for (_, (prev, curr)) in result {
-        println!("{prev:?}, {curr:?}");
-        result_vec.push(curr.unwrap_or(prev.context("fatal: could not get diff entries")?));
+        result_vec.push(curr.unwrap_or(prev.unwrap_or_default()));
     }
 
     Ok(result_vec)

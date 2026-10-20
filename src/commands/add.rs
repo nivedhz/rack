@@ -3,7 +3,7 @@ use anyhow::{Context, Result, bail};
 use sha3::{Digest, Sha3_256};
 use std::{
     fs::{self},
-    io::{Read, Write},
+    io::{BufReader, Read, Write},
     os::unix::fs::MetadataExt,
     path::{Path, PathBuf},
 };
@@ -119,11 +119,33 @@ fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()
     let mut read_buf: Vec<u8> = Vec::new();
     panty_list_file.read_to_end(&mut read_buf)?;
     let file_content = String::from_utf8_lossy(&read_buf[..]).to_string();
+    let baby_bonkers_entry = repository::read_baby_bonkers_file()?;
+    if !baby_bonkers_entry.trim().is_empty() {
+        let commit_entry_file = fs::File::options().read(true).open(
+            rack_repo_root_path
+                .join(DIR_PATH)
+                .join("commit")
+                .join(&baby_bonkers_entry.trim()[..2])
+                .join(&baby_bonkers_entry.trim()[2..]),
+        )?;
+        let mut commit_entry = String::new();
+        let mut reader = BufReader::new(commit_entry_file);
+        reader.read_to_string(&mut commit_entry)?;
+        let entries = commit_entry.trim().split("\0").nth(1).unwrap_or_default();
+        for line_entry in entries.lines() {
+            let file_name = line_entry.split_whitespace().nth(1).unwrap_or_default();
+            let file_hash = line_entry.split_whitespace().nth(2).unwrap_or_default();
+            if file_name == relative_file_name.to_str().unwrap_or_default() && file_hash == hash {
+                println!("info: file {} has no changes", file_name);
+                return Ok(());
+            }
+        }
+    }
     for contents in file_content.trim().lines() {
+        let file_hash = contents.split_whitespace().nth(2).unwrap_or_default();
         let file_name = contents.split_whitespace().nth(1).unwrap_or_default();
-        let m_time = contents.split_whitespace().nth(4).unwrap_or_default();
         if file_name == relative_file_name.to_str().unwrap_or_default() {
-            if m_time == file_metadata.mtime_nsec().to_string() {
+            if file_hash == hash {
                 println!("info: file {} already added", file_name);
                 return Ok(());
             } else {
