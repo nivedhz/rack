@@ -1,5 +1,4 @@
 // TODO: refactor this as whole. Make the code more readable
-// FIXME: fix the small bugs
 use std::{
     collections::HashMap,
     fs,
@@ -39,8 +38,14 @@ fn handle_not_fresh_commit(hash: &str, message: &str) -> Result<()> {
         .map(String::from)
         .collect();
     let curr_file_entry = repository::read_panty_list_file()?;
-    let diff_entries = get_diff_entries(&curr_file_entry, &prev_file_entry)?;
-    create_commit_entry_with_head(&diff_entries, message, hash)?;
+    let diff_entries = get_diff_entries(&prev_file_entry, &curr_file_entry)?;
+    println!("diff entries: {:?}", diff_entries);
+    let mut commit_diff_entry = String::new();
+    for entry in diff_entries {
+        commit_diff_entry.push_str(&format!("{}\n", entry));
+    }
+    println!("{}", commit_diff_entry);
+    create_commit_entry_with_head(&commit_diff_entry, message, hash)?;
     write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
     empty_panty_list().context("fatal: could not empty panty list")?;
     Ok(())
@@ -138,33 +143,23 @@ fn get_file_entries(hash: &str) -> Result<String> {
 
     Ok(entries)
 }
-struct DiffFileEntry {
-    filename: String,
-    hash: String,
-}
-impl DiffFileEntry {
-    fn new(entry: String) -> Self {
-        let filename = entry.split_whitespace().next().unwrap().to_string();
-        let hash = entry.split_whitespace().nth(1).unwrap().to_string();
-        DiffFileEntry { filename, hash }
+fn get_diff_entries(prev_entries: &Vec<String>, curr_entries: &Vec<String>) -> Result<Vec<String>> {
+    let mut result: HashMap<String, (Option<String>, Option<String>)> = HashMap::new();
+    let mut result_vec: Vec<String> = Vec::new();
+
+    for entry in prev_entries {
+        let filename = entry.split_whitespace().nth(1).unwrap().to_string();
+        result.entry(filename).or_insert((None, None)).0 = Some(entry.clone());
     }
-}
-fn get_diff_entries(
-    curr_file_entries: &Vec<String>,
-    prev_file_entries: &Vec<String>,
-) -> Result<String> {
-    let mut diffed_result: HashMap<String, String> = std::collections::HashMap::new();
-    for pe in prev_file_entries {
-        let prev_file_entry = DiffFileEntry::new(pe.to_string());
-        diffed_result.insert(prev_file_entry.filename, prev_file_entry.hash);
+
+    for entry in curr_entries {
+        let filename = entry.split_whitespace().nth(1).unwrap().to_string();
+        result.entry(filename).or_insert((None, None)).1 = Some(entry.clone());
     }
-    for ce in curr_file_entries {
-        let curr_file_entry = DiffFileEntry::new(ce.to_string());
-        diffed_result.insert(curr_file_entry.filename, curr_file_entry.hash);
+    for (_, (prev, curr)) in result {
+        println!("{prev:?}, {curr:?}");
+        result_vec.push(curr.unwrap_or(prev.context("fatal: could not get diff entries")?));
     }
-    let mut result = String::new();
-    for (filename, hash) in diffed_result {
-        result.push_str(&format!("{} {}\n", filename, hash));
-    }
-    Ok(result)
+
+    Ok(result_vec)
 }
