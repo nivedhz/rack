@@ -117,8 +117,8 @@ fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()
     panty_list_file.read_to_end(&mut read_buf)?;
     let file_content = String::from_utf8_lossy(&read_buf[..]).to_string();
     for contents in file_content.trim().lines() {
-        let file_name = contents.split_whitespace().nth(1).unwrap_or_default();
-        let m_time = contents.split_whitespace().nth(4).unwrap_or_default();
+        let file_name = contents.split_whitespace().next().unwrap_or_default();
+        let m_time = contents.split_whitespace().nth(1).unwrap_or_default();
         if file_name == relative_file_name.to_str().unwrap_or_default() {
             if m_time == file_metadata.mtime_nsec().to_string() {
                 println!("info: file {} already added", file_name);

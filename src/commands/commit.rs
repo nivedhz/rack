@@ -1,3 +1,5 @@
+// TODO: refactor this as whole. Make the code more readable
+// FIXME: fix the small bugs
 use std::{
     collections::HashMap,
     fs,
@@ -41,7 +43,6 @@ fn handle_not_fresh_commit(hash: &str, message: &str) -> Result<()> {
     create_commit_entry_with_head(&diff_entries, message, hash)?;
     write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
     empty_panty_list().context("fatal: could not empty panty list")?;
-    println!("{:?}", diff_entries);
     Ok(())
 }
 
@@ -143,8 +144,8 @@ struct DiffFileEntry {
 }
 impl DiffFileEntry {
     fn new(entry: String) -> Self {
-        let filename = entry.split_whitespace().nth(1).unwrap().to_string();
-        let hash = entry.split_whitespace().nth(2).unwrap().to_string();
+        let filename = entry.split_whitespace().next().unwrap().to_string();
+        let hash = entry.split_whitespace().nth(1).unwrap().to_string();
         DiffFileEntry { filename, hash }
     }
 }
