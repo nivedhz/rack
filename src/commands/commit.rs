@@ -5,7 +5,7 @@ use std::{
     io::{Read, Write},
 };
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::{hasher, repository};
 
@@ -37,6 +37,10 @@ fn handle_not_fresh_commit(hash: &str, message: &str) -> Result<()> {
         .map(String::from)
         .collect();
     let curr_file_entry = repository::read_panty_list_file()?;
+    if curr_file_entry.is_empty() {
+        println!("use rack insert <file> to insert a file");
+        bail!("fatal: no file inserted");
+    }
     let diff_entries = get_diff_entries(&prev_file_entry, &curr_file_entry)?;
     create_commit_entry_with_head(&diff_entries.join("\n"), message, hash)?;
     write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
@@ -86,6 +90,10 @@ fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
 fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
     let panty_list_entries =
         repository::read_panty_list_file().context("fatal: could not read panty list")?;
+    if panty_list_entries.is_empty() {
+        println!("use rack insert <file> to insert a file");
+        bail!("fatal: no file inserted");
+    }
     let mut commit_entry = format!("{} {}\0\n", hash, message);
     for entry in panty_list_entries {
         commit_entry.push_str(&format!("{}\n", entry));
