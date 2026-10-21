@@ -17,20 +17,19 @@ pub fn run() -> Result<()> {
     Ok(())
 }
 fn get_all_files() -> Result<()> {
-    let rack_folder = repository::find_rack_dir()
-        .context("fatal: could not find rack repository")?
-        .parent()
-        .context("fatal: could not find rack repository")?
-        .to_path_buf();
+    let rack_repo_root_path =
+        repository::find_repo_root().context("fatal: could not find rack repository")?;
 
-    let ignore_dirs: Vec<PathBuf> = repository::read_rack_ignore(&rack_folder.join(DIR_PATH))?
-        .iter()
-        .map(PathBuf::from)
-        .collect();
+    let ignore_dirs: Vec<PathBuf> =
+        repository::read_rack_ignore(&rack_repo_root_path.join(DIR_PATH))?
+            .iter()
+            .map(PathBuf::from)
+            .collect();
 
     let indexed_files: Vec<PathBuf> = get_indexed_files()?.iter().map(PathBuf::from).collect();
 
-    let files: Vec<FileStatus> = get_file_recursively(&rack_folder, ignore_dirs, indexed_files)?;
+    let files: Vec<FileStatus> =
+        get_file_recursively(&rack_repo_root_path, ignore_dirs, indexed_files)?;
 
     let unindexed_files = files
         .iter()
