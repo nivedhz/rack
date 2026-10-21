@@ -12,39 +12,33 @@ use crate::{hasher, repository};
 pub fn run(message: String) -> Result<()> {
     let hash = hasher::get_random_hash();
     let baby_bonkers_entry = repository::read_baby_bonkers_file()?;
-    if baby_bonkers_entry.trim().is_empty() {
-        handle_fresh_commit(&hash, &message)?;
+    handle_commit(&hash, &message, !baby_bonkers_entry.trim().is_empty())?;
+    Ok(())
+}
+
+fn handle_commit(hash: &str, message: &str, has_head: bool) -> Result<()> {
+    if has_head {
+        let prev_commit_hash = repository::read_baby_bonkers_file()?;
+        let prev_commit_entry: Vec<String> = get_prev_commit_entry(prev_commit_hash.trim())?
+            .trim()
+            .lines()
+            .map(String::from)
+            .collect();
+        let curr_file_entry = repository::read_panty_list_file()?;
+        if curr_file_entry.is_empty() {
+            println!("use rack insert <file> to insert a file");
+            bail!("fatal: no file inserted");
+        }
+        let diff_entries = get_diff_entries(&prev_commit_entry, &curr_file_entry)?;
+        create_commit_entry_with_head(&diff_entries.join("\n"), message, hash)?;
     } else {
-        handle_not_fresh_commit(&hash, &message)?;
+        create_commit_dir().context("fatal: could not create commit dir")?;
+        create_headless_commit_entry(hash, message)
+            .context("fatal: could not create commit entry")?;
     }
-    Ok(())
-}
-
-fn handle_fresh_commit(hash: &str, message: &str) -> Result<()> {
-    create_commit_dir().context("fatal: could not create commit dir")?;
-    create_headless_commit_entry(hash, message).context("fatal: could not create commit entry")?;
     write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
     empty_panty_list().context("fatal: could not empty panty list")?;
 
-    Ok(())
-}
-
-fn handle_not_fresh_commit(hash: &str, message: &str) -> Result<()> {
-    let prev_commit_hash = repository::read_baby_bonkers_file()?;
-    let prev_file_entry: Vec<String> = get_commit_entries(prev_commit_hash.trim())?
-        .trim()
-        .lines()
-        .map(String::from)
-        .collect();
-    let curr_file_entry = repository::read_panty_list_file()?;
-    if curr_file_entry.is_empty() {
-        println!("use rack insert <file> to insert a file");
-        bail!("fatal: no file inserted");
-    }
-    let diff_entries = get_diff_entries(&prev_file_entry, &curr_file_entry)?;
-    create_commit_entry_with_head(&diff_entries.join("\n"), message, hash)?;
-    write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
-    empty_panty_list().context("fatal: could not empty panty list")?;
     Ok(())
 }
 
@@ -87,6 +81,8 @@ fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
 
     Ok(())
 }
+// Header: <hash>0x20<message>0x00\n
+// Body: <panty-list entries>
 fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
     let panty_list_entries =
         repository::read_panty_list_file().context("fatal: could not read panty list")?;
@@ -95,9 +91,7 @@ fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
         bail!("fatal: no file inserted");
     }
     let mut commit_entry = format!("{} {}\0\n", hash, message);
-    for entry in panty_list_entries {
-        commit_entry.push_str(&format!("{}\n", entry));
-    }
+    commit_entry.push_str(panty_list_entries.join("\n").as_str());
 
     Ok(commit_entry)
 }
@@ -124,7 +118,7 @@ fn empty_panty_list() -> Result<()> {
     Ok(())
 }
 
-fn get_commit_entries(hash: &str) -> Result<String> {
+fn get_prev_commit_entry(hash: &str) -> Result<String> {
     let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
     let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
     let entry_file = fs::File::open(entry_dir_path.join(&hash[2..]))
