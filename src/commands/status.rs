@@ -48,6 +48,7 @@ fn get_all_files() -> Result<()> {
     }
     if !unindexed_files.is_empty() {
         println!("Changes not staged for commit:");
+        println!("(use rack insert <file> to update what will be banged)");
         for file in unindexed_files {
             println!(
                 "      {}    {}",
