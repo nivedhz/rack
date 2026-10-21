@@ -9,7 +9,7 @@ use std::{
 
 pub fn run(dir_path: PathBuf) -> Result<()> {
     println!();
-    let path = get_path(dir_path)
+    let path = get_current_dir_path(dir_path)
         .context("fatal: could parse arg path")?
         .join(DIR_PATH);
     create_rack_dir(&path)?;
@@ -19,7 +19,7 @@ pub fn run(dir_path: PathBuf) -> Result<()> {
     create_rack_ignore_file(&path)?;
     Ok(())
 }
-fn get_path(dir_path: PathBuf) -> Result<PathBuf> {
+fn get_current_dir_path(dir_path: PathBuf) -> Result<PathBuf> {
     if dir_path == Path::new(".") {
         Ok(env::current_dir()?)
     } else {
@@ -27,10 +27,10 @@ fn get_path(dir_path: PathBuf) -> Result<PathBuf> {
     }
 }
 fn create_rack_dir(path: &Path) -> Result<()> {
-    let exist_status = fs::exists(path)? && path.is_dir();
+    let dir_exists = fs::exists(path)? && path.is_dir();
 
     fs::create_dir_all(path)?;
-    if exist_status {
+    if dir_exists {
         println!("Reinitialized a rack repository in {}", path.display());
     } else {
         println!("Initialized a new rack repository in {}", path.display());
