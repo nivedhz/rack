@@ -6,12 +6,11 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use rand::RngExt;
 
-use crate::repository;
+use crate::{hasher, repository};
 
 pub fn run(message: String) -> Result<()> {
-    let hash = create_commit_hash();
+    let hash = hasher::get_random_hash();
     let baby_bonkers_entry = repository::read_baby_bonkers_file()?;
     if baby_bonkers_entry.trim().is_empty() {
         handle_fresh_commit(&hash, &message)?;
@@ -99,10 +98,6 @@ fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
     Ok(commit_entry)
 }
 
-fn create_commit_hash() -> String {
-    let random_bytes: [u8; 32] = rand::rng().random();
-    hex::encode(random_bytes)
-}
 fn write_baby_bonkers_file(hash: &str) -> Result<()> {
     let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
     let mut file = fs::File::options()
