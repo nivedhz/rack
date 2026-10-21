@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use colored::*;
+use sha3::{Digest, Sha3_256};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -75,15 +76,19 @@ fn get_file_recursively(
     for entry in entries {
         let entry = entry?;
         let path = entry.path();
-        let base_path = repository::find_rack_dir()
-            .context("fatal: could not find rack repository")?
-            .parent()
-            .context("fatal: could not find rack repository")?
-            .to_path_buf();
-        let relative_path = path.strip_prefix(base_path)?;
+        let relative_path = repository::get_relative_path_from_root(&path)?;
+        let prev_commit_entry: Vec<(String, String)> = repository::read_head_commit_entry()?
+            .iter()
+            .map(|e| {
+                (
+                    e.split_whitespace().nth(1).unwrap_or_default().to_string(),
+                    e.split_whitespace().nth(2).unwrap_or_default().to_string(),
+                )
+            })
+            .collect();
         if let Some(path_name) = path.file_name()
             && (ignore_dirs.contains(&PathBuf::from(path_name))
-                || ignore_dirs.contains(&PathBuf::from(relative_path)))
+                || ignore_dirs.contains(&relative_path))
         {
             continue;
         } else {
@@ -94,9 +99,19 @@ fn get_file_recursively(
                     indexed_files.clone(),
                 )?);
             } else {
+                let file_content = fs::read(&path).unwrap_or_default();
+                let hash = get_hash(&file_content);
+                let prev_commit_hash = prev_commit_entry
+                    .iter()
+                    .find(|e| e.0 == relative_path.display().to_string())
+                    .map(|e| e.1.clone())
+                    .unwrap_or_default();
+                if prev_commit_hash == hash {
+                    continue;
+                }
                 files.push(FileStatus {
-                    is_indexed: indexed_files.contains(&PathBuf::from(relative_path)),
-                    file_path: PathBuf::from(relative_path),
+                    is_indexed: indexed_files.contains(&relative_path),
+                    file_path: relative_path,
                 });
             }
         }
@@ -117,4 +132,9 @@ fn get_indexed_files() -> Result<Vec<String>> {
         .iter()
         .map(|s| s.split(" ").collect::<Vec<&str>>()[1].to_string())
         .collect::<Vec<String>>())
+}
+fn get_hash(file_content: &Vec<u8>) -> String {
+    let mut hasher = Sha3_256::new();
+    hasher.update(file_content);
+    hex::encode(hasher.finalize())
 }
