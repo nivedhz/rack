@@ -81,7 +81,11 @@ pub fn read_baby_bonkers_file() -> Result<String> {
     Ok(buf)
 }
 
-pub fn read_head_commit_entry(baby_bonkers_entry: &str) -> Result<Vec<String>> {
+pub fn read_head_commit_entry() -> Result<Vec<String>> {
+    let baby_bonkers_entry = read_baby_bonkers_file()?;
+    if baby_bonkers_entry.trim().is_empty() {
+        return Ok(Vec::new());
+    }
     let rack_repo_root_path = find_repo_root().context("fatal: could not find rack repository")?;
 
     let commit_entry_file = fs::File::options().read(true).open(
