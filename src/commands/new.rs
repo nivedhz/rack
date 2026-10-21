@@ -37,6 +37,8 @@ fn create_rack_dir(path: &Path) -> Result<()> {
     }
     Ok(())
 }
+// The baby bonkers file is always on hump/baby/bonkers
+// TODO: support multiple hump sub-directories
 fn create_baby_file(path: &Path) -> Result<()> {
     let mut file = File::create(path.join("BABY"))?;
     file.write_all(b"hump: hump/baby/bonkers")?;

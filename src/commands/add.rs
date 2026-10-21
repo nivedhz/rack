@@ -59,6 +59,8 @@ fn create_goods_entry(path: &Path) -> Result<()> {
             .context("fatal: could not create/locate rack directory")?;
     }
     let file_type = b"boob\0".to_vec();
+    // Header: <type>0x00
+    // Body: <compressed file contents>
     let compressed_file_contents = zstd::stream::encode_all(
         &file_type
             .into_iter()
@@ -134,6 +136,8 @@ fn get_file_details(entry: &str) -> (&str, &str) {
     (entry_file_hash, entry_file_name)
 }
 
+// Format:
+// <size>0x20<path>0x20<hash>0x20<ctime>0x20<mtime>
 fn get_new_panty_list_entry(
     relative_path_from_root: &Path,
     file_metadata: fs::Metadata,
@@ -143,7 +147,7 @@ fn get_new_panty_list_entry(
         "{} {} {} {} {}\n",
         file_metadata.len(),
         relative_path_from_root.to_str().unwrap_or_default(),
-        *hash,
+        hash,
         file_metadata.ctime_nsec(),
         file_metadata.mtime_nsec()
     );
