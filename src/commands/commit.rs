@@ -38,11 +38,7 @@ fn handle_not_fresh_commit(hash: &str, message: &str) -> Result<()> {
         .collect();
     let curr_file_entry = repository::read_panty_list_file()?;
     let diff_entries = get_diff_entries(&prev_file_entry, &curr_file_entry)?;
-    let mut commit_diff_entry = String::new();
-    for entry in diff_entries {
-        commit_diff_entry.push_str(&format!("{}\n", entry));
-    }
-    create_commit_entry_with_head(&commit_diff_entry, message, hash)?;
+    create_commit_entry_with_head(&diff_entries.join("\n"), message, hash)?;
     write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
     empty_panty_list().context("fatal: could not empty panty list")?;
     Ok(())
