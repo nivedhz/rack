@@ -31,14 +31,8 @@ fn get_all_files() -> Result<()> {
     let files: Vec<FileStatus> =
         get_file_recursively(&rack_repo_root_path, ignore_dirs, indexed_files)?;
 
-    let unindexed_files = files
-        .iter()
-        .filter(|f| !f.is_indexed)
-        .collect::<Vec<&FileStatus>>();
-    let indexed_files = files
-        .iter()
-        .filter(|f| f.is_indexed)
-        .collect::<Vec<&FileStatus>>();
+    let (indexed_files, unindexed_files): (Vec<&FileStatus>, Vec<&FileStatus>) =
+        files.iter().partition(|f| f.is_indexed);
 
     println!();
     if !indexed_files.is_empty() {
