@@ -98,7 +98,12 @@ pub fn read_head_commit_entry() -> Result<Vec<String>> {
     let mut commit_entry = String::new();
     let mut reader = BufReader::new(commit_entry_file);
     reader.read_to_string(&mut commit_entry)?;
-    let commit_entry = commit_entry.trim().split("\0").nth(1).unwrap_or_default();
+    let commit_entry = commit_entry
+        .trim()
+        .split("\0")
+        .nth(1)
+        .unwrap_or_default()
+        .trim();
 
     let entries: Vec<String> = commit_entry.lines().map(String::from).collect();
     Ok(entries)
