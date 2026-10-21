@@ -82,7 +82,7 @@ fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
     Ok(())
 }
 // Header: <hash>0x20<message>0x00\n
-// Body: <panty-list entries>
+// Body: <panty-list entries joined by \n>
 fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
     let panty_list_entries =
         repository::read_panty_list_file().context("fatal: could not read panty list")?;
