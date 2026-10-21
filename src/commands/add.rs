@@ -3,7 +3,7 @@ use anyhow::{Context, Result, bail};
 use sha3::{Digest, Sha3_256};
 use std::{
     fs::{self},
-    io::{BufReader, Read, Write},
+    io::Write,
     os::unix::fs::MetadataExt,
     path::{Path, PathBuf},
 };
@@ -19,37 +19,31 @@ pub fn run(path: PathBuf) -> Result<()> {
         bail!("fatal: not a rack repository")
     }
     if path.is_dir() {
-        handle_dir(path.to_path_buf())?
+        handle_dir(&path)?
     } else {
-        create_goods_entry(&path, None)?;
-        create_panty_list_entry(&path, None)?;
+        create_goods_entry(&path)?;
+        create_panty_list_entry(&path)?;
     }
     Ok(())
 }
-fn handle_dir(path: PathBuf) -> Result<()> {
-    let entries = fs::read_dir(&path)?;
+fn handle_dir(path: &Path) -> Result<()> {
+    let entries = fs::read_dir(path)?;
     for entry in entries {
         let entry = entry?;
-        let recursion_path = entry.path();
-        if recursion_path.is_dir() {
-            handle_dir(recursion_path)?;
+        let recursive_path = entry.path();
+        if recursive_path.is_dir() {
+            handle_dir(&recursive_path)?;
         } else {
-            create_goods_entry(&path, Some(&recursion_path))?;
-            create_panty_list_entry(&path, Some(recursion_path))?;
+            create_goods_entry(&recursive_path)?;
+            create_panty_list_entry(&recursive_path)?;
         }
     }
 
     Ok(())
 }
-fn create_goods_entry(path: &Path, recursive_path: Option<&Path>) -> Result<()> {
-    let path = recursive_path.unwrap_or(path);
+fn create_goods_entry(path: &Path) -> Result<()> {
     let rack_repo_dir = repository::find_rack_dir().context("fatal: not in a rack repository")?;
-    let rack_repo_root_path = rack_repo_dir
-        .parent()
-        .context("fatal: could not find parent")?
-        .to_path_buf();
-    let full_path = fs::canonicalize(path)?;
-    let relative_path_from_root = full_path.strip_prefix(&rack_repo_root_path)?;
+    let relative_path_from_root = repository::get_relative_path_from_root(path)?;
     let rack_ignore_entries = repository::read_rack_ignore(&rack_repo_dir)?;
     if rack_ignore_entries
         .iter()
@@ -60,16 +54,21 @@ fn create_goods_entry(path: &Path, recursive_path: Option<&Path>) -> Result<()> 
     let file_content = fs::read(path)?;
     let hash = get_hash(&file_content);
     let (dir_name, file_name) = hash.split_at(2);
-    let dir_path = rack_repo_dir.join("goods").join(dir_name);
-    if !dir_path.exists() {
-        fs::create_dir_all(&dir_path).context("fatal: could not create/locate rack directory")?;
+    let good_entry_dir_path = rack_repo_dir.join("goods").join(dir_name);
+    if !good_entry_dir_path.exists() {
+        fs::create_dir_all(&good_entry_dir_path)
+            .context("fatal: could not create/locate rack directory")?;
     }
-    let mut file_type = b"boob".to_vec();
-    file_type.push(0x00);
-    let total_content = [file_type, file_content].concat();
-    let compressed_file_contents = zstd::stream::encode_all(&total_content[..], 3)?;
-    let file_path = dir_path.join(file_name);
-    fs::write(&file_path, compressed_file_contents)?;
+    let file_type = b"boob\0".to_vec();
+    let compressed_file_contents = zstd::stream::encode_all(
+        &file_type
+            .into_iter()
+            .chain(file_content)
+            .collect::<Vec<u8>>()[..],
+        3,
+    )?;
+    let goods_entry_file_path = good_entry_dir_path.join(file_name);
+    fs::write(&goods_entry_file_path, compressed_file_contents)?;
     Ok(())
 }
 
@@ -78,15 +77,10 @@ fn get_hash(file_content: &Vec<u8>) -> String {
     hasher.update(file_content);
     hex::encode(hasher.finalize())
 }
-fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()> {
-    let rack_repo_root_path = repository::find_rack_dir()
-        .context("fatal: could not find rack repository")?
-        .parent()
-        .context("fatal: could not find rack repository")?
-        .to_path_buf();
-    let relative_file_name = file_name.unwrap_or(path.to_path_buf());
-    let canonical_file_name = fs::canonicalize(&relative_file_name)?;
-    let relative_path_from_root = canonical_file_name.strip_prefix(&rack_repo_root_path)?;
+fn create_panty_list_entry(path: &Path) -> Result<()> {
+    let rack_repo_root_path =
+        repository::find_repo_root().context("fatal: could not find rack repository")?;
+    let relative_path_from_root = repository::get_relative_path_from_root(path)?;
     let rack_ignore_entries = repository::read_rack_ignore(&rack_repo_root_path.join(DIR_PATH))?;
     if rack_ignore_entries
         .iter()
@@ -95,66 +89,69 @@ fn create_panty_list_entry(path: &Path, file_name: Option<PathBuf>) -> Result<()
         return Ok(());
     }
 
-    let file_metadata = fs::metadata(&relative_file_name)?;
-    let file_content = fs::read(&relative_file_name)?;
+    let file_metadata = fs::metadata(path)?;
+    let file_content = fs::read(path)?;
     let hash = get_hash(&file_content);
 
-    let entry = format!(
-        "{} {} {} {} {}\n",
-        file_metadata.len(),
-        relative_path_from_root.to_str().unwrap_or_default(),
-        hash,
-        file_metadata.ctime_nsec(),
-        file_metadata.mtime_nsec()
-    );
+    let new_entry = get_new_panty_list_entry(&relative_path_from_root, file_metadata, &hash);
     let panty_list_path = repository::find_rack_dir()
         .context("fatal: could not find rack repository")?
         .join("panty-list");
-    let mut panty_list_file = fs::File::options()
-        .create(true)
-        .read(true)
-        .append(true)
-        .truncate(false)
-        .open(&panty_list_path)?;
-    let mut read_buf: Vec<u8> = Vec::new();
-    panty_list_file.read_to_end(&mut read_buf)?;
-    let file_content = String::from_utf8_lossy(&read_buf[..]).to_string();
+
     let baby_bonkers_entry = repository::read_baby_bonkers_file()?;
     if !baby_bonkers_entry.trim().is_empty() {
-        let commit_entry_file = fs::File::options().read(true).open(
-            rack_repo_root_path
-                .join(DIR_PATH)
-                .join("commit")
-                .join(&baby_bonkers_entry.trim()[..2])
-                .join(&baby_bonkers_entry.trim()[2..]),
-        )?;
-        let mut commit_entry = String::new();
-        let mut reader = BufReader::new(commit_entry_file);
-        reader.read_to_string(&mut commit_entry)?;
-        let entries = commit_entry.trim().split("\0").nth(1).unwrap_or_default();
-        for line_entry in entries.lines() {
-            let file_name = line_entry.split_whitespace().nth(1).unwrap_or_default();
-            let file_hash = line_entry.split_whitespace().nth(2).unwrap_or_default();
-            if file_name == relative_file_name.to_str().unwrap_or_default() && file_hash == hash {
+        let head_commit_entries = repository::read_head_commit_entry(&baby_bonkers_entry)?;
+        for entry in head_commit_entries {
+            let (file_hash, file_name) = get_file_details(&entry);
+            if Path::new(file_name) == path && file_hash == hash {
                 println!("info: file {} has no changes", file_name);
                 return Ok(());
             }
         }
     }
-    for contents in file_content.trim().lines() {
-        let file_hash = contents.split_whitespace().nth(2).unwrap_or_default();
-        let file_name = contents.split_whitespace().nth(1).unwrap_or_default();
-        if file_name == relative_file_name.to_str().unwrap_or_default() {
-            if file_hash == hash {
-                println!("info: file {} already added", file_name);
+
+    let panty_list_entries = repository::read_panty_list_file()?;
+    for entry in &panty_list_entries {
+        let (entry_file_hash, entry_file_name) = get_file_details(entry);
+        if Path::new(entry_file_name) == path {
+            if entry_file_hash == hash {
+                println!("info: file {} already added", entry_file_name);
                 return Ok(());
             } else {
-                let new_content = file_content.trim().replace(contents, entry.as_str());
+                let new_content = panty_list_entries
+                    .iter()
+                    .find(|x| x.contains(&hash) && x.contains(path.to_str().unwrap_or_default()))
+                    .unwrap_or(&new_entry);
                 fs::write(panty_list_path, new_content.as_bytes())?;
                 return Ok(());
             }
         }
     }
-    panty_list_file.write_all(entry.as_bytes())?;
+    fs::File::options()
+        .append(true)
+        .open(panty_list_path)?
+        .write_all(new_entry.as_bytes())?;
     Ok(())
+}
+
+fn get_file_details(entry: &str) -> (&str, &str) {
+    let entry_file_hash = entry.split_whitespace().nth(2).unwrap_or_default();
+    let entry_file_name = entry.split_whitespace().nth(1).unwrap_or_default();
+    (entry_file_hash, entry_file_name)
+}
+
+fn get_new_panty_list_entry(
+    relative_path_from_root: &Path,
+    file_metadata: fs::Metadata,
+    hash: &String,
+) -> String {
+    let entry = format!(
+        "{} {} {} {} {}\n",
+        file_metadata.len(),
+        relative_path_from_root.to_str().unwrap_or_default(),
+        *hash,
+        file_metadata.ctime_nsec(),
+        file_metadata.mtime_nsec()
+    );
+    entry
 }
