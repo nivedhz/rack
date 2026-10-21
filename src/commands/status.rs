@@ -103,7 +103,7 @@ fn get_file_recursively(
                 let prev_commit_hash = prev_commit_entry
                     .iter()
                     .find(|e| e.0 == relative_path.display().to_string())
-                    .map(|e| e.1.clone())
+                    .map(|e| e.1.to_owned())
                     .unwrap_or_default();
                 if prev_commit_hash == hash {
                     continue;
