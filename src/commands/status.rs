@@ -115,6 +115,6 @@ fn get_indexed_files() -> Result<Vec<String>> {
     }
     Ok(entries
         .iter()
-        .map(|s| s.split(" ").collect::<Vec<&str>>()[0].to_string())
+        .map(|s| s.split(" ").collect::<Vec<&str>>()[1].to_string())
         .collect::<Vec<String>>())
 }
