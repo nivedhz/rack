@@ -100,7 +100,7 @@ fn create_panty_list_entry(path: &Path) -> Result<()> {
 
     let baby_bonkers_entry = repository::read_baby_bonkers_file()?;
     if !baby_bonkers_entry.trim().is_empty() {
-        let head_commit_entries = repository::read_head_commit_entry(&baby_bonkers_entry)?;
+        let head_commit_entries = repository::read_head_commit_entry()?;
         for entry in head_commit_entries {
             let (file_hash, file_name) = get_file_details(&entry);
             if Path::new(file_name) == path && file_hash == hash {
