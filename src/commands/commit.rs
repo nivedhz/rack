@@ -31,7 +31,7 @@ fn handle_fresh_commit(hash: &str, message: &str) -> Result<()> {
 
 fn handle_not_fresh_commit(hash: &str, message: &str) -> Result<()> {
     let prev_commit_hash = repository::read_baby_bonkers_file()?;
-    let prev_file_entry: Vec<String> = get_file_entries(prev_commit_hash.trim())?
+    let prev_file_entry: Vec<String> = get_commit_entries(prev_commit_hash.trim())?
         .trim()
         .lines()
         .map(String::from)
@@ -120,7 +120,7 @@ fn empty_panty_list() -> Result<()> {
     Ok(())
 }
 
-fn get_file_entries(hash: &str) -> Result<String> {
+fn get_commit_entries(hash: &str) -> Result<String> {
     let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
     let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
     let entry_file = fs::File::open(entry_dir_path.join(&hash[2..]))
