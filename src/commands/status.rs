@@ -67,9 +67,8 @@ fn get_file_recursively(
     let entries = fs::read_dir(dir)?;
     let mut files = Vec::new();
     for entry in entries {
-        let entry = entry?;
-        let path = entry.path();
-        let relative_path = repository::get_relative_path_from_root(&path)?;
+        let entry = entry?.path();
+        let relative_path = repository::get_relative_path_from_root(&entry)?;
         let prev_commit_entry: Vec<(String, String)> = repository::read_head_commit_entry()?
             .iter()
             .map(|e| {
@@ -79,20 +78,20 @@ fn get_file_recursively(
                 )
             })
             .collect();
-        if let Some(path_name) = path.file_name()
+        if let Some(path_name) = entry.file_name()
             && (ignore_dirs.contains(&PathBuf::from(path_name))
                 || ignore_dirs.contains(&relative_path))
         {
             continue;
         } else {
-            if path.is_dir() {
+            if entry.is_dir() {
                 files.extend(get_file_recursively(
-                    &path,
+                    &entry,
                     ignore_dirs.clone(),
                     indexed_files.clone(),
                 )?);
             } else {
-                let file_content = fs::read(&path).unwrap_or_default();
+                let file_content = fs::read(&entry).unwrap_or_default();
                 let hash = hasher::get_hash(&file_content);
                 let prev_commit_hash = prev_commit_entry
                     .iter()
