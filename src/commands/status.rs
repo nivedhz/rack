@@ -1,12 +1,11 @@
 use anyhow::{Context, Result};
 use colored::*;
-use sha3::{Digest, Sha3_256};
 use std::{
     fs,
     path::{Path, PathBuf},
 };
 
-use crate::{constants::DIR_PATH, repository};
+use crate::{constants::DIR_PATH, hasher, repository};
 #[derive(Debug)]
 struct FileStatus {
     file_path: PathBuf,
@@ -100,7 +99,7 @@ fn get_file_recursively(
                 )?);
             } else {
                 let file_content = fs::read(&path).unwrap_or_default();
-                let hash = get_hash(&file_content);
+                let hash = hasher::get_hash(&file_content);
                 let prev_commit_hash = prev_commit_entry
                     .iter()
                     .find(|e| e.0 == relative_path.display().to_string())
@@ -132,9 +131,4 @@ fn get_indexed_files() -> Result<Vec<String>> {
         .iter()
         .map(|s| s.split(" ").collect::<Vec<&str>>()[1].to_string())
         .collect::<Vec<String>>())
-}
-fn get_hash(file_content: &Vec<u8>) -> String {
-    let mut hasher = Sha3_256::new();
-    hasher.update(file_content);
-    hex::encode(hasher.finalize())
 }

@@ -1,6 +1,5 @@
-use crate::{constants::DIR_PATH, repository};
+use crate::{constants::DIR_PATH, hasher, repository};
 use anyhow::{Context, Result, bail};
-use sha3::{Digest, Sha3_256};
 use std::{
     fs::{self},
     io::Write,
@@ -52,7 +51,7 @@ fn create_goods_entry(path: &Path) -> Result<()> {
         return Ok(());
     }
     let file_content = fs::read(path)?;
-    let hash = get_hash(&file_content);
+    let hash = hasher::get_hash(&file_content);
     let (dir_name, file_name) = hash.split_at(2);
     let good_entry_dir_path = rack_repo_dir.join("goods").join(dir_name);
     if !good_entry_dir_path.exists() {
@@ -72,11 +71,6 @@ fn create_goods_entry(path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn get_hash(file_content: &Vec<u8>) -> String {
-    let mut hasher = Sha3_256::new();
-    hasher.update(file_content);
-    hex::encode(hasher.finalize())
-}
 fn create_panty_list_entry(path: &Path) -> Result<()> {
     let rack_repo_root_path =
         repository::find_repo_root().context("fatal: could not find rack repository")?;
@@ -91,7 +85,7 @@ fn create_panty_list_entry(path: &Path) -> Result<()> {
 
     let file_metadata = fs::metadata(path)?;
     let file_content = fs::read(path)?;
-    let hash = get_hash(&file_content);
+    let hash = hasher::get_hash(&file_content);
 
     let new_entry = get_new_panty_list_entry(&relative_path_from_root, file_metadata, &hash);
     let panty_list_path = repository::find_rack_dir()
