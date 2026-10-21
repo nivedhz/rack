@@ -1,6 +1,6 @@
 use std::{
     env, fs,
-    io::BufRead,
+    io::{BufRead, BufReader, Read},
     path::{Path, PathBuf},
 };
 
@@ -17,6 +17,19 @@ pub fn find_rack_dir() -> Option<PathBuf> {
         let path = ancestor.join(DIR_PATH);
         if path.exists() && path.is_dir() {
             return Some(path);
+        }
+    }
+    None
+}
+pub fn find_repo_root() -> Option<PathBuf> {
+    let current_dir = env::current_dir().ok()?;
+    for ancestor in current_dir.ancestors() {
+        if ancestor == Path::new("/") {
+            return None;
+        }
+        let path = ancestor.join(DIR_PATH);
+        if path.exists() && path.is_dir() {
+            return Some(path.parent()?.to_path_buf());
         }
     }
     None
@@ -64,6 +77,41 @@ pub fn read_baby_bonkers_file() -> Result<String> {
     let mut buf = String::new();
     reader
         .read_line(&mut buf)
-        .context("fatal: could not read line")?;
+        .context("fatal: could not read baby bonkers file")?;
     Ok(buf)
+}
+
+pub fn read_head_commit_entry(baby_bonkers_entry: &str) -> Result<Vec<String>> {
+    let rack_repo_root_path = find_repo_root().context("fatal: could not find rack repository")?;
+
+    let commit_entry_file = fs::File::options().read(true).open(
+        rack_repo_root_path
+            .join(DIR_PATH)
+            .join("commit")
+            .join(&baby_bonkers_entry.trim()[..2])
+            .join(&baby_bonkers_entry.trim()[2..]),
+    )?;
+    let mut commit_entry = String::new();
+    let mut reader = BufReader::new(commit_entry_file);
+    reader.read_to_string(&mut commit_entry)?;
+    let entries: Vec<String> = commit_entry
+        .trim()
+        .split("\0")
+        .nth(1)
+        .unwrap_or_default()
+        .lines()
+        .map(|s| s.to_string())
+        .collect();
+    Ok(entries)
+}
+
+pub fn get_relative_path_from_root(path: &Path) -> Result<PathBuf> {
+    let rack_repo_root_path = find_rack_dir()
+        .context("fatal: could not find rack repository")?
+        .parent()
+        .context("fatal: could not find rack repository")?
+        .to_path_buf();
+    let canonical_file_name = fs::canonicalize(path)?;
+    let relative_path_from_root = canonical_file_name.strip_prefix(&rack_repo_root_path)?;
+    Ok(relative_path_from_root.to_path_buf())
 }
