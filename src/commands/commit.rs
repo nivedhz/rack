@@ -1,4 +1,3 @@
-// TODO: refactor this as whole. Make the code more readable
 use std::{
     collections::HashMap,
     fs,
