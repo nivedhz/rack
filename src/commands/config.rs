@@ -30,7 +30,10 @@ pub fn run(key: String, input_value: String) -> Result<()> {
                     .write(toml_parse.to_string().as_bytes())
                     .context("fatal: could not write toml")?;
             }
-            _ => bail!("fatal: {} is not a valid key", key),
+            _ => {
+                println!("valid keys: user.name, user.email");
+                bail!("fatal: {} is not a valid key", key);
+            }
         },
         "core" => match bottom_level {
             "editor" => {
@@ -39,9 +42,15 @@ pub fn run(key: String, input_value: String) -> Result<()> {
                     .write(toml_parse.to_string().as_bytes())
                     .context("fatal: could not write toml")?;
             }
-            _ => bail!("fatal: {} is not a valid key", key),
+            _ => {
+                println!("valid keys: core.editor");
+                bail!("fatal: {} is not a valid key", key);
+            }
         },
-        _ => bail!("fatal: {} is not a valid key", key),
+        _ => {
+            println!("valid keys: user.name, user.email, core.editor");
+            bail!("fatal: {} is not a valid key", key);
+        }
     }
     Ok(())
 }
