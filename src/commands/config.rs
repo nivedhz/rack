@@ -6,13 +6,12 @@ use toml_edit::{DocumentMut, value};
 use crate::repository;
 
 pub fn run(key: String, input_value: String) -> Result<()> {
-    let base_path =
-        repository::find_repo_root().context("fatal: could not find rack repository")?;
+    let base_path = repository::find_rack_dir().context("fatal: could not find rack repository")?;
     let mut rack_config_file = fs::File::options()
         .read(true)
         .write(true)
-        .open(base_path.join(".rackconfig.toml"))?;
-    let file_content = fs::read_to_string(base_path.join(".rackconfig.toml"))?;
+        .open(base_path.join("config.toml"))?;
+    let file_content = fs::read_to_string(base_path.join("config.toml"))?;
     let mut toml_parse: DocumentMut = file_content
         .parse()
         .context("fatal: could not parse toml")?;

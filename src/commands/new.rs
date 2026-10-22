@@ -64,13 +64,11 @@ fn create_rack_ignore_file(path: &Path) -> Result<()> {
     Ok(())
 }
 fn create_rack_config_file(path: &Path) -> Result<()> {
-    let path = path.parent().context("could not find rack repository")?;
-    const RACK_CONFIG_CONTENT: &str =
-        "# Enter the user and core configurations that you want.\n[user]\n[core]";
-    if path.join(".rackconfig.toml").exists() {
+    const RACK_CONFIG_CONTENT: &str = "[user]\n\n[core]";
+    if path.join("config.toml").exists() {
         return Ok(());
     }
-    let mut file = File::create(path.join(".rackconfig.toml"))?;
+    let mut file = File::create(path.join("config.toml"))?;
     file.write_all(RACK_CONFIG_CONTENT.as_bytes())?;
     Ok(())
 }
