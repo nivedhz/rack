@@ -17,6 +17,7 @@ pub fn run(dir_path: PathBuf) -> Result<()> {
     create_hump_dir(&path)?;
     create_goods_dir(&path)?;
     create_rack_ignore_file(&path)?;
+    create_rack_config_file(&path)?;
     Ok(())
 }
 fn get_current_dir_path(dir_path: PathBuf) -> Result<PathBuf> {
@@ -60,5 +61,16 @@ fn create_rack_ignore_file(path: &Path) -> Result<()> {
     }
     let mut file = File::create(path.join(".rackignore"))?;
     file.write_all(RACK_IGNORE_CONTENT.as_bytes())?;
+    Ok(())
+}
+fn create_rack_config_file(path: &Path) -> Result<()> {
+    let path = path.parent().context("could not find rack repository")?;
+    const RACK_CONFIG_CONTENT: &str =
+        "# Enter the user and core configurations that you want.\n[user]\n[core]";
+    if path.join(".rackconfig.toml").exists() {
+        return Ok(());
+    }
+    let mut file = File::create(path.join(".rackconfig.toml"))?;
+    file.write_all(RACK_CONFIG_CONTENT.as_bytes())?;
     Ok(())
 }
