@@ -15,7 +15,10 @@ pub fn run(key: String, input_value: String) -> Result<()> {
     let mut toml_parse: DocumentMut = file_content
         .parse()
         .context("fatal: could not parse toml")?;
-    let (top_level, bottom_level) = key.split_once('.').context("fatal: invalid key")?;
+    let (top_level, bottom_level) = key.split_once('.').context(format!(
+        "valid keys: user.name, user.email, core.editor\nfatal: {} is not a valid key",
+        key
+    ))?;
     match top_level {
         "user" => match bottom_level {
             "name" => {
