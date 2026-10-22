@@ -36,7 +36,7 @@ fn get_all_files() -> Result<()> {
 
     println!();
     if !indexed_files.is_empty() {
-        // TODO: Add rack restore docs
+        //TODO: Add rack restore docs
         println!("Changes to be commited:");
         for file in indexed_files {
             println!(
@@ -48,7 +48,7 @@ fn get_all_files() -> Result<()> {
         println!();
     }
     if !unindexed_files.is_empty() {
-        // TODO: Add rack restore docs
+        //TODO: Add rack restore docs
         println!("Changes not staged for commit:");
         println!("(use rack insert <file> to update what will be banged)");
         for file in unindexed_files {
