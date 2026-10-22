@@ -80,6 +80,7 @@ fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
 
     Ok(())
 }
+// TODO: make the header <hash>0x20<message>0x20<author name>0x20<author email>0x20<commit timestamp>\n
 // Header: <hash>0x20<message>0x00\n
 // Body: <panty-list entries joined by \n>
 fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
@@ -89,6 +90,7 @@ fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
         println!("use rack insert <file> to insert a file");
         bail!("fatal: no file inserted");
     }
+    // let mut commit_entry = format!("{} {} {} {} {}\0\n", hash, message, author_name, author_email, commit_timestamp);
     let mut commit_entry = format!("{} {}\0\n", hash, message);
     commit_entry.push_str(panty_list_entries.join("\n").as_str());
 
