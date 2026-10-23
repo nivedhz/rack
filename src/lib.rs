@@ -21,6 +21,7 @@ pub fn run() -> Result<()> {
         args::Commands::Expose => status::run()?,
         // rack bang -m <message>
         args::Commands::Bang { message } => commit::run(message)?,
+        // rack config <key> <value>
         args::Commands::Config { key, value } => config::run(key, value)?,
     }
     Ok(())
