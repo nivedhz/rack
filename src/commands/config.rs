@@ -1,59 +1,48 @@
-use std::{fs, io::Write};
-
-use anyhow::{Context, Result, bail};
-use toml_edit::{DocumentMut, value};
-
 use crate::repository;
+use anyhow::{Context, Result, bail};
+use std::fs;
+use toml_edit::{DocumentMut, Item, Table, value};
 
 pub fn run(key: String, input_value: String) -> Result<()> {
-    let base_path = repository::find_rack_dir().context("fatal: could not find rack repository")?;
-    let mut rack_config_file = fs::File::options()
-        .read(true)
-        .write(true)
-        .open(base_path.join("config.toml"))?;
-    let file_content = fs::read_to_string(base_path.join("config.toml"))?;
-    let mut toml_parse: DocumentMut = file_content
+    let rack_dir = repository::find_rack_dir().context("fatal: could not find rack repository")?;
+    let config_path = rack_dir.join("config.toml");
+    let file_content = fs::read_to_string(&config_path)?;
+    let mut rack_config_file_toml: DocumentMut = file_content
         .parse()
         .context("fatal: could not parse toml")?;
-    let (top_level, bottom_level) = key.split_once('.').context(format!(
-        "valid keys: user.name, user.email, core.editor\nfatal: {} is not a valid key",
+    if let Some(item) = rack_config_file_toml.get_mut("user")
+        && let Some(inline_table) = item.as_inline_table()
+    {
+        let mut table = Table::new();
+
+        for (k, v) in inline_table {
+            table[k] = v.clone().into()
+        }
+        *item = Item::Table(table)
+    }
+    let (section, section_key) = key.split_once('.').context(format!(
+        "valid keys: user.name, user.email\nfatal: {} is not a valid key",
         key
     ))?;
-    match top_level {
-        "user" => match bottom_level {
+    match section {
+        "user" => match section_key {
             "name" => {
-                toml_parse["user"]["name"] = value(input_value);
-                rack_config_file
-                    .write(toml_parse.to_string().as_bytes())
-                    .context("fatal: could not write toml")?;
+                rack_config_file_toml["user"]["name"] = value(input_value.trim());
             }
             "email" => {
-                toml_parse["user"]["email"] = value(input_value);
-                rack_config_file
-                    .write(toml_parse.to_string().as_bytes())
-                    .context("fatal: could not write toml")?;
+                rack_config_file_toml["user"]["email"] = value(input_value.trim());
             }
             _ => {
                 println!("valid keys: user.name, user.email");
                 bail!("fatal: {} is not a valid key", key);
             }
         },
-        "core" => match bottom_level {
-            "editor" => {
-                toml_parse["core"]["editor"] = value(input_value);
-                rack_config_file
-                    .write(toml_parse.to_string().as_bytes())
-                    .context("fatal: could not write toml")?;
-            }
-            _ => {
-                println!("valid keys: core.editor");
-                bail!("fatal: {} is not a valid key", key);
-            }
-        },
         _ => {
-            println!("valid keys: user.name, user.email, core.editor");
+            println!("valid keys: user.name, user.email");
             bail!("fatal: {} is not a valid key", key);
         }
     }
+    println!("{} ", rack_config_file_toml);
+    fs::write(&config_path, rack_config_file_toml.to_string())?;
     Ok(())
 }
