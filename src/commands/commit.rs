@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::{Context, Result, bail};
+use chrono::Utc;
 
 use crate::{hasher, repository};
 
@@ -62,25 +63,32 @@ fn create_commit_entry_with_head(
         .write(true)
         .truncate(true)
         .open(entry_dir_path.join(&hash[2..]))?;
-    let author_name = "John Doe";
-    let author_email = "OYV6P@example.com";
-    let commit_timestamp = "2022-01-01 00:00:00";
-    entry_file
-        .write_all(
-            format!(
-                "{}\0{}\0{}\0{}\0{}\0\n{}",
-                prev_commit_hash,
-                message,
-                author_name,
-                author_email,
-                commit_timestamp,
-                diffed_entry
+    let user_detais = repository::get_user_details()?;
+    if let Some(user_name) = user_detais.name
+        && let Some(user_email) = user_detais.email
+    {
+        let author_name = user_name;
+        let author_email = user_email;
+        let commit_timestamp = get_current_time();
+        entry_file
+            .write_all(
+                format!(
+                    "{}\0{}\0{}\0{}\0{}\0\n{}",
+                    prev_commit_hash,
+                    message,
+                    author_name,
+                    author_email,
+                    commit_timestamp,
+                    diffed_entry
+                )
+                .as_bytes(),
             )
-            .as_bytes(),
-        )
-        .context("fatal: could not write commit entry")?;
-
-    Ok(())
+            .context("fatal: could not write commit entry")?;
+        Ok(())
+    } else {
+        println!("use rack config <key> <value> to set user details");
+        bail!("fatal: user details not found");
+    }
 }
 
 fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
@@ -92,9 +100,9 @@ fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
         .write(true)
         .truncate(true)
         .open(entry_dir_path.join(&hash[2..]))?;
-    let commit_entry = get_commit_entry(message);
+    let commit_entry = get_commit_entry(message)?;
     entry_file
-        .write_all(commit_entry?.as_bytes())
+        .write_all(commit_entry.as_bytes())
         .context("fatal: could not write commit entry")?;
 
     Ok(())
@@ -109,20 +117,24 @@ fn get_commit_entry(message: &str) -> Result<String> {
         println!("use rack insert <file> to insert a file");
         bail!("fatal: no file inserted");
     }
-    let author_name = "John Doe";
-    let author_email = "OYV6P@example.com";
-    let commit_timestamp = "2022-01-01 00:00:00";
-
-    let commit_entry = format!(
-        "\0{}\0{}\0{}\0{}\0\n{}",
-        message,
-        author_name,
-        author_email,
-        commit_timestamp,
-        panty_list_entries.join("\n").as_str()
-    );
-
-    Ok(commit_entry)
+    let user_detais = repository::get_user_details()?;
+    if let Some(user_name) = user_detais.name
+        && let Some(user_email) = user_detais.email
+    {
+        let commit_timestamp = get_current_time();
+        let commit_entry = format!(
+            "\0{}\0{}\0{}\0{}\0\n{}",
+            message,
+            user_name,
+            user_email,
+            commit_timestamp,
+            panty_list_entries.join("\n").as_str()
+        );
+        Ok(commit_entry)
+    } else {
+        println!("use rack config <key> <value> to set user details");
+        bail!("fatal: user details not found");
+    }
 }
 
 fn write_baby_bonkers_file(hash: &str) -> Result<()> {
@@ -179,4 +191,9 @@ fn get_diff_entries(prev_entries: &Vec<String>, curr_entries: &Vec<String>) -> R
     }
 
     Ok(result_vec)
+}
+
+fn get_current_time() -> i64 {
+    let now = Utc::now();
+    now.timestamp_millis()
 }
