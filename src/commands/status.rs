@@ -35,6 +35,12 @@ fn get_all_files() -> Result<()> {
         files.iter().partition(|f| f.is_indexed);
 
     println!();
+    if indexed_files.is_empty() && unindexed_files.is_empty() {
+        println!("On branch 'bonkers'");
+        println!("Your branch is up to date with 'baby/bonkers'.");
+        println!("\nnothing to commit, working tree clean");
+        return Ok(());
+    }
     if !indexed_files.is_empty() {
         //TODO: Add rack restore docs
         println!("Changes to be commited:");
