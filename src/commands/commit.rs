@@ -62,8 +62,22 @@ fn create_commit_entry_with_head(
         .write(true)
         .truncate(true)
         .open(entry_dir_path.join(&hash[2..]))?;
+    let author_name = "John Doe";
+    let author_email = "OYV6P@example.com";
+    let commit_timestamp = "2022-01-01 00:00:00";
     entry_file
-        .write_all(format!("{}\0{}\0\n{}", prev_commit_hash, message, diffed_entry).as_bytes())
+        .write_all(
+            format!(
+                "{}\0{}\0{}\0{}\0{}\0\n{}",
+                prev_commit_hash,
+                message,
+                author_name,
+                author_email,
+                commit_timestamp,
+                diffed_entry
+            )
+            .as_bytes(),
+        )
         .context("fatal: could not write commit entry")?;
 
     Ok(())
@@ -95,9 +109,16 @@ fn get_commit_entry(message: &str) -> Result<String> {
         println!("use rack insert <file> to insert a file");
         bail!("fatal: no file inserted");
     }
+    let author_name = "John Doe";
+    let author_email = "OYV6P@example.com";
+    let commit_timestamp = "2022-01-01 00:00:00";
+
     let commit_entry = format!(
-        "\0{}\0\n{}",
+        "\0{}\0{}\0{}\0{}\0\n{}",
         message,
+        author_name,
+        author_email,
+        commit_timestamp,
         panty_list_entries.join("\n").as_str()
     );
 
