@@ -42,7 +42,6 @@ pub fn run(key: String, input_value: String) -> Result<()> {
             bail!("fatal: {} is not a valid key", key);
         }
     }
-    println!("{} ", rack_config_file_toml);
     fs::write(&config_path, rack_config_file_toml.to_string())?;
     Ok(())
 }
