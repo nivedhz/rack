@@ -91,8 +91,12 @@ fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
         bail!("fatal: no file inserted");
     }
     // let mut commit_entry = format!("{} {} {} {} {}\0\n", hash, message, author_name, author_email, commit_timestamp);
-    let mut commit_entry = format!("{} {}\0\n", hash, message);
-    commit_entry.push_str(panty_list_entries.join("\n").as_str());
+    let commit_entry = format!(
+        "{} {}\0\n{}",
+        hash,
+        message,
+        panty_list_entries.join("\n").as_str()
+    );
 
     Ok(commit_entry)
 }
