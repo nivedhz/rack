@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+use serde::Deserialize;
 
 use crate::constants::DIR_PATH;
 
@@ -116,4 +117,24 @@ pub fn get_relative_path_from_root(path: &Path) -> Result<PathBuf> {
     let canonical_file_name = fs::canonicalize(path)?;
     let relative_path_from_root = canonical_file_name.strip_prefix(&rack_repo_root_path)?;
     Ok(relative_path_from_root.to_path_buf())
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Config {
+    pub user: UserDetails,
+}
+#[derive(Deserialize, Debug)]
+pub struct UserDetails {
+    pub name: Option<String>,
+    pub email: Option<String>,
+}
+pub fn get_user_details() -> Result<UserDetails> {
+    let config_file_path = find_rack_dir()
+        .context("fatal: could not find rack repository")?
+        .join("config.toml");
+    let file_content =
+        fs::read_to_string(config_file_path).context("fatal: could not read config file")?;
+    let config: Config = toml::from_str(&file_content).context("fatal: could not parse config")?;
+
+    Ok(config.user)
 }
