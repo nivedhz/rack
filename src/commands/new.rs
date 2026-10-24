@@ -8,7 +8,6 @@ use std::{
 };
 
 pub fn run(dir_path: PathBuf) -> Result<()> {
-    println!();
     let path = get_current_dir_path(dir_path)
         .context("fatal: could parse arg path")?
         .join(DIR_PATH);
