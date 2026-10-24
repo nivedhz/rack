@@ -95,18 +95,16 @@ pub fn read_head_commit_entry() -> Result<Vec<String>> {
             .join(&baby_bonkers_entry.trim()[..2])
             .join(&baby_bonkers_entry.trim()[2..]),
     )?;
-    let mut commit_entry = String::new();
+    let mut buf = String::new();
     let mut reader = BufReader::new(commit_entry_file);
-    reader.read_to_string(&mut commit_entry)?;
-    let commit_entry = commit_entry
-        .trim()
-        .split("\0")
-        .nth(2)
-        .unwrap_or_default()
-        .trim();
-
-    let entries: Vec<String> = commit_entry.lines().map(String::from).collect();
-    Ok(entries)
+    reader.read_to_string(&mut buf)?;
+    let commit_entry: Vec<String> = buf.trim().split("\0").map(|s| s.to_string()).collect();
+    if let Some(commit_file_entries) = commit_entry.last() {
+        let entries: Vec<String> = commit_file_entries.lines().map(String::from).collect();
+        Ok(entries)
+    } else {
+        Ok(Vec::new())
+    }
 }
 
 pub fn get_relative_path_from_root(path: &Path) -> Result<PathBuf> {
