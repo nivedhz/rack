@@ -80,7 +80,7 @@ fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
 
     Ok(())
 }
-// TODO: make the header <hash>0x20<prev head hash>0x20<message>0x20<author name>0x20<author email>0x20<commit timestamp>\n
+// TODO: make the header <prev head hash>0x20<message>0x20<author name>0x20<author email>0x20<commit timestamp>\n
 // Header: <hash>0x20<message>0x00\n
 // Body: <panty-list entries joined by \n>
 fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
