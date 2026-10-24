@@ -101,7 +101,7 @@ pub fn read_head_commit_entry() -> Result<Vec<String>> {
     let commit_entry = commit_entry
         .trim()
         .split("\0")
-        .nth(1)
+        .nth(2)
         .unwrap_or_default()
         .trim();
 

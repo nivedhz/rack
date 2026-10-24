@@ -16,8 +16,8 @@ pub fn run(message: String) -> Result<()> {
 }
 
 fn handle_commit(hash: &str, message: &str, has_head: bool) -> Result<()> {
+    let prev_commit_hash = repository::read_baby_bonkers_file()?;
     if has_head {
-        let prev_commit_hash = repository::read_baby_bonkers_file()?;
         let prev_commit_entry: Vec<String> = get_prev_commit_entry(prev_commit_hash.trim())?
             .trim()
             .lines()
@@ -29,7 +29,7 @@ fn handle_commit(hash: &str, message: &str, has_head: bool) -> Result<()> {
             bail!("fatal: no file inserted");
         }
         let diff_entries = get_diff_entries(&prev_commit_entry, &curr_file_entry)?;
-        create_commit_entry_with_head(&diff_entries.join("\n"), message, hash)?;
+        create_commit_entry_with_head(&diff_entries.join("\n"), message, hash, &prev_commit_hash)?;
     } else {
         create_commit_dir().context("fatal: could not create commit dir")?;
         create_headless_commit_entry(hash, message)
@@ -48,7 +48,12 @@ fn create_commit_dir() -> Result<()> {
     Ok(())
 }
 
-fn create_commit_entry_with_head(diffed_entry: &str, message: &str, hash: &str) -> Result<()> {
+fn create_commit_entry_with_head(
+    diffed_entry: &str,
+    message: &str,
+    hash: &str,
+    prev_commit_hash: &str,
+) -> Result<()> {
     let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
     let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
     fs::create_dir_all(&entry_dir_path).context("fatal: could not create commit entry")?;
@@ -58,7 +63,7 @@ fn create_commit_entry_with_head(diffed_entry: &str, message: &str, hash: &str) 
         .truncate(true)
         .open(entry_dir_path.join(&hash[2..]))?;
     entry_file
-        .write_all(format!("{} {}\0\n{}", hash, message, diffed_entry).as_bytes())
+        .write_all(format!("{}\0{}\0\n{}", prev_commit_hash, message, diffed_entry).as_bytes())
         .context("fatal: could not write commit entry")?;
 
     Ok(())
@@ -73,7 +78,7 @@ fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
         .write(true)
         .truncate(true)
         .open(entry_dir_path.join(&hash[2..]))?;
-    let commit_entry = get_commit_entry(hash, message);
+    let commit_entry = get_commit_entry(message);
     entry_file
         .write_all(commit_entry?.as_bytes())
         .context("fatal: could not write commit entry")?;
@@ -83,17 +88,15 @@ fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
 // TODO: make the header <prev head hash>0x20<message>0x20<author name>0x20<author email>0x20<commit timestamp>\n
 // Header: <hash>0x20<message>0x00\n
 // Body: <panty-list entries joined by \n>
-fn get_commit_entry(hash: &str, message: &str) -> Result<String> {
+fn get_commit_entry(message: &str) -> Result<String> {
     let panty_list_entries =
         repository::read_panty_list_file().context("fatal: could not read panty list")?;
     if panty_list_entries.is_empty() {
         println!("use rack insert <file> to insert a file");
         bail!("fatal: no file inserted");
     }
-    // let mut commit_entry = format!("{} {} {} {} {}\0\n", hash, message, author_name, author_email, commit_timestamp);
     let commit_entry = format!(
-        "{} {}\0\n{}",
-        hash,
+        "\0{}\0\n{}",
         message,
         panty_list_entries.join("\n").as_str()
     );
@@ -131,13 +134,11 @@ fn get_prev_commit_entry(hash: &str) -> Result<String> {
     let mut reader = std::io::BufReader::new(entry_file);
     let mut buf = String::new();
     reader.read_to_string(&mut buf)?;
-    let entries = buf
-        .split_once("\0")
-        .context("fatal: could not read commit entry")?
-        .1
-        .to_string();
-
-    Ok(entries)
+    let entries: Vec<String> = buf.split("\0").map(String::from).collect();
+    if let Some(commit_file_entry) = entries.last() {
+        return Ok(commit_file_entry.to_string());
+    };
+    Ok(String::new())
 }
 fn get_diff_entries(prev_entries: &Vec<String>, curr_entries: &Vec<String>) -> Result<Vec<String>> {
     let mut result: HashMap<String, (Option<String>, Option<String>)> = HashMap::new();
