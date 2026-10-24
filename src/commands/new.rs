@@ -64,7 +64,7 @@ fn create_rack_ignore_file(path: &Path) -> Result<()> {
     Ok(())
 }
 fn create_rack_config_file(path: &Path) -> Result<()> {
-    const RACK_CONFIG_CONTENT: &str = "[user]\n\n[core]";
+    const RACK_CONFIG_CONTENT: &str = "[user]\n";
     if path.join("config.toml").exists() {
         return Ok(());
     }
