@@ -2,4 +2,3 @@
 .rack/
 tmp/
 .rackignore
-.rackconfig.toml
