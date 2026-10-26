@@ -13,14 +13,14 @@ pub fn run() -> Result<()> {
     let args = args::Cli::parse();
 
     match args.command {
-        // rack deflower <path | .>
-        args::Commands::Deflower { dir_path } => new::run(dir_path)?,
-        // rack insert <file | dir>
-        args::Commands::Insert { path } => add::run(path)?,
-        // rack expose
-        args::Commands::Expose => status::run()?,
-        // rack bang -m <message>
-        args::Commands::Bang { message } => commit::run(message)?,
+        // rack init <path | .>
+        args::Commands::Init { dir_path } => new::run(dir_path)?,
+        // rack add <file | dir>
+        args::Commands::Add { path } => add::run(path)?,
+        // rack status
+        args::Commands::Status => status::run()?,
+        // rack commit -m <message>
+        args::Commands::Commit { message } => commit::run(message)?,
         // rack config <key> <value>
         args::Commands::Config { key, value } => config::run(key, value)?,
     }

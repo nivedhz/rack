@@ -12,16 +12,16 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Initilalize a new rack repository
-    Deflower {
+    Init {
         #[arg(default_value = ".")]
         dir_path: PathBuf,
     },
     /// Add file to the rack
-    Insert { path: PathBuf },
+    Add { path: PathBuf },
     /// View the current status of the rack repository
-    Expose,
+    Status,
     /// Commit the added files
-    Bang {
+    Commit {
         #[arg(short, long)]
         message: String,
     },
