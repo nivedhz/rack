@@ -27,4 +27,9 @@ pub enum Commands {
     },
     /// Set a config value
     Config { key: String, value: String },
+    /// Logs the commits
+    Log {
+        #[arg(long)]
+        oneline: bool,
+    },
 }

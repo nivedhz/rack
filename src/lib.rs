@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::commands::{add, commit, config, new, status};
+use crate::commands::{add, commit, config, log, new, status};
 
 mod args;
 mod commands;
@@ -23,6 +23,8 @@ pub fn run() -> Result<()> {
         args::Commands::Commit { message } => commit::run(message)?,
         // rack config <key> <value>
         args::Commands::Config { key, value } => config::run(key, value)?,
+        // rack log <--oneline>
+        args::Commands::Log { oneline } => log::run(oneline)?,
     }
     Ok(())
 }
