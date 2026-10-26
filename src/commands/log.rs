@@ -47,7 +47,7 @@ pub fn run(oneline: bool) -> Result<()> {
                 let commit_message = format!("commit {}", curr_head_commit);
                 println!(
                     "{}\nAuthor: {} <{}>\nDate: {}\n\n    {}",
-                    commit_message.green(),
+                    commit_message.truecolor(68, 146, 80),
                     curr_commit_author,
                     curr_commit_email,
                     curr_commit_time_stamp
