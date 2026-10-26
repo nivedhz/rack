@@ -1,4 +1,4 @@
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, Local};
 use colored::Colorize;
 use itertools::Itertools;
 use std::fs;
@@ -43,7 +43,7 @@ pub fn run(oneline: bool) -> Result<()> {
                 DateTime::from_timestamp_millis(curr_commit_time_stamp)
             {
                 let fixed_time_offset =
-                    FixedOffset::east_opt(19800).context("fatal: could not parse offset")?;
+                    get_device_time_offset().context("fatal: could not get device offset")?;
                 let commit_message = format!("commit {}", curr_head_commit);
                 println!(
                     "{}\nAuthor: {} <{}>\nDate: {}\n\n    {}",
@@ -69,4 +69,9 @@ pub fn run(oneline: bool) -> Result<()> {
         curr_head_commit = curr_commit_hash.to_string();
     }
     Ok(())
+}
+
+fn get_device_time_offset() -> Option<FixedOffset> {
+    let local_time = Local::now();
+    FixedOffset::east_opt(local_time.offset().local_minus_utc())
 }
