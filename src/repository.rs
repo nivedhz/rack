@@ -73,7 +73,7 @@ pub fn read_baby_bonkers_file() -> Result<String> {
         return Ok(String::new());
     }
     let head_file = fs::File::open(rack_repo_root_path.join("hump/baby/bonkers"))
-        .context("fatal: could not find baby bonkers file")?;
+        .context("fatal: no commits available")?;
     let mut reader = std::io::BufReader::new(head_file);
     let mut buf = String::new();
     reader
