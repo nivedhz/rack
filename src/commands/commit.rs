@@ -18,22 +18,18 @@ pub fn run(message: String) -> Result<()> {
 
 fn handle_commit(hash: &str, message: &str, has_head: bool) -> Result<()> {
     let prev_commit_hash = repository::read_baby_bonkers_file()?;
+    let curr_file_entries = repository::read_panty_list_file()?;
+    if curr_file_entries.is_empty() {
+        println!("use rack insert <file> to insert a file");
+        bail!("fatal: no file inserted");
+    }
     if has_head {
-        let prev_commit_entry: Vec<String> = get_prev_commit_entry(prev_commit_hash.trim())?
-            .trim()
-            .lines()
-            .map(String::from)
-            .collect();
-        let curr_file_entry = repository::read_panty_list_file()?;
-        if curr_file_entry.is_empty() {
-            println!("use rack insert <file> to insert a file");
-            bail!("fatal: no file inserted");
-        }
-        let diff_entries = get_diff_entries(&prev_commit_entry, &curr_file_entry)?;
-        create_commit_entry_with_head(&diff_entries.join("\n"), message, hash, &prev_commit_hash)?;
+        let prev_file_entries: Vec<String> = get_prev_commit_entry(prev_commit_hash.trim())?;
+        let diff_entries = get_diff_entries(&prev_file_entries, &curr_file_entries)?;
+        create_commit_entry_with_head(diff_entries, message, hash, &prev_commit_hash)?;
     } else {
         create_commit_dir().context("fatal: could not create commit dir")?;
-        create_headless_commit_entry(hash, message)
+        create_headless_commit_entry(hash, message, curr_file_entries)
             .context("fatal: could not create commit entry")?;
     }
     write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
@@ -50,39 +46,33 @@ fn create_commit_dir() -> Result<()> {
 }
 
 fn create_commit_entry_with_head(
-    diffed_entry: &str,
+    diffed_entry: Vec<String>,
     message: &str,
     hash: &str,
     prev_commit_hash: &str,
 ) -> Result<()> {
-    let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
-    let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
-    fs::create_dir_all(&entry_dir_path).context("fatal: could not create commit entry")?;
-    let mut entry_file = fs::File::options()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open(entry_dir_path.join(&hash[2..]))?;
     let user_detais = repository::get_user_details()?;
-    if let Some(user_name) = user_detais.name
+    if let Some(username) = user_detais.name
         && let Some(user_email) = user_detais.email
     {
-        let author_name = user_name;
-        let author_email = user_email;
-        let commit_timestamp = get_current_time();
+        let rack_dir_path =
+            repository::find_rack_dir().context("fatal: could not find rack dir")?;
+        let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
+        fs::create_dir_all(&entry_dir_path).context("fatal: could not create commit entry")?;
+        let mut entry_file = fs::File::options()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(entry_dir_path.join(&hash[2..]))?;
+        let commit_entry = get_commit_entry(
+            Some(prev_commit_hash),
+            message,
+            &username,
+            &user_email,
+            diffed_entry,
+        )?;
         entry_file
-            .write_all(
-                format!(
-                    "{}\0{}\0{}\0{}\0{}\0\n{}",
-                    prev_commit_hash,
-                    message,
-                    author_name,
-                    author_email,
-                    commit_timestamp,
-                    diffed_entry
-                )
-                .as_bytes(),
-            )
+            .write_all(commit_entry.as_bytes())
             .context("fatal: could not write commit entry")?;
         Ok(())
     } else {
@@ -91,50 +81,57 @@ fn create_commit_entry_with_head(
     }
 }
 
-fn create_headless_commit_entry(hash: &str, message: &str) -> Result<()> {
-    let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
-    let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
-    fs::create_dir_all(&entry_dir_path).context("fatal: could not create commit entry")?;
-    let mut entry_file = fs::File::options()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open(entry_dir_path.join(&hash[2..]))?;
-    let commit_entry = get_commit_entry(message)?;
-    entry_file
-        .write_all(commit_entry.as_bytes())
-        .context("fatal: could not write commit entry")?;
-
-    Ok(())
-}
-
-// Header: <prev head hash>0x20<message>0x20<author name>0x20<author email>0x20<commit timestamp>\n
-// Body: <panty-list entries joined by \n>
-fn get_commit_entry(message: &str) -> Result<String> {
-    let panty_list_entries =
-        repository::read_panty_list_file().context("fatal: could not read panty list")?;
-    if panty_list_entries.is_empty() {
-        println!("use rack insert <file> to insert a file");
-        bail!("fatal: no file inserted");
-    }
-    let user_detais = repository::get_user_details()?;
-    if let Some(user_name) = user_detais.name
-        && let Some(user_email) = user_detais.email
+fn create_headless_commit_entry(
+    hash: &str,
+    message: &str,
+    curr_file_entries: Vec<String>,
+) -> Result<()> {
+    let user_details = repository::get_user_details()?;
+    if let Some(username) = user_details.name
+        && let Some(user_email) = user_details.email
     {
-        let commit_timestamp = get_current_time();
-        let commit_entry = format!(
-            "\0{}\0{}\0{}\0{}\0\n{}",
-            message,
-            user_name,
-            user_email,
-            commit_timestamp,
-            panty_list_entries.join("\n").as_str()
-        );
-        Ok(commit_entry)
+        let rack_dir_path =
+            repository::find_rack_dir().context("fatal: could not find rack dir")?;
+        let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
+        fs::create_dir_all(&entry_dir_path).context("fatal: could not create commit entry")?;
+        let mut entry_file = fs::File::options()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(entry_dir_path.join(&hash[2..]))?;
+        let commit_entry =
+            get_commit_entry(None, message, &username, &user_email, curr_file_entries)?;
+        entry_file
+            .write_all(commit_entry.as_bytes())
+            .context("fatal: could not write commit entry")?;
     } else {
         println!("use rack config <key> <value> to set user details");
         bail!("fatal: user details not found");
     }
+    Ok(())
+}
+
+fn get_commit_entry(
+    prev_commit_hash: Option<&str>,
+    message: &str,
+    username: &str,
+    user_email: &str,
+    entries: Vec<String>,
+) -> Result<String> {
+    let commit_timestamp = get_current_time();
+    // Header: <prev head hash>0x20<message>0x20<author name>0x20<author email>0x20<commit timestamp>\n
+    // Body: <panty-list entries joined by \n>
+    let commit_entry = format!(
+        "{}\0{}\0{}\0{}\0{}\0\n{}",
+        prev_commit_hash.unwrap_or_default().trim(),
+        message,
+        username,
+        user_email,
+        commit_timestamp,
+        entries.join("\n").as_str()
+    );
+
+    Ok(commit_entry)
 }
 
 fn write_baby_bonkers_file(hash: &str) -> Result<()> {
@@ -159,7 +156,7 @@ fn empty_panty_list() -> Result<()> {
     Ok(())
 }
 
-fn get_prev_commit_entry(hash: &str) -> Result<String> {
+fn get_prev_commit_entry(hash: &str) -> Result<Vec<String>> {
     let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
     let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
     let entry_file = fs::File::open(entry_dir_path.join(&hash[2..]))
@@ -169,9 +166,11 @@ fn get_prev_commit_entry(hash: &str) -> Result<String> {
     reader.read_to_string(&mut buf)?;
     let entries: Vec<String> = buf.split("\0").map(String::from).collect();
     if let Some(commit_file_entry) = entries.last() {
-        return Ok(commit_file_entry.to_string());
+        let commit_file_entry: Vec<String> =
+            commit_file_entry.trim().lines().map(String::from).collect();
+        return Ok(commit_file_entry);
     };
-    Ok(String::new())
+    Ok(Vec::new())
 }
 fn get_diff_entries(prev_entries: &Vec<String>, curr_entries: &Vec<String>) -> Result<Vec<String>> {
     let mut result: HashMap<String, (Option<String>, Option<String>)> = HashMap::new();
