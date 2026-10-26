@@ -1,7 +1,7 @@
 use crate::{constants::DIR_PATH, hasher, repository};
 use anyhow::{Context, Result, bail};
 use std::{
-    fs::{self},
+    fs,
     io::Write,
     os::unix::fs::MetadataExt,
     path::{Path, PathBuf},

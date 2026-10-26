@@ -1,8 +1,8 @@
 use crate::constants::DIR_PATH;
 use anyhow::{Context, Result};
 use std::{
-    env,
-    fs::{self, File},
+    env, fs,
+    fs::File,
     io::Write,
     path::{Path, PathBuf, absolute},
 };
