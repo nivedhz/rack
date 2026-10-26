@@ -44,14 +44,15 @@ pub fn run(oneline: bool) -> Result<()> {
             {
                 let fixed_time_offset =
                     FixedOffset::east_opt(19800).context("fatal: could not parse offset")?;
-                let local_datetime = curr_commit_time_stamp.with_timezone(&fixed_time_offset);
                 let commit_message = format!("commit {}", curr_head_commit);
                 println!(
                     "{}\nAuthor: {} <{}>\nDate: {}\n\n    {}",
                     commit_message.green(),
                     curr_commit_author,
                     curr_commit_email,
-                    local_datetime.format("%a %b %d %H:%M:%S %Y %z"),
+                    curr_commit_time_stamp
+                        .with_timezone(&fixed_time_offset)
+                        .format("%a %b %d %H:%M:%S %Y %z"),
                     curr_commit_message,
                 );
             } else {
