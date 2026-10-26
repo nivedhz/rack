@@ -23,17 +23,40 @@ fn handle_commit(hash: &str, message: &str, has_head: bool) -> Result<()> {
         println!("use rack insert <file> to insert a file");
         bail!("fatal: no file inserted");
     }
-    if has_head {
-        let prev_file_entries: Vec<String> = get_prev_commit_entry(prev_commit_hash.trim())?;
-        let diff_entries = get_diff_entries(&prev_file_entries, &curr_file_entries)?;
-        create_commit_entry_with_head(diff_entries, message, hash, &prev_commit_hash)?;
-    } else {
-        create_commit_dir().context("fatal: could not create commit dir")?;
-        create_headless_commit_entry(hash, message, curr_file_entries)
+
+    let user_detais = repository::get_user_details()?;
+    if let Some(username) = user_detais.name
+        && let Some(user_email) = user_detais.email
+    {
+        if has_head {
+            let prev_file_entries: Vec<String> = get_prev_commit_entry(prev_commit_hash.trim())?;
+            let diffed_entries = get_diff_entries(&prev_file_entries, &curr_file_entries)?;
+            create_commit_entry(
+                diffed_entries,
+                message,
+                hash,
+                Some(&prev_commit_hash),
+                &username,
+                &user_email,
+            )?;
+        } else {
+            create_commit_dir().context("fatal: could not create commit dir")?;
+            create_commit_entry(
+                curr_file_entries,
+                message,
+                hash,
+                None,
+                &username,
+                &user_email,
+            )
             .context("fatal: could not create commit entry")?;
+        }
+        write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
+        empty_panty_list().context("fatal: could not empty panty list")?;
+    } else {
+        println!("use rack config <key> <value> to set user details");
+        bail!("fatal: user details not found");
     }
-    write_baby_bonkers_file(hash).context("fatal: could not write baby bonkers file")?;
-    empty_panty_list().context("fatal: could not empty panty list")?;
 
     Ok(())
 }
@@ -45,69 +68,32 @@ fn create_commit_dir() -> Result<()> {
     Ok(())
 }
 
-fn create_commit_entry_with_head(
-    diffed_entry: Vec<String>,
+fn create_commit_entry(
+    diffed_entries: Vec<String>,
     message: &str,
     hash: &str,
-    prev_commit_hash: &str,
+    prev_commit_hash: Option<&str>,
+    username: &str,
+    user_email: &str,
 ) -> Result<()> {
-    let user_detais = repository::get_user_details()?;
-    if let Some(username) = user_detais.name
-        && let Some(user_email) = user_detais.email
-    {
-        let rack_dir_path =
-            repository::find_rack_dir().context("fatal: could not find rack dir")?;
-        let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
-        fs::create_dir_all(&entry_dir_path).context("fatal: could not create commit entry")?;
-        let mut entry_file = fs::File::options()
-            .create(true)
-            .write(true)
-            .truncate(true)
-            .open(entry_dir_path.join(&hash[2..]))?;
-        let commit_entry = get_commit_entry(
-            Some(prev_commit_hash),
-            message,
-            &username,
-            &user_email,
-            diffed_entry,
-        )?;
-        entry_file
-            .write_all(commit_entry.as_bytes())
-            .context("fatal: could not write commit entry")?;
-        Ok(())
-    } else {
-        println!("use rack config <key> <value> to set user details");
-        bail!("fatal: user details not found");
-    }
-}
-
-fn create_headless_commit_entry(
-    hash: &str,
-    message: &str,
-    curr_file_entries: Vec<String>,
-) -> Result<()> {
-    let user_details = repository::get_user_details()?;
-    if let Some(username) = user_details.name
-        && let Some(user_email) = user_details.email
-    {
-        let rack_dir_path =
-            repository::find_rack_dir().context("fatal: could not find rack dir")?;
-        let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
-        fs::create_dir_all(&entry_dir_path).context("fatal: could not create commit entry")?;
-        let mut entry_file = fs::File::options()
-            .create(true)
-            .write(true)
-            .truncate(true)
-            .open(entry_dir_path.join(&hash[2..]))?;
-        let commit_entry =
-            get_commit_entry(None, message, &username, &user_email, curr_file_entries)?;
-        entry_file
-            .write_all(commit_entry.as_bytes())
-            .context("fatal: could not write commit entry")?;
-    } else {
-        println!("use rack config <key> <value> to set user details");
-        bail!("fatal: user details not found");
-    }
+    let rack_dir_path = repository::find_rack_dir().context("fatal: could not find rack dir")?;
+    let entry_dir_path = rack_dir_path.join("commit").join(&hash[..2]);
+    fs::create_dir_all(&entry_dir_path).context("fatal: could not create commit entry")?;
+    let mut entry_file = fs::File::options()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(entry_dir_path.join(&hash[2..]))?;
+    let commit_entry = get_commit_entry(
+        prev_commit_hash,
+        message,
+        username,
+        user_email,
+        diffed_entries,
+    )?;
+    entry_file
+        .write_all(commit_entry.as_bytes())
+        .context("fatal: could not write commit entry")?;
     Ok(())
 }
 
