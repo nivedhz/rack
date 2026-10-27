@@ -17,9 +17,7 @@ pub enum Commands {
         dir_path: PathBuf,
     },
     /// Add file to the rack
-    Add {
-        path: PathBuf,
-    },
+    Add { path: PathBuf },
     /// View the current status of the rack repository
     Status,
     /// Commit the added files
@@ -28,13 +26,14 @@ pub enum Commands {
         message: String,
     },
     /// Set a config value
-    Config {
-        key: String,
-        value: String,
-    },
+    Config { key: String, value: String },
     /// Logs the commits
     Log {
         #[arg(long)]
         oneline: bool,
+    },
+    Diff {
+        #[arg(default_value = ".")]
+        path: PathBuf,
     },
 }
