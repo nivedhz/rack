@@ -101,7 +101,11 @@ pub fn read_head_commit_entry() -> Result<Vec<String>> {
     reader.read_to_string(&mut buf)?;
     let commit_entry: Vec<String> = buf.trim().split("\0").map(|s| s.to_string()).collect();
     if let Some(commit_file_entries) = commit_entry.last() {
-        let entries: Vec<String> = commit_file_entries.lines().map(String::from).collect();
+        let entries: Vec<String> = commit_file_entries
+            .trim()
+            .lines()
+            .map(String::from)
+            .collect();
         Ok(entries)
     } else {
         Ok(Vec::new())
