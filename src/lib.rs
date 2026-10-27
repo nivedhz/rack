@@ -14,17 +14,17 @@ pub fn run() -> Result<()> {
 
     match args.command {
         // rack init <path | .>
-        args::Commands::Init { dir_path } => new::run(dir_path)?,
+        args::Commands::Seed { dir_path } => new::run(dir_path)?,
         // rack add <file | dir>
-        args::Commands::Add { path } => add::run(path)?,
+        args::Commands::Insert { path } => add::run(path)?,
         // rack status
-        args::Commands::Status => status::run()?,
+        args::Commands::Flash => status::run()?,
         // rack commit -m <message>
-        args::Commands::Commit { message } => commit::run(message)?,
+        args::Commands::Bust { message } => commit::run(message)?,
         // rack config <key> <value>
-        args::Commands::Config { key, value } => config::run(key, value)?,
+        args::Commands::Kinks { key, value } => config::run(key, value)?,
         // rack log <--oneline>
-        args::Commands::Log { oneline } => log::run(oneline)?,
+        args::Commands::Stains { oneline } => log::run(oneline)?,
     }
     Ok(())
 }

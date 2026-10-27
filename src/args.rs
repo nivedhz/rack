@@ -12,23 +12,23 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Initilalize a new rack repository
-    Init {
+    Seed {
         #[arg(default_value = ".")]
         dir_path: PathBuf,
     },
     /// Add file to the rack
-    Add { path: PathBuf },
+    Insert { path: PathBuf },
     /// View the current status of the rack repository
-    Status,
+    Flash,
     /// Commit the added files
-    Commit {
+    Bust {
         #[arg(short, long)]
         message: String,
     },
     /// Set a config value
-    Config { key: String, value: String },
+    Kinks { key: String, value: String },
     /// Logs the commits
-    Log {
+    Stains {
         #[arg(long)]
         oneline: bool,
     },
