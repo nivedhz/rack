@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::commands::{add, commit, config, log, new, status};
+use crate::commands::{add, commit, config, init, log, status};
 
 mod args;
 mod commands;
@@ -14,7 +14,7 @@ pub fn run() -> Result<()> {
 
     match args.command {
         // rack init <path | .>
-        args::Commands::Seed { dir_path } => new::run(dir_path)?,
+        args::Commands::Seed { dir_path } => init::run(dir_path)?,
         // rack add <file | dir>
         args::Commands::Insert { path } => add::run(path)?,
         // rack status
