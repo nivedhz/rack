@@ -6,6 +6,7 @@ use std::{
 
 use anyhow::{Context, Result};
 use serde::Deserialize;
+use zstd::Decoder;
 
 use crate::constants::DIR_PATH;
 
@@ -165,3 +166,17 @@ pub fn find_file_entry_in_head(filename: &str) -> Result<String> {
     Ok(String::new())
 }
 
+pub fn get_goods_entry(hash: &str) -> Result<String> {
+    let rack_repo_path = find_rack_dir().context("fatal: could not find rack repository")?;
+    let entry_file = fs::File::options().read(true).open(
+        rack_repo_path
+            .join("goods")
+            .join(&hash[..2])
+            .join(&hash[2..]),
+    )?;
+    let mut decoder = Decoder::new(entry_file)?;
+    let mut decompressed = Vec::new();
+    decoder.read_to_end(&mut decompressed)?;
+
+    Ok(String::from_utf8_lossy(&decompressed).to_string())
+}
