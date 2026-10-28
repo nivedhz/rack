@@ -142,3 +142,26 @@ pub fn get_user_details() -> Result<UserDetails> {
 
     Ok(config.user)
 }
+
+pub fn find_file_entry_in_head(filename: &str) -> Result<String> {
+    let curr_head_hash = read_baby_bonkers_file()?;
+    let rack_repo_path = find_rack_dir().context("fatal: could not find rack repository")?;
+    let commit_entry_file = fs::File::options().read(true).open(
+        rack_repo_path
+            .join("commit")
+            .join(&curr_head_hash[..2])
+            .join(&curr_head_hash[2..]),
+    )?;
+    let mut buf = String::new();
+    let mut reader = BufReader::new(commit_entry_file);
+    reader.read_to_string(&mut buf)?;
+    let file_entries = buf.split("\0").last().unwrap_or_default().to_string();
+    for entry in file_entries.lines() {
+        let entry_file_name = entry.split_whitespace().nth(1).unwrap_or_default();
+        if entry_file_name == filename {
+            return Ok(entry.to_string());
+        }
+    }
+    Ok(String::new())
+}
+
