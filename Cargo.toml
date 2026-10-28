@@ -16,3 +16,4 @@ chrono = "0.4.45"
 serde = { version = "1.0.229", features = ["derive"] }
 toml = "1.1.8"
 itertools = "0.15.0"
+diffy = { version = "0.5.2", features = ["color"] }
