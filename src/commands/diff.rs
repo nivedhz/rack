@@ -34,7 +34,30 @@ impl FileEntry {
     }
 }
 
-fn compute_diff() -> Result<()> {
+fn print_diffed_entries(file_entry: Vec<FileEntry>) -> Result<()> {
+    for fe in file_entry {
+        let prev_file_entry = repository::find_file_entry_in_head(&fe.path.to_string_lossy())?;
+        let prev_hash = prev_file_entry
+            .split_whitespace()
+            .nth(2)
+            .unwrap_or_default();
+        let prev_goods_entry = repository::get_goods_entry(prev_hash)?;
+        let prev_file_state = prev_goods_entry.split("\0").last().unwrap_or_default();
+        let rack_repo_root_path =
+            repository::find_repo_root().context("fatal: could not find rack repository")?;
+        let curr_file = fs::File::options()
+            .read(true)
+            .open(rack_repo_root_path.join(&fe.path))?;
+        let mut curr_file_state = String::new();
+        let mut reader = BufReader::new(curr_file);
+        reader.read_to_string(&mut curr_file_state)?;
+
+        let patch = diffy::create_patch(prev_file_state, &curr_file_state);
+        let f = PatchFormatter::new().with_color();
+        println!("{}", f.fmt_patch(&patch));
+    }
+    Ok(())
+}
     let head_file_entries: Vec<FileEntry> =
         convert_from_file_entry(repository::read_head_commit_entry()?);
     let panty_list_entries: Vec<FileEntry> =
