@@ -1,17 +1,20 @@
 use std::{
     env,
     fs::{self, canonicalize},
+    io::{BufReader, Read},
     path::{Path, PathBuf},
 };
 
 use anyhow::{Context, Result};
+use diffy::PatchFormatter;
 use itertools::Itertools;
 
-use crate::{hasher::get_hash, repository};
+use crate::{hasher, repository};
 
 pub fn run(path: PathBuf) -> Result<()> {
     let _path = get_diff_path(path)?;
-    compute_diff()?;
+    let diffed_files = get_diffed_files()?;
+    print_diffed_entries(diffed_files)?;
     Ok(())
 }
 
@@ -58,6 +61,8 @@ fn print_diffed_entries(file_entry: Vec<FileEntry>) -> Result<()> {
     }
     Ok(())
 }
+
+fn get_diffed_files() -> Result<Vec<FileEntry>> {
     let head_file_entries: Vec<FileEntry> =
         convert_from_file_entry(repository::read_head_commit_entry()?);
     let panty_list_entries: Vec<FileEntry> =
@@ -66,19 +71,15 @@ fn print_diffed_entries(file_entry: Vec<FileEntry>) -> Result<()> {
     let mut common_modified_entries: Vec<FileEntry> = Vec::new();
     for entry in &head_file_entries {
         let curr_file_content = fs::read(&entry.path).context("fatal: could not read file")?;
-        let curr_file_hash = get_hash(&curr_file_content);
+        let curr_file_hash = hasher::get_hash(&curr_file_content);
         if curr_file_hash != entry.hash
             && !panty_list_entries.contains(&FileEntry::new(entry.path.clone(), curr_file_hash))
         {
             common_modified_entries.push(entry.clone());
         }
     }
-    for e in common_modified_entries {
-        println!("File Path: {:?}", e.path);
-        println!("File Hash: {:?}", e.hash)
-    }
 
-    Ok(())
+    Ok(common_modified_entries)
 }
 
 fn convert_from_file_entry(file_entry: Vec<String>) -> Vec<FileEntry> {
