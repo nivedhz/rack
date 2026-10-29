@@ -17,6 +17,7 @@ pub enum Commands {
         dir_path: PathBuf,
     },
     /// Add file to the rack
+    // TODO: accept multiple paths
     Add { path: PathBuf },
     /// View the current status of the rack repository
     Status,
