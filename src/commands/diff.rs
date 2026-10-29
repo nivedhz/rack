@@ -57,7 +57,7 @@ fn print_diffed_entries(file_entry: Vec<FileEntry>) -> Result<()> {
 
         let patch = diffy::create_patch(prev_file_state, &curr_file_state);
         let f = PatchFormatter::new().with_color();
-        println!("{}", f.fmt_patch(&patch));
+        println!("{}\n{}", fe.path.to_string_lossy(), f.fmt_patch(&patch));
     }
     Ok(())
 }
