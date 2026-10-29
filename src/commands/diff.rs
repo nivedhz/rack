@@ -12,8 +12,8 @@ use itertools::Itertools;
 use crate::{hasher, repository};
 
 pub fn run(path: PathBuf) -> Result<()> {
-    let _path = get_diff_path(path)?;
-    let diffed_files = get_diffed_files()?;
+    let path = get_diff_path(path)?;
+    let diffed_files = get_diffed_files(path)?;
     print_diffed_entries(diffed_files)?;
     Ok(())
 }
@@ -62,9 +62,21 @@ fn print_diffed_entries(file_entry: Vec<FileEntry>) -> Result<()> {
     Ok(())
 }
 
-fn get_diffed_files() -> Result<Vec<FileEntry>> {
+fn get_diffed_files(path: PathBuf) -> Result<Vec<FileEntry>> {
+    // TODO: Clean up
     let head_file_entries: Vec<FileEntry> =
-        convert_from_file_entry(repository::read_head_commit_entry()?);
+        convert_from_file_entry(repository::read_head_commit_entry()?)
+            .iter()
+            .filter_map(|e| {
+                let e_path = fs::canonicalize(e.path.clone()).unwrap_or_default();
+                let a_path = fs::canonicalize(path.clone()).unwrap_or_default();
+                if e_path.starts_with(&a_path) {
+                    Some(e.clone())
+                } else {
+                    None
+                }
+            })
+            .collect();
     let panty_list_entries: Vec<FileEntry> =
         convert_from_file_entry(repository::read_panty_list_file()?);
 
