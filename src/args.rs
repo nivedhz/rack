@@ -32,6 +32,7 @@ pub enum Commands {
         #[arg(long)]
         oneline: bool,
     },
+    /// Show the diff
     Diff {
         #[arg(default_value = ".")]
         path: PathBuf,
