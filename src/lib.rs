@@ -25,6 +25,7 @@ pub fn run() -> Result<()> {
         args::Commands::Config { key, value } => config::run(key, value)?,
         // rack log <--oneline>
         args::Commands::Log { oneline } => log::run(oneline)?,
+        // rack diff
         args::Commands::Diff { path } => diff::run(path)?,
     }
     Ok(())
