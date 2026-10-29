@@ -5,23 +5,22 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{Context, Result};
+use anyhow::Context;
 use colored::Colorize;
-use diffy::PatchFormatter;
 use itertools::Itertools;
 
 use crate::{hasher, repository};
 
 // TODO: implemented own diffing algorithm from scratch
 // The Myers Diffing algorithm looks promising
-pub fn run(path: PathBuf) -> Result<()> {
+pub fn run(path: PathBuf) -> anyhow::Result<()> {
     let path = get_diff_path(path)?;
     let diffed_files = get_diffed_files(path)?;
     print_diffed_entries(diffed_files)?;
     Ok(())
 }
 
-fn get_diff_path(path: PathBuf) -> Result<PathBuf> {
+fn get_diff_path(path: PathBuf) -> anyhow::Result<PathBuf> {
     if path == Path::new(".") {
         Ok(env::current_dir().context("fatal: could not get current directory")?)
     } else {
@@ -40,7 +39,7 @@ impl FileEntry {
     }
 }
 
-fn print_diffed_entries(file_entry: Vec<FileEntry>) -> Result<()> {
+fn print_diffed_entries(file_entry: Vec<FileEntry>) -> anyhow::Result<()> {
     for fe in file_entry {
         let prev_file_entry = repository::find_file_entry_in_head(&fe.path.to_string_lossy())?;
         let prev_hash = prev_file_entry
@@ -59,7 +58,7 @@ fn print_diffed_entries(file_entry: Vec<FileEntry>) -> Result<()> {
         reader.read_to_string(&mut curr_file_state)?;
 
         let patch = diffy::create_patch(prev_file_state, &curr_file_state);
-        let f = PatchFormatter::new().with_color();
+        let f = diffy::PatchFormatter::new().with_color();
         println!(
             "{}\n{}",
             fe.path.to_string_lossy().bold(),
@@ -69,7 +68,7 @@ fn print_diffed_entries(file_entry: Vec<FileEntry>) -> Result<()> {
     Ok(())
 }
 
-fn get_diffed_files(path: PathBuf) -> Result<Vec<FileEntry>> {
+fn get_diffed_files(path: PathBuf) -> anyhow::Result<Vec<FileEntry>> {
     let a_path = fs::canonicalize(&path).unwrap_or_default();
     let head_file_entries: Vec<FileEntry> =
         convert_from_file_entry(repository::read_head_commit_entry()?)
