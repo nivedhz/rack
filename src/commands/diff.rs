@@ -64,18 +64,13 @@ fn print_diffed_entries(file_entry: Vec<FileEntry>) -> Result<()> {
 }
 
 fn get_diffed_files(path: PathBuf) -> Result<Vec<FileEntry>> {
-    // TODO: Clean up
+    let a_path = fs::canonicalize(&path).unwrap_or_default();
     let head_file_entries: Vec<FileEntry> =
         convert_from_file_entry(repository::read_head_commit_entry()?)
-            .iter()
-            .filter_map(|e| {
-                let e_path = fs::canonicalize(e.path.clone()).unwrap_or_default();
-                let a_path = fs::canonicalize(path.clone()).unwrap_or_default();
-                if e_path.starts_with(&a_path) {
-                    Some(e.clone())
-                } else {
-                    None
-                }
+            .into_iter()
+            .filter(|e| {
+                let e_path = fs::canonicalize(&e.path).unwrap_or_default();
+                e_path.starts_with(&a_path)
             })
             .collect();
     let panty_list_entries: Vec<FileEntry> =
