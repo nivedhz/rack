@@ -71,7 +71,7 @@ fn print_diffed_entries(file_entry: Vec<FileEntry>) -> anyhow::Result<()> {
 fn get_diffed_files(path: PathBuf) -> anyhow::Result<Vec<FileEntry>> {
     let a_path = fs::canonicalize(&path).unwrap_or_default();
     let head_file_entries: Vec<FileEntry> =
-        convert_from_file_entry(repository::read_head_commit_entry()?)
+        convert_to_file_entry(repository::read_head_commit_entry()?)
             .into_iter()
             .filter(|e| {
                 let e_path = fs::canonicalize(&e.path).unwrap_or_default();
@@ -79,7 +79,7 @@ fn get_diffed_files(path: PathBuf) -> anyhow::Result<Vec<FileEntry>> {
             })
             .collect();
     let panty_list_entries: Vec<FileEntry> =
-        convert_from_file_entry(repository::read_panty_list_file()?);
+        convert_to_file_entry(repository::read_panty_list_file()?);
 
     let mut common_modified_entries: Vec<FileEntry> = Vec::new();
     for entry in &head_file_entries {
@@ -95,7 +95,7 @@ fn get_diffed_files(path: PathBuf) -> anyhow::Result<Vec<FileEntry>> {
     Ok(common_modified_entries)
 }
 
-fn convert_from_file_entry(file_entry: Vec<String>) -> Vec<FileEntry> {
+fn convert_to_file_entry(file_entry: Vec<String>) -> Vec<FileEntry> {
     file_entry
         .iter()
         .map(|s| {
