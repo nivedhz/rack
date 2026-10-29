@@ -11,6 +11,7 @@ use itertools::Itertools;
 
 use crate::{hasher, repository};
 
+// TODO: implemented own diffing algorithm from scratch
 pub fn run(path: PathBuf) -> Result<()> {
     let path = get_diff_path(path)?;
     let diffed_files = get_diffed_files(path)?;
