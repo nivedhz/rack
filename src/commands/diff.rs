@@ -48,24 +48,30 @@ fn print_diffed_entries(file_entry: Vec<FileEntry>) -> anyhow::Result<()> {
             .unwrap_or_default();
         let prev_goods_entry = repository::get_goods_entry(prev_hash)?;
         let prev_file_state = prev_goods_entry.split("\0").last().unwrap_or_default();
-        let rack_repo_root_path =
-            repository::find_repo_root().context("fatal: could not find rack repository")?;
-        let curr_file = fs::File::options()
-            .read(true)
-            .open(rack_repo_root_path.join(&fe.path))?;
-        let mut curr_file_state = String::new();
-        let mut reader = BufReader::new(curr_file);
-        reader.read_to_string(&mut curr_file_state)?;
+        let curr_file_state = read_curr_file(&fe.path)?;
 
         let patch = diffy::create_patch(prev_file_state, &curr_file_state);
-        let f = diffy::PatchFormatter::new().with_color();
+        let formatter = diffy::PatchFormatter::new().with_color();
         println!(
             "{}\n{}",
             fe.path.to_string_lossy().bold(),
-            f.fmt_patch(&patch)
+            formatter.fmt_patch(&patch)
         );
     }
     Ok(())
+}
+
+fn read_curr_file(path: &Path) -> anyhow::Result<String> {
+    let rack_repo_root_path =
+        repository::find_repo_root().context("fatal: could not find rack repository")?;
+    let curr_file = fs::File::options()
+        .read(true)
+        .open(rack_repo_root_path.join(path))
+        .context("fatal: could not read file")?;
+    let mut curr_file_state = String::new();
+    let mut reader = BufReader::new(curr_file);
+    reader.read_to_string(&mut curr_file_state)?;
+    Ok(curr_file_state)
 }
 
 fn get_diffed_files(path: PathBuf) -> anyhow::Result<Vec<FileEntry>> {
