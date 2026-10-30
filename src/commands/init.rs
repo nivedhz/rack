@@ -52,7 +52,7 @@ fn create_goods_dir(path: &Path) -> Result<()> {
 }
 fn create_rack_ignore_file(path: &Path) -> Result<()> {
     let path = path.parent().context("could not find rack repository")?;
-    const RACK_IGNORE_CONTENT: &str = "# Enter the relative or absolute paths of the files or directories you want to ignore.\n# tmp/\n# target\n# .git/";
+    const RACK_IGNORE_CONTENT: &str = "# Enter the relative or absolute paths of the files or directories you want to ignore.\ntmp/\ntarget\n.git/";
     if path.join(".rackignore").exists() {
         return Ok(());
     }
