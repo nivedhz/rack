@@ -57,11 +57,8 @@ pub fn read_panty_list_file() -> Result<Vec<String>> {
     Ok(entries)
 }
 
-pub fn read_rack_ignore(rack_dir: &Path) -> Result<Vec<String>> {
-    let rack_repo_root_path = rack_dir
-        .parent()
-        .context("fatal: could not find rack repository")?
-        .to_path_buf();
+pub fn read_rack_ignore() -> Result<Vec<String>> {
+    let rack_repo_root_path = find_repo_root().context("fatal: could not find rack repository")?;
     let value = fs::read_to_string(rack_repo_root_path.join(".rackignore")).unwrap_or_default();
     let mut entries: Vec<&str> = value.trim().lines().collect();
     entries.push(DIR_PATH);
