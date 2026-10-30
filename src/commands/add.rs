@@ -1,4 +1,4 @@
-use crate::{constants::DIR_PATH, hasher, repository};
+use crate::{hasher, repository};
 use anyhow::{Context, Result, bail};
 use std::{
     fs,
@@ -27,9 +27,17 @@ pub fn run(path: PathBuf) -> Result<()> {
 }
 fn handle_dir(path: &Path) -> Result<()> {
     let entries = fs::read_dir(path)?;
+    let rack_ignore_entries = repository::read_rack_ignore()?;
     for entry in entries {
         let entry = entry?;
         let recursive_path = entry.path();
+        if rack_ignore_entries.iter().any(|entry| {
+            let relative_path_from_root =
+                repository::get_relative_path_from_root(&recursive_path).unwrap();
+            relative_path_from_root.starts_with(entry.trim())
+        }) {
+            continue;
+        }
         if recursive_path.is_dir() {
             handle_dir(&recursive_path)?;
         } else {
@@ -42,14 +50,6 @@ fn handle_dir(path: &Path) -> Result<()> {
 }
 fn create_goods_entry(path: &Path) -> Result<()> {
     let rack_repo_dir = repository::find_rack_dir().context("fatal: not in a rack repository")?;
-    let relative_path_from_root = repository::get_relative_path_from_root(path)?;
-    let rack_ignore_entries = repository::read_rack_ignore(&rack_repo_dir)?;
-    if rack_ignore_entries
-        .iter()
-        .any(|entry| relative_path_from_root.starts_with(entry.trim()))
-    {
-        return Ok(());
-    }
     let file_content = fs::read(path)?;
     let hash = hasher::get_hash(&file_content);
     let (dir_name, file_name) = hash.split_at(2);
@@ -74,14 +74,15 @@ fn create_goods_entry(path: &Path) -> Result<()> {
 }
 
 fn create_panty_list_entry(path: &Path) -> Result<()> {
-    let rack_repo_root_path =
-        repository::find_repo_root().context("fatal: could not find rack repository")?;
     let relative_path_from_root = repository::get_relative_path_from_root(path)?;
-    let rack_ignore_entries = repository::read_rack_ignore(&rack_repo_root_path.join(DIR_PATH))?;
-    if rack_ignore_entries
-        .iter()
-        .any(|entry| relative_path_from_root.starts_with(entry.trim()))
-    {
+    let head_commit_entries = repository::read_head_commit_entry()?;
+
+    if head_commit_entries.iter().any(|entry| {
+        let filename = entry.split_whitespace().nth(1).unwrap_or_default();
+        let file_hash = entry.split_whitespace().nth(2).unwrap_or_default();
+        relative_path_from_root == Path::new(filename)
+            && hasher::get_hash(&fs::read(path).unwrap()) == file_hash
+    }) {
         return Ok(());
     }
 
@@ -109,8 +110,8 @@ fn create_panty_list_entry(path: &Path) -> Result<()> {
     let panty_list_entries = repository::read_panty_list_file()?;
     for entry in &panty_list_entries {
         let (entry_file_hash, entry_file_name) = get_file_details(entry);
-        if Path::new(entry_file_name) == path {
-            if entry_file_hash == hash {
+        if Path::new(entry_file_name) == relative_path_from_root {
+            if entry_file_hash != hash {
                 println!("info: file {} already added", entry_file_name);
                 return Ok(());
             } else {
