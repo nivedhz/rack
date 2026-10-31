@@ -38,4 +38,6 @@ pub enum Commands {
         #[arg(default_value = ".")]
         path: PathBuf,
     },
+    /// Restore a file
+    Restore { path: PathBuf },
 }
