@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::commands::{add, commit, config, diff, init, log, status};
+use crate::commands::{add, commit, config, diff, init, log, restore, status};
 
 mod args;
 mod commands;
@@ -27,6 +27,8 @@ pub fn run() -> Result<()> {
         args::Commands::Log { oneline } => log::run(oneline)?,
         // rack diff
         args::Commands::Diff { path } => diff::run(path)?,
+        // rack restore <path>
+        args::Commands::Restore { path } => restore::run(path)?,
     }
     Ok(())
 }
