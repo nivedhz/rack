@@ -38,8 +38,8 @@ fn create_rack_dir(path: &Path) -> Result<()> {
     Ok(())
 }
 fn create_baby_file(path: &Path) -> Result<()> {
-    let mut file = File::create(path.join("BABY"))?;
-    file.write_all(b"hump: hump/baby/bonkers")?;
+    let mut f = File::create(path.join("BABY"))?;
+    f.write_all(b"hump: hump/baby/bonkers")?;
     Ok(())
 }
 fn create_hump_dir(path: &Path) -> Result<()> {
@@ -51,13 +51,13 @@ fn create_goods_dir(path: &Path) -> Result<()> {
     Ok(())
 }
 fn create_rack_ignore_file(path: &Path) -> Result<()> {
-    let path = path.parent().context("could not find rack repository")?;
+    let p = path.parent().context("could not find rack repository")?;
     const RACK_IGNORE_CONTENT: &str = "# Enter the relative or absolute paths of the files or directories you want to ignore.\ntmp/\ntarget\n.git/";
-    if path.join(".rackignore").exists() {
+    if p.join(".rackignore").exists() {
         return Ok(());
     }
-    let mut file = File::create(path.join(".rackignore"))?;
-    file.write_all(RACK_IGNORE_CONTENT.as_bytes())?;
+    let mut f = File::create(p.join(".rackignore"))?;
+    f.write_all(RACK_IGNORE_CONTENT.as_bytes())?;
     Ok(())
 }
 fn create_rack_config_file(path: &Path) -> Result<()> {
