@@ -9,11 +9,6 @@ use std::{
 
 pub fn run(path: PathBuf) -> Result<()> {
     let rack_dir = repository::find_rack_dir().context("fatal: could not find rack repository")?;
-    if let Some(path_string) = path.to_str()
-        && path_string.trim().is_empty()
-    {
-        bail!("fatal: empty path")
-    }
     if !rack_dir.exists() {
         bail!("fatal: not a rack repository")
     }
@@ -31,11 +26,13 @@ fn handle_dir(path: &Path) -> Result<()> {
     for entry in entries {
         let entry = entry?;
         let recursive_path = entry.path();
-        if rack_ignore_entries.iter().any(|entry| {
+
+        let is_path_ignored = rack_ignore_entries.iter().any(|ignore_entry| {
             let relative_path_from_root =
                 repository::get_relative_path_from_root(&recursive_path).unwrap();
-            relative_path_from_root.starts_with(entry.trim())
-        }) {
+            relative_path_from_root.starts_with(ignore_entry.trim())
+        });
+        if is_path_ignored {
             continue;
         }
         if recursive_path.is_dir() {
