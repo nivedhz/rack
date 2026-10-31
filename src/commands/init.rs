@@ -1,10 +1,10 @@
 use crate::constants::DIR_PATH;
 use anyhow::{Context, Result};
 use std::{
-    env, fs,
-    fs::File,
+    env,
+    fs::{self, File, canonicalize},
     io::Write,
-    path::{Path, PathBuf, absolute},
+    path::{Path, PathBuf},
 };
 
 pub fn run(dir_path: PathBuf) -> Result<()> {
@@ -23,7 +23,7 @@ fn get_current_dir_path(dir_path: PathBuf) -> Result<PathBuf> {
     if dir_path == Path::new(".") {
         Ok(env::current_dir()?)
     } else {
-        Ok(absolute(dir_path)?)
+        Ok(canonicalize(dir_path)?)
     }
 }
 fn create_rack_dir(path: &Path) -> Result<()> {
