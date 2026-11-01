@@ -1,7 +1,7 @@
-use crate::constants::LONG_ABOUT;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
+const LONG_ABOUT: &str = "A dirtier version of git which is sure to get you fired.";
 #[derive(Parser)]
 #[command(author, version, about, long_about = LONG_ABOUT)]
 pub struct Cli {
