@@ -4,3 +4,4 @@ pub mod object;
 pub mod object_id;
 pub mod repo_path;
 pub mod timestamp;
+pub mod user;
