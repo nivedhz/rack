@@ -1,13 +1,11 @@
 use std::path::PathBuf;
 
-use anyhow::Result;
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct RepoPath(PathBuf);
 
 impl RepoPath {
-    pub fn new(path: impl Into<PathBuf>) -> Result<Self> {
-        Ok(Self(path.into()))
+    pub fn new(path: impl Into<PathBuf>) -> Self {
+        Self(path.into())
     }
     pub fn as_path(&self) -> &PathBuf {
         &self.0
