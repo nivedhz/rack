@@ -4,5 +4,7 @@ pub enum Error {
     NotARepository,
     #[error("fatal: {path} {src}")]
     IO { path: String, src: String },
+    #[error("fatal: missing config\nuse 'rack config <key> <value>' to set a config value")]
+    MissingConfig,
 }
 pub type Result<T> = std::result::Result<T, Error>;
