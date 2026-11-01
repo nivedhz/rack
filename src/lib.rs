@@ -8,6 +8,7 @@ mod commands;
 mod constants;
 mod error;
 mod hasher;
+mod output;
 mod repository;
 
 pub fn run() -> Result<()> {
