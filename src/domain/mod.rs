@@ -1,4 +1,5 @@
 pub mod commit;
+pub mod ignore;
 pub mod index;
 pub mod object;
 pub mod object_id;
