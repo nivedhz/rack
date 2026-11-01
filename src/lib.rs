@@ -6,6 +6,7 @@ use crate::commands::{add, commit, config, diff, init, log, restore, status};
 mod cli;
 mod commands;
 mod constants;
+mod error;
 mod hasher;
 mod repository;
 
