@@ -11,6 +11,7 @@ mod error;
 mod hasher;
 mod output;
 mod repository;
+mod storage;
 
 pub fn run() -> Result<()> {
     let args = cli::Cli::parse();
