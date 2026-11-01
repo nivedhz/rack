@@ -12,8 +12,9 @@ impl std::fmt::Display for ObjectId {
 impl std::str::FromStr for ObjectId {
     type Err = std::string::ParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let bytes = hex::decode(s).unwrap();
-        Ok(ObjectId(bytes.try_into().unwrap()))
+        let bytes = hex::decode(s).unwrap_or_default();
+        let bytes: [u8; 32] = bytes.try_into().unwrap_or_default();
+        Ok(ObjectId(bytes))
     }
 }
 impl ObjectId {
