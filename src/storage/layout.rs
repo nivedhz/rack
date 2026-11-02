@@ -45,3 +45,6 @@ pub fn objects_dir(root: &Path) -> PathBuf {
 pub fn commits_dir(root: &Path) -> PathBuf {
     rack_dir(root).join("commits")
 }
+pub fn config(root: &Path) -> PathBuf {
+    rack_dir(root).join("config.toml")
+}
