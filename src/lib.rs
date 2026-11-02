@@ -9,7 +9,6 @@ mod constants;
 mod domain;
 mod error;
 mod hasher;
-mod output;
 mod repository;
 mod storage;
 
