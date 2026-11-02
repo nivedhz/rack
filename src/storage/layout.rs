@@ -14,7 +14,8 @@ pub fn index(root: &Path) -> PathBuf {
 }
 /// Get the current rack head path
 pub fn head(root: &Path) -> PathBuf {
-    rack_dir(root).join("hump").join("baby").join("bonkers")
+    rack_dir(root).join("hump").join("baby")
+}
 }
 /// Get the current rack ignore file
 pub fn ignore_file(root: &Path) -> PathBuf {
