@@ -7,7 +7,7 @@ pub fn rack_dir(root: &Path) -> PathBuf {
     root.join(RACK_DIR)
 }
 /// Get the current rack panty-list index file path
-pub fn _index(root: &Path) -> PathBuf {
+pub fn index(root: &Path) -> PathBuf {
     rack_dir(root).join("panty-list")
 }
 /// Get the current rack head path
@@ -26,7 +26,7 @@ pub fn objects_dir(root: &Path) -> PathBuf {
     rack_dir(root).join("goods")
 }
 /// Get the commit directory path in the current rack repository
-pub fn _commits_dir(root: &Path) -> PathBuf {
+pub fn commits_dir(root: &Path) -> PathBuf {
     rack_dir(root).join("commits")
 }
 pub fn config(root: &Path) -> PathBuf {
