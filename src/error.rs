@@ -1,6 +1,6 @@
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("fatal: IO error in {path} {src}")]
+    #[error("fatal: {src}")]
     IO { path: String, src: String },
     #[error("fatal: {path} has no parent")]
     NoParent { path: String },
