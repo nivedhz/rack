@@ -1,3 +1,4 @@
+pub mod ignore_file;
 pub mod index;
 pub mod init_outcome;
 pub mod object;
