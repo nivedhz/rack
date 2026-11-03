@@ -2,10 +2,8 @@
 pub enum Error {
     #[error("fatal: IO error in {path} {src}")]
     IO { path: String, src: String },
-    #[error("fatal: not a directory")]
-    NotADir,
-    #[error("fatal: path has no parent")]
-    NoParent,
+    #[error("fatal: {path} has no parent")]
+    NoParent { path: String },
     #[error("fatal: not a rack repository (or any parent up to mount point /)")]
     NotInRackRepo,
 }
