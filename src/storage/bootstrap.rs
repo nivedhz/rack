@@ -1,27 +1,45 @@
-use std::{fs, path::Path};
+use std::{env, fs, path::Path};
 
 use crate::{
+    domain::repository::Repository,
     error::Result,
     storage::{fsutil, layout},
 };
 
-pub fn initialize(root: &Path) -> Result<()> {
-    if root.is_dir() {
-        ensure_created(root)?;
-        seed_files(root)?;
-        return Ok(());
+pub enum InitStatus {
+    Initialized,
+    Reinitialized,
+}
+pub struct InitOutcome {
+    pub repository: Repository,
+    pub status: InitStatus,
+}
+
+pub fn initialize(root: &Path) -> Result<InitOutcome> {
+    let target = env::current_dir()?.join(root);
+    let root = fs::canonicalize(&target)?;
+
+    if root.is_dir() && layout::rack_dir(&root).is_dir() && layout::rack_dir(&root).exists() {
+        ensure_created(&root)?;
+        seed_files(&root)?;
+        return Ok(InitOutcome {
+            repository: Repository::new(root.to_path_buf()),
+            status: InitStatus::Reinitialized,
+        });
     }
 
-    let temp = tempfile::TempDir::new_in(root)?;
+    let temp = tempfile::TempDir::new_in(&root)?;
     ensure_created(temp.path())?;
     let tmp_path = temp.keep();
-    if let Err(e) = fs::rename(&tmp_path, layout::rack_dir(root)) {
+    if let Err(e) = fs::rename(&tmp_path, layout::rack_dir(&root)) {
         fs::remove_dir_all(tmp_path)?;
-        println!("Error: {}", e);
         return Err(e.into());
     }
-    seed_files(root)?;
-    Ok(())
+    seed_files(&root)?;
+    Ok(InitOutcome {
+        repository: Repository::new(root.to_path_buf()),
+        status: InitStatus::Initialized,
+    })
 }
 
 fn ensure_created(root: &Path) -> Result<()> {
