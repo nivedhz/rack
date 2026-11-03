@@ -1,11 +1,23 @@
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("{path} {src}")]
+    #[error("fatal: IO error in {path} {src}")]
     IO { path: String, src: String },
+    #[error("fatal: not a directory")]
+    NotADir,
+    #[error("fatal: path has no parent")]
+    NoParent,
 }
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
+        Error::IO {
+            path: err.to_string(),
+            src: err.to_string(),
+        }
+    }
+}
+impl From<&str> for Error {
+    fn from(err: &str) -> Self {
         Error::IO {
             path: err.to_string(),
             src: err.to_string(),
