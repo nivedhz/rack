@@ -19,12 +19,12 @@ impl Repository {
     pub fn discover(root: PathBuf) -> Result<Self> {
         let curr_path = env::current_dir()?.join(root);
         for ancestor in curr_path.ancestors() {
+            let rack_path = layout::rack_dir(ancestor);
+            if rack_path.exists() && rack_path.is_dir() {
+                return Ok(Repository::new(ancestor.to_path_buf()));
+            }
             if ancestor == Path::new("/") {
                 return Err(error::Error::NotInRackRepo);
-            }
-            let path = layout::rack_dir(ancestor);
-            if path.exists() && path.is_dir() {
-                return Ok(Repository::new(path.to_path_buf()));
             }
         }
         Err(error::Error::NotInRackRepo)
