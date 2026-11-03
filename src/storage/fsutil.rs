@@ -23,7 +23,9 @@ pub fn write_new(path: &Path, content: &str) -> Result<()> {
     }
 }
 pub fn write_atomic(path: &Path, data: &[u8]) -> Result<()> {
-    let mut f = tempfile::NamedTempFile::new_in(path.parent().ok_or(Error::NoParent)?)?;
+    let mut f = tempfile::NamedTempFile::new_in(path.parent().ok_or(Error::NoParent {
+        path: path.display().to_string(),
+    })?)?;
     f.write_all(data)?;
     f.as_file().sync_all()?;
     f.persist(path)?;
