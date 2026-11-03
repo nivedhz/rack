@@ -1,6 +1,6 @@
 use std::{fs, io::Write, path::Path};
 
-use crate::error::Result;
+use crate::error::{Error, Result};
 
 pub fn write_new(path: &Path, content: &str) -> Result<()> {
     match fs::File::options()
@@ -21,4 +21,11 @@ pub fn write_new(path: &Path, content: &str) -> Result<()> {
             }
         }
     }
+}
+pub fn write_atomic(path: &Path, data: &[u8]) -> Result<()> {
+    let mut f = tempfile::NamedTempFile::new_in(path.parent().ok_or(Error::NoParent)?)?;
+    f.write_all(data)?;
+    f.as_file().sync_all()?;
+    f.persist(path)?;
+    Ok(())
 }
