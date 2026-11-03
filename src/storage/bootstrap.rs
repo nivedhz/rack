@@ -1,3 +1,4 @@
+use crate::domain::init_outcome::{InitOutcome, InitStatus};
 use std::{env, fs, path::Path};
 
 use crate::{
@@ -6,20 +7,11 @@ use crate::{
     storage::{fsutil, layout},
 };
 
-pub enum InitStatus {
-    Initialized,
-    Reinitialized,
-}
-pub struct InitOutcome {
-    pub repository: Repository,
-    pub status: InitStatus,
-}
-
 pub fn initialize(root: &Path) -> Result<InitOutcome> {
     let target = env::current_dir()?.join(root);
     let root = fs::canonicalize(&target)?;
 
-    if root.is_dir() && layout::rack_dir(&root).is_dir() && layout::rack_dir(&root).exists() {
+    if root.is_dir() && layout::rack_dir(&root).exists() {
         ensure_created(&root)?;
         seed_files(&root)?;
         return Ok(InitOutcome {
@@ -28,13 +20,15 @@ pub fn initialize(root: &Path) -> Result<InitOutcome> {
         });
     }
 
-    let temp = tempfile::TempDir::new_in(&root)?;
-    ensure_created(temp.path())?;
-    let tmp_path = temp.keep();
+    let tmp = tempfile::TempDir::new_in(&root)?;
+    ensure_created(tmp.path())?;
+    let tmp_path = tmp.keep();
+
     if let Err(e) = fs::rename(&tmp_path, layout::rack_dir(&root)) {
         fs::remove_dir_all(tmp_path)?;
         return Err(e.into());
     }
+
     seed_files(&root)?;
     Ok(InitOutcome {
         repository: Repository::new(root.to_path_buf()),
@@ -44,9 +38,9 @@ pub fn initialize(root: &Path) -> Result<InitOutcome> {
 
 fn ensure_created(root: &Path) -> Result<()> {
     fs::create_dir_all(layout::rack_dir(root))?;
-    fs::File::create(layout::baby(root))?;
     fs::create_dir_all(layout::head(root))?;
     fs::create_dir_all(layout::objects_dir(root))?;
+    fs::File::create(layout::baby(root))?;
     fs::File::create(layout::ignore_file(root))?;
     fs::File::create(layout::config(root))?;
     Ok(())
