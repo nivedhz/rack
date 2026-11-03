@@ -6,6 +6,8 @@ pub enum Error {
     NoParent { path: String },
     #[error("fatal: not a rack repository (or any parent up to mount point /)")]
     NotInRackRepo,
+    #[error("fatal: path '{path}' did not match any files")]
+    PathNotFound { path: String },
 }
 
 impl From<std::io::Error> for Error {
