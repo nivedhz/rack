@@ -26,6 +26,14 @@ impl From<&str> for Error {
         }
     }
 }
+impl From<std::path::StripPrefixError> for Error {
+    fn from(err: std::path::StripPrefixError) -> Self {
+        Error::IO {
+            path: err.to_string(),
+            src: err.to_string(),
+        }
+    }
+}
 impl From<tempfile::PersistError> for Error {
     fn from(err: tempfile::PersistError) -> Self {
         Error::IO {
