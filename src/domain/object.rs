@@ -16,9 +16,11 @@ impl std::fmt::Display for ObjectType {
 
 #[derive(Debug)]
 pub struct Object {
-    hash: ObjectId,
-    object_type: ObjectType,
-    data: Vec<u8>,
+    pub id: ObjectId,
+    pub object_type: ObjectType,
+    pub data: Vec<u8>,
+}
+
 impl Object {
     pub fn new(id: ObjectId, object_type: ObjectType, data: Vec<u8>) -> Result<Self> {
         let data = zstd::encode_all(&data[..], DEFAULT_COMPRESSION_LEVEL)?;
