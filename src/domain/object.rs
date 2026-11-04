@@ -1,5 +1,8 @@
-use crate::domain::object_id::ObjectId;
+use zstd::DEFAULT_COMPRESSION_LEVEL;
 
+use crate::{domain::object_id::ObjectId, error::Result};
+
+#[derive(Debug)]
 pub enum ObjectType {
     Blob,
 }
@@ -11,8 +14,18 @@ impl std::fmt::Display for ObjectType {
     }
 }
 
+#[derive(Debug)]
 pub struct Object {
     hash: ObjectId,
     object_type: ObjectType,
     data: Vec<u8>,
+impl Object {
+    pub fn new(id: ObjectId, object_type: ObjectType, data: Vec<u8>) -> Result<Self> {
+        let data = zstd::encode_all(&data[..], DEFAULT_COMPRESSION_LEVEL)?;
+        Ok(Object {
+            id,
+            object_type,
+            data,
+        })
+    }
 }
