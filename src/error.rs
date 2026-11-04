@@ -8,6 +8,8 @@ pub enum Error {
     NotInRackRepo,
     #[error("fatal: path '{path}' did not match any files")]
     PathNotFound { path: String },
+    #[error("fatal: path '{path}' is a dir and hence didn't match any files")]
+    PathIsDir { path: String },
 }
 
 impl From<std::io::Error> for Error {
