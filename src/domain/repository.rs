@@ -16,7 +16,7 @@ impl Repository {
     pub fn new(root: PathBuf) -> Self {
         Self { root }
     }
-    pub fn discover(root: PathBuf) -> Result<Self> {
+    pub fn discover(root: &Path) -> Result<Self> {
         let curr_path = env::current_dir()?.join(root);
         for ancestor in curr_path.ancestors() {
             let rack_path = layout::rack_dir(ancestor);
