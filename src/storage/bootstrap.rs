@@ -47,9 +47,9 @@ fn ensure_created(root: &Path) -> Result<()> {
 }
 
 fn seed_files(root: &Path) -> Result<()> {
-    const RACK_CONFIG_CONTENT: &str = "[user]\n";
-    const RACK_IGNORE_CONTENT: &str = "# Enter the relative or absolute paths of the files or directories you want to ignore.\ntmp/\ntarget\n.git/";
-    const BABY_CONTENT: &str = "hump: hump/baby/bonkers";
+    const RACK_CONFIG_CONTENT: &[u8] = "[user]\n".as_bytes();
+    const RACK_IGNORE_CONTENT: &[u8] = "# Enter the relative or absolute paths of the files or directories you want to ignore.\ntmp/\ntarget\n.git/".as_bytes();
+    const BABY_CONTENT: &[u8] = "hump: hump/baby/bonkers".as_bytes();
 
     fsutil::write_new(&layout::config(root), RACK_CONFIG_CONTENT)?;
     fsutil::write_new(&layout::ignore_file(root), RACK_IGNORE_CONTENT)?;
