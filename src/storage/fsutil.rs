@@ -1,8 +1,12 @@
-use std::{fs, io::Write, path::Path};
+use std::{
+    fs,
+    io::{Read, Write},
+    path::Path,
+};
 
 use crate::error::{Error, Result};
 
-pub fn write_new(path: &Path, content: &str) -> Result<()> {
+pub fn write_new(path: &Path, content: &[u8]) -> Result<()> {
     match fs::File::options()
         .create(true)
         .truncate(false)
@@ -10,7 +14,7 @@ pub fn write_new(path: &Path, content: &str) -> Result<()> {
         .open(path)
     {
         Ok(mut f) => {
-            f.write_all(content.as_bytes())?;
+            f.write_all(content)?;
             Ok(())
         }
         Err(e) => {
