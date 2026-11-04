@@ -19,7 +19,7 @@ impl IgnoreFile {
     pub fn entries(file_content: String) -> IgnoreFile {
         let entries: HashSet<PathBuf> = file_content
             .lines()
-            .filter(|e| !e.is_empty() && !e.starts_with("#"))
+            .filter(|&entry| !entry.is_empty() && !entry.starts_with("#"))
             .map(PathBuf::from)
             .collect();
 
