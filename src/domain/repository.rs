@@ -4,6 +4,7 @@ use std::{
 };
 
 use crate::{
+    domain::object_id::{self, ObjectId},
     error::{self, Result},
     storage::layout,
 };
@@ -55,5 +56,11 @@ impl Repository {
     }
     pub fn config(&self) -> PathBuf {
         layout::config(&self.root)
+    }
+    pub fn object_entry_dir(&self, object_id: &ObjectId) -> PathBuf {
+        self.objects_dir().join(object_id.shard())
+    }
+    pub fn object_entry_file(&self, object_id: &ObjectId) -> PathBuf {
+        self.object_entry_dir(object_id).join(object_id.rest())
     }
 }
