@@ -17,6 +17,7 @@ pub struct IgnoreFile {
 
 impl IgnoreFile {
     pub fn entries(file_content: String) -> IgnoreFile {
+        // The entries starting with # are comments and are thus ignored
         let entries: HashSet<PathBuf> = file_content
             .lines()
             .filter(|&entry| !entry.is_empty() && !entry.starts_with("#"))
@@ -28,6 +29,8 @@ impl IgnoreFile {
     pub fn is_ignored(&self, repository: &Repository, path: &Path) -> Result<bool> {
         let path = match fs::canonicalize(path) {
             Ok(path) => path,
+            // The NotFound error is handled with a custom Error::PathNotFound error.
+            // The reason for which being a custom message present in Error::PathNotFound.
             Err(err) => {
                 if err.kind() == std::io::ErrorKind::NotFound {
                     return Err(Error::PathNotFound {
@@ -38,10 +41,13 @@ impl IgnoreFile {
                 }
             }
         };
+
         for ancestor in path.ancestors() {
             let ancestor = fs::canonicalize(ancestor)?;
             let ancestor = match ancestor.strip_prefix(repository.root()) {
                 Ok(ancestor) => ancestor,
+                // Every error in strip_prefix prefix is of type std::path::StripPrefixError and
+                // hence can be ignored and made to be a return of false
                 Err(_) => return Ok(false),
             };
 
