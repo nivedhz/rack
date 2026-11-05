@@ -37,4 +37,10 @@ impl Object {
             data,
         })
     }
+    pub fn serialize(&self) -> Vec<u8> {
+        let mut bytes = self.object_type.as_bytes().to_vec();
+        bytes.push(0x00);
+        bytes.extend_from_slice(&self.data);
+        bytes
+    }
 }
