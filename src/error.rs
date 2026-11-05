@@ -28,6 +28,14 @@ impl From<&str> for Error {
         }
     }
 }
+impl From<std::string::FromUtf8Error> for Error {
+    fn from(err: std::string::FromUtf8Error) -> Self {
+        Error::IO {
+            path: err.to_string(),
+            src: err.to_string(),
+        }
+    }
+}
 impl From<std::path::StripPrefixError> for Error {
     fn from(err: std::path::StripPrefixError) -> Self {
         Error::IO {
