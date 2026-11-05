@@ -18,7 +18,15 @@ pub fn write_blob(repo: &Repository, path: &Path) -> Result<()> {
         file_contents.into_bytes(),
     )?;
 
-    fs::create_dir(repo.object_entry_dir(&object.id))?;
+    match fs::create_dir(repo.object_entry_dir(&object.id)) {
+        Ok(_) => (),
+        Err(e) => {
+            if e.kind() == std::io::ErrorKind::AlreadyExists {
+            } else {
+                return Err(e.into());
+            }
+        }
+    }
     fsutil::write_new(&repo.object_entry_file(&object.id), &object.serialize())?;
 
     Ok(())
