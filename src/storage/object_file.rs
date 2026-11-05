@@ -19,7 +19,7 @@ pub fn write_blob(repo: &Repository, path: &Path) -> Result<()> {
     )?;
 
     fs::create_dir(repo.object_entry_dir(&object.id))?;
-    fsutil::write_new(&repo.object_entry_file(&object.id), &object.data)?;
+    fsutil::write_new(&repo.object_entry_file(&object.id), &object.serialize())?;
 
     Ok(())
 }
