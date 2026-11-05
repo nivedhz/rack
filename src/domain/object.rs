@@ -13,6 +13,13 @@ impl std::fmt::Display for ObjectType {
         }
     }
 }
+impl ObjectType {
+    fn as_bytes(&self) -> &[u8] {
+        match self {
+            ObjectType::Blob => b"blob",
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Object {
