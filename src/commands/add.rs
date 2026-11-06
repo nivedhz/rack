@@ -15,7 +15,7 @@ use crate::{
 pub fn run(path: PathBuf) -> Result<()> {
     let repo = repository::Repository::discover(&path)?;
     let ig_file_content = fs::read_to_string(repo.ignore_file())?;
-    let ig = IgnoreFile::new(ig_file_content);
+    let ig = IgnoreFile::parse(ig_file_content);
     if path.is_dir() {
         handle_dir(&path, &ig, &repo)?;
     } else {
