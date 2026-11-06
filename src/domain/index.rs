@@ -1,7 +1,12 @@
 use core::fmt;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, path::Path};
 
-use crate::domain::{object_id::ObjectId, repo_path::RepoPath};
+use itertools::Itertools;
+
+use crate::{
+    domain::{object_id::ObjectId, repo_path::RepoPath},
+    error::Result,
+};
 
 pub struct IndexEntry {
     pub size: u64,
@@ -9,6 +14,29 @@ pub struct IndexEntry {
     pub object_id: ObjectId,
     pub ctime: u64,
     pub mtime: u64,
+}
+impl IndexEntry {
+    fn parse(
+        size: &str,
+        path: &str,
+        object_id: &str,
+        ctime: &str,
+        mtime: &str,
+    ) -> Result<IndexEntry> {
+        let size: u64 = size.parse()?;
+        let path = RepoPath::new(path);
+        let object_id = ObjectId::from_bytes(&object_id.to_string().into_bytes());
+        let ctime: u64 = ctime.parse()?;
+        let mtime: u64 = mtime.parse()?;
+
+        Ok(IndexEntry {
+            size,
+            path,
+            object_id,
+            ctime,
+            mtime,
+        })
+    }
 }
 pub struct IndexEntries {
     entries: BTreeMap<String, IndexEntry>,
