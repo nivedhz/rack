@@ -4,7 +4,10 @@ use std::{
     path::Path,
 };
 
-use crate::error::{Error, Result};
+use crate::{
+    domain::{ignore::IgnoreEntries, repo_path::RepoPath, repository::Repository},
+    error::{Error, Result},
+};
 
 pub fn write_new(path: &Path, content: &[u8]) -> Result<()> {
     match fs::File::options()
@@ -66,4 +69,22 @@ pub fn read_file_to_string(path: &Path) -> Result<String> {
     buf_reader.read_to_string(&mut buf)?;
 
     Ok(buf)
+}
+pub fn collect_files(root: &Path, repo: &Repository, ig: &IgnoreEntries) -> Result<Vec<RepoPath>> {
+    let mut files: Vec<RepoPath> = Vec::new();
+
+    let dirs = fs::read_dir(root)?;
+    for dir in dirs {
+        let rec_path = dir?.path();
+
+        if ig.is_ignored(repo, &rec_path)? {
+            continue;
+        }
+        if rec_path.is_dir() {
+            files.extend(collect_files(&rec_path, repo, ig)?);
+        } else {
+            files.push(RepoPath::new(&rec_path));
+        }
+    }
+    Ok(files)
 }
