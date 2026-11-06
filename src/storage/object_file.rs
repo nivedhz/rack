@@ -21,8 +21,7 @@ pub fn write_blob(repo: &Repository, path: &Path) -> Result<()> {
     match fs::create_dir(repo.object_entry_dir(&object.id)) {
         Ok(_) => (),
         Err(e) => {
-            if e.kind() == std::io::ErrorKind::AlreadyExists {
-            } else {
+            if e.kind() != std::io::ErrorKind::AlreadyExists {
                 return Err(e.into());
             }
         }
