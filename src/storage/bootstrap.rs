@@ -1,5 +1,5 @@
 use crate::domain::init_outcome::{InitOutcome, InitStatus};
-use std::{env, fs, path::Path};
+use std::{fs, path::Path};
 
 use crate::{
     domain::repository::Repository,
@@ -8,8 +8,7 @@ use crate::{
 };
 
 pub fn initialize(root: &Path) -> Result<InitOutcome> {
-    let target = env::current_dir()?.join(root);
-    let root = fs::canonicalize(&target)?;
+    let root = fs::canonicalize(root)?;
 
     if root.is_dir() && layout::rack_dir(&root).exists() {
         ensure_created(&root)?;
