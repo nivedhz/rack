@@ -10,7 +10,7 @@ pub struct IndexEntry {
     pub ctime: u64,
     pub mtime: u64,
 }
-pub struct Index {
+pub struct IndexEntries {
     entries: BTreeMap<String, IndexEntry>,
 }
 
