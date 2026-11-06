@@ -20,15 +20,15 @@ pub fn initialize(root: &Path) -> Result<InitOutcome> {
     }
 
     let tmp = tempfile::TempDir::new_in(&root)?;
-    ensure_created(tmp.path())?;
-    let tmp_path = tmp.keep();
+    let tmp_path = tmp.path();
+    ensure_created(tmp_path)?;
+    seed_files(tmp_path)?;
 
-    if let Err(e) = fs::rename(&tmp_path, layout::rack_dir(&root)) {
+    if let Err(e) = fs::rename(layout::rack_dir(tmp_path), layout::rack_dir(&root)) {
         fs::remove_dir_all(tmp_path)?;
         return Err(e.into());
     }
 
-    seed_files(&root)?;
     Ok(InitOutcome {
         repository: Repository::new(root.to_path_buf()),
         status: InitStatus::Initialized,
@@ -36,6 +36,7 @@ pub fn initialize(root: &Path) -> Result<InitOutcome> {
 }
 
 fn ensure_created(root: &Path) -> Result<()> {
+    dbg!(layout::rack_dir(root));
     fs::create_dir_all(layout::rack_dir(root))?;
     fs::create_dir_all(layout::head(root))?;
     fs::create_dir_all(layout::objects_dir(root))?;
