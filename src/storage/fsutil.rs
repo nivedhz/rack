@@ -33,6 +33,13 @@ pub fn write_atomic(path: &Path, data: &[u8]) -> Result<()> {
     f.write_all(data)?;
     f.as_file().sync_all()?;
     f.persist(path)?;
+
+    Ok(())
+}
+pub fn append_to_file(path: &Path, data: &[u8]) -> Result<()> {
+    let mut f = fs::File::options().append(true).create(true).open(path)?;
+    f.write_all(data)?;
+
     Ok(())
 }
 pub fn read_file_to_string(path: &Path) -> Result<String> {
@@ -50,5 +57,6 @@ pub fn read_file_to_string(path: &Path) -> Result<String> {
     let mut buf_reader = std::io::BufReader::new(f);
     let mut buf = String::new();
     buf_reader.read_to_string(&mut buf)?;
+
     Ok(buf)
 }
