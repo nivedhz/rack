@@ -14,6 +14,9 @@ impl ObjectId {
         let hex = hex::encode(hash);
         ObjectId { hash: hex }
     }
+    pub fn hash(&self) -> String {
+        self.hash.clone()
+    }
     pub fn shard(&self) -> String {
         self.hash[..2].to_string()
     }
