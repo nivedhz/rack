@@ -10,7 +10,7 @@ use crate::{
 };
 
 pub struct Repository {
-    pub root: PathBuf,
+    root: PathBuf,
 }
 
 impl Repository {
