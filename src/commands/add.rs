@@ -6,6 +6,7 @@ use std::{
 use crate::{
     domain::{
         ignore::IgnoreEntries,
+        index::IndexEntries,
         repository::{self, Repository},
     },
     error::Result,
@@ -15,7 +16,9 @@ use crate::{
 pub fn run(path: PathBuf) -> Result<()> {
     let repo = repository::Repository::discover(&path)?;
     let ig_file_content = fs::read_to_string(repo.ignore_file())?;
+    let idx_file_content = fs::read_to_string(repo.index()).unwrap_or_default();
     let ig = IgnoreEntries::parse(ig_file_content);
+    let idx = IndexEntries::parse(idx_file_content)?;
     if path.is_dir() {
         handle_dir(&path, &ig, &repo)?;
     } else {
