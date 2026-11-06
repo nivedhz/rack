@@ -18,11 +18,12 @@ pub struct IgnoreEntries {
 impl IgnoreEntries {
     pub fn parse(file_content: String) -> IgnoreEntries {
         // The entries starting with # are comments and are thus ignored
-        let entries: HashSet<PathBuf> = file_content
+        let mut entries: HashSet<PathBuf> = file_content
             .lines()
             .filter(|&entry| !entry.is_empty() && !entry.starts_with("#"))
             .map(PathBuf::from)
             .collect();
+        entries.insert(PathBuf::from(".rack/"));
 
         IgnoreEntries { entries }
     }
