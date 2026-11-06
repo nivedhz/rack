@@ -11,12 +11,12 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct IgnoreFile {
+pub struct IgnoreEntries {
     entries: HashSet<PathBuf>,
 }
 
-impl IgnoreFile {
-    pub fn parse(file_content: String) -> IgnoreFile {
+impl IgnoreEntries {
+    pub fn parse(file_content: String) -> IgnoreEntries {
         // The entries starting with # are comments and are thus ignored
         let entries: HashSet<PathBuf> = file_content
             .lines()
@@ -24,7 +24,7 @@ impl IgnoreFile {
             .map(PathBuf::from)
             .collect();
 
-        IgnoreFile { entries }
+        IgnoreEntries { entries }
     }
     pub fn is_ignored(&self, repository: &Repository, path: &Path) -> Result<bool> {
         let path = match fs::canonicalize(path) {
@@ -62,7 +62,7 @@ impl IgnoreFile {
     }
 }
 
-impl fmt::Display for IgnoreFile {
+impl fmt::Display for IgnoreEntries {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "IgnoreFile: {{\n\tentries: {:#?}\n}}", self.entries)
     }

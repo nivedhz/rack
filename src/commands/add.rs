@@ -5,7 +5,7 @@ use std::{
 
 use crate::{
     domain::{
-        ignore_file::IgnoreFile,
+        ignore::IgnoreEntries,
         repository::{self, Repository},
     },
     error::Result,
@@ -15,7 +15,7 @@ use crate::{
 pub fn run(path: PathBuf) -> Result<()> {
     let repo = repository::Repository::discover(&path)?;
     let ig_file_content = fs::read_to_string(repo.ignore_file())?;
-    let ig = IgnoreFile::parse(ig_file_content);
+    let ig = IgnoreEntries::parse(ig_file_content);
     if path.is_dir() {
         handle_dir(&path, &ig, &repo)?;
     } else {
@@ -24,7 +24,7 @@ pub fn run(path: PathBuf) -> Result<()> {
 
     Ok(())
 }
-fn handle_dir(path: &Path, ig: &IgnoreFile, repo: &Repository) -> Result<()> {
+fn handle_dir(path: &Path, ig: &IgnoreEntries, repo: &Repository) -> Result<()> {
     if ig.is_ignored(repo, path)? {
         return Ok(());
     }
@@ -42,7 +42,7 @@ fn handle_dir(path: &Path, ig: &IgnoreFile, repo: &Repository) -> Result<()> {
     }
     Ok(())
 }
-fn handle_file(path: &Path, ig: &IgnoreFile, repo: &Repository) -> Result<()> {
+fn handle_file(path: &Path, ig: &IgnoreEntries, repo: &Repository) -> Result<()> {
     if ig.is_ignored(repo, path)? {
         return Ok(());
     }
