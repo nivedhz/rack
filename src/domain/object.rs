@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use zstd::DEFAULT_COMPRESSION_LEVEL;
 
 use crate::{domain::object_id::ObjectId, error::Result};
@@ -43,4 +45,7 @@ impl Object {
         bytes.extend_from_slice(&self.data);
         bytes
     }
+}
+pub struct ObjectEntries {
+    entries: BTreeMap<ObjectId, Object>,
 }
