@@ -16,7 +16,7 @@ pub struct IndexEntry {
     pub mtime: u64,
 }
 impl IndexEntry {
-    fn parse(
+    pub fn parse(
         size: &str,
         path: &str,
         object_id: &str,
@@ -53,6 +53,9 @@ impl IndexEntries {
             );
         }
         Ok(IndexEntries { entries })
+    }
+    pub fn contains(&self, idx_path: &RepoPath) -> bool {
+        self.entries.contains_key(idx_path)
     }
 }
 
