@@ -20,6 +20,14 @@ impl From<std::io::Error> for Error {
         }
     }
 }
+impl From<std::num::ParseIntError> for Error {
+    fn from(err: std::num::ParseIntError) -> Self {
+        Error::IO {
+            path: err.to_string(),
+            src: err.to_string(),
+        }
+    }
+}
 impl From<&str> for Error {
     fn from(err: &str) -> Self {
         Error::IO {
