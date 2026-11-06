@@ -9,14 +9,14 @@ use crate::{
         repository::{self, Repository},
     },
     error::Result,
-    storage::{index_file, object_file},
+    storage::{fsutil, index_file, object_file},
 };
 
 pub fn run(path: PathBuf) -> Result<()> {
     let repo = repository::Repository::discover(&path)?;
     let path = fs::canonicalize(path)?;
 
-    let ig_file_content = fs::read_to_string(repo.ignore_file())?;
+    let ig_file_content = fsutil::read_file_to_string(&path)?;
     let ig = IgnoreEntries::parse(ig_file_content);
 
     if path.is_dir() {
