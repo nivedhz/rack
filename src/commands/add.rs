@@ -31,6 +31,7 @@ fn handle_dir(path: &Path, ig: &IgnoreEntries, repo: &Repository) -> Result<()> 
     if ig.is_ignored(repo, path)? {
         return Ok(());
     }
+
     let dirs = fs::read_dir(path)?;
     for dir in dirs {
         let rec_path = dir?.path();
