@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{collections::BTreeMap, path::Path};
+use std::collections::BTreeMap;
 
 use itertools::Itertools;
 
