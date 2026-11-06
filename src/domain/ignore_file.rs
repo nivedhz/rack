@@ -46,8 +46,10 @@ impl IgnoreFile {
             let ancestor = fs::canonicalize(ancestor)?;
             let ancestor = match ancestor.strip_prefix(repository.root()) {
                 Ok(ancestor) => ancestor,
-                // Every error in strip_prefix prefix is of type std::path::StripPrefixError and
-                // hence can be ignored and made to be a return of false
+                // Every error in strip_prefix prefix is of type std::path::StripPrefixError which
+                // usually occurs when the path is in a higher hierarchy than the given path which
+                // is the repository root in this case and hence can be ignored and made to be a
+                // return of false
                 Err(_) => return Ok(false),
             };
 
