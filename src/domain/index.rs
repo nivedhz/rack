@@ -86,6 +86,13 @@ impl IndexEntries {
         }
         Ok(IndexEntries { entries })
     }
+    pub fn serialize(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = Vec::new();
+        for (_, e) in self.entries() {
+            bytes.extend_from_slice(&e.serialize());
+        }
+        bytes
+    }
     pub fn contains(&self, idx_path: &RepoPath) -> Option<IndexEntry> {
         self.entries.get(idx_path).cloned()
     }
