@@ -24,7 +24,7 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
 
         let f_idx = IndexEntry::new(
             f_metadata.size(),
-            rel_path.clone(),
+            rel_path,
             ObjectId::from_bytes(&f_content.into_bytes()),
             f_metadata.ctime_nsec(),
             f_metadata.mtime_nsec(),
@@ -33,7 +33,8 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
             return Ok(());
         } else {
             idx_entries.modify(&f_idx);
-            fsutil::replace_atomic(&repo.index(), &idx_entries.serialize())?;
+            fsutil::write_atomic(&repo.index(), &idx_entries.serialize())?;
+
             return Ok(());
         }
     }
@@ -42,7 +43,7 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
     let f_metadata = fs::metadata(path)?;
     let obj_id = ObjectId::from_bytes(&f_content.into_bytes());
 
-    let idx_data = IndexEntry::new(
+    let idx_entry = IndexEntry::new(
         f_metadata.size(),
         rel_path,
         obj_id,
@@ -50,7 +51,7 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
         f_metadata.mtime_nsec(),
     );
 
-    fsutil::append_atomic(&repo.index(), &idx_data.serialize())?;
+    fsutil::append_atomic(&repo.index(), &idx_entry.serialize())?;
 
     Ok(())
 }

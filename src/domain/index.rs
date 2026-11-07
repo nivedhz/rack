@@ -76,9 +76,11 @@ impl IndexEntries {
     }
     pub fn parse(idx_content: String) -> Result<IndexEntries> {
         let mut entries: BTreeMap<RepoPath, IndexEntry> = BTreeMap::new();
+
         for entry in idx_content.lines() {
             let (size, path, object_id, ctime, mtime) =
                 entry.split_whitespace().collect_tuple().unwrap_or_default();
+
             entries.insert(
                 RepoPath::new(path),
                 IndexEntry::parse(size, path, object_id, ctime, mtime)?,
@@ -88,9 +90,11 @@ impl IndexEntries {
     }
     pub fn serialize(&self) -> Vec<u8> {
         let mut bytes: Vec<u8> = Vec::new();
+
         for (_, e) in self.entries() {
             bytes.extend_from_slice(&e.serialize());
         }
+
         bytes
     }
     pub fn contains(&self, idx_path: &RepoPath) -> Option<IndexEntry> {
