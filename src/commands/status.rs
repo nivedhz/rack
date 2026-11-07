@@ -1,8 +1,12 @@
-use std::env;
+use std::{env, os::unix::fs::MetadataExt};
 
 use crate::{
     domain::{
-        ignore::IgnoreEntries, index::IndexEntries, repo_path::RepoPath, repository::Repository,
+        ignore::IgnoreEntries,
+        index::{IndexEntries, IndexEntry},
+        object_id::ObjectId,
+        repo_path::RepoPath,
+        repository::Repository,
     },
     error::Result,
     storage::fsutil,
@@ -29,9 +33,21 @@ pub fn run() -> Result<StatusResult> {
     for f in &files {
         let f = f.strip_prefix(&repo.root())?;
 
-        // TODO: take the current state of the file into consideration `idx.is_equal(lhs, rhs)`
-        if idx.contains(&f).is_some() {
-            idx_entries.push(f);
+        if let Some(e) = idx.contains(&f) {
+            idx_entries.push(f.clone());
+
+            let f_content = fsutil::read_file_to_string(&f.path())?;
+            let f_metadata = std::fs::File::open(f.path())?.metadata()?;
+            let f_idx = IndexEntry::new(
+                f_metadata.size(),
+                f.clone(),
+                ObjectId::from_bytes(&f_content.into_bytes()),
+                f_metadata.ctime_nsec(),
+                f_metadata.mtime_nsec(),
+            );
+            if !e.is_equal(&f_idx) {
+                un_idx_entries.push(f);
+            }
         } else {
             un_idx_entries.push(f);
         }
