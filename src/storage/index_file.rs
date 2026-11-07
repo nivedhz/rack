@@ -33,7 +33,7 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
         f_metadata.mtime_nsec(),
     );
 
-    fsutil::append_to_file(&repo.index(), &idx_data.serialize())?;
+    fsutil::append_atomic(&repo.index(), &idx_data.serialize())?;
 
     Ok(())
 }
