@@ -9,26 +9,6 @@ use crate::{
     error::{Error, Result},
 };
 
-pub fn write_new(path: &Path, content: &[u8]) -> Result<()> {
-    match fs::File::options()
-        .create(true)
-        .truncate(false)
-        .write(true)
-        .open(path)
-    {
-        Ok(mut f) => {
-            f.write_all(content)?;
-            Ok(())
-        }
-        Err(e) => {
-            if e.kind() == std::io::ErrorKind::AlreadyExists {
-                Ok(())
-            } else {
-                Err(e.into())
-            }
-        }
-    }
-}
 pub fn write_atomic(path: &Path, data: &[u8]) -> Result<()> {
     if path.is_dir() {
         return Err(Error::PathIsDir {

@@ -26,7 +26,7 @@ pub fn write_blob(repo: &Repository, path: &Path) -> Result<()> {
             }
         }
     }
-    fsutil::write_new(&repo.object_entry_file(&object.id), &object.serialize())?;
+    fsutil::write_atomic(&repo.object_entry_file(&object.id), &object.serialize())?;
 
     Ok(())
 }
