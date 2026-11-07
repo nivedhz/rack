@@ -9,6 +9,7 @@ mod constants;
 mod domain;
 mod error;
 mod hasher;
+mod output;
 mod repository;
 mod storage;
 
@@ -21,7 +22,10 @@ pub fn run() -> Result<()> {
         // rack add <file | dir>
         cli::Commands::Add { path } => add::run(path)?,
         // rack status
-        cli::Commands::Status => status::run()?,
+        cli::Commands::Status => {
+            let status_res = status::run()?;
+            output::status(status_res)?;
+        }
         // rack commit -m <message>
         cli::Commands::Commit { message } => commit::run(message)?,
         // rack config <key> <value>
