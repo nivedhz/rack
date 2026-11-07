@@ -16,16 +16,15 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
     let rel_path = RepoPath::new(c_path.strip_prefix(repo.root())?);
 
     let idx_content = fs::read_to_string(repo.index()).unwrap_or_default();
-    let idx_entries = IndexEntries::parse(idx_content)?;
+    let mut idx_entries = IndexEntries::parse(idx_content)?;
 
     if let Some(e_idx) = idx_entries.contains(&rel_path) {
-        // TODO: this is recurring so extract into a function of some sorts
         let f_content = fsutil::read_file_to_string(path)?;
         let f_metadata = fs::metadata(path)?;
 
         let f_idx = IndexEntry::new(
             f_metadata.size(),
-            rel_path,
+            rel_path.clone(),
             ObjectId::from_bytes(&f_content.into_bytes()),
             f_metadata.ctime_nsec(),
             f_metadata.mtime_nsec(),
@@ -33,9 +32,9 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
         if e_idx.is_equal(&f_idx) {
             return Ok(());
         } else {
-            // TODO: replace the current idx entry with the new one
-            dbg!(idx_entries.entries());
-            todo!("replace the current idx entry with the new one");
+            idx_entries.modify(&f_idx);
+            fsutil::replace_atomic(&repo.index(), &idx_entries.serialize())?;
+            return Ok(());
         }
     }
 
