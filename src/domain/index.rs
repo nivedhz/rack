@@ -71,6 +71,9 @@ pub struct IndexEntries {
     entries: BTreeMap<RepoPath, IndexEntry>,
 }
 impl IndexEntries {
+    pub fn entries(&self) -> BTreeMap<RepoPath, IndexEntry> {
+        self.entries.clone()
+    }
     pub fn parse(idx_content: String) -> Result<IndexEntries> {
         let mut entries: BTreeMap<RepoPath, IndexEntry> = BTreeMap::new();
         for entry in idx_content.lines() {
