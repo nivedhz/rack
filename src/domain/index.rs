@@ -83,7 +83,6 @@ impl IndexEntries {
     pub fn contains(&self, idx_path: &RepoPath) -> Option<IndexEntry> {
         self.entries.get(idx_path).cloned()
     }
-    }
 }
 
 impl fmt::Display for IndexEntry {
