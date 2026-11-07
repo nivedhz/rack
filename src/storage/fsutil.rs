@@ -48,6 +48,28 @@ pub fn append_atomic(path: &Path, data: &[u8]) -> Result<()> {
 
     Ok(())
 }
+pub fn replace_atomic(path: &Path, data: &[u8]) -> Result<()> {
+    if path.is_dir() {
+        return Err(Error::PathIsDir {
+            path: path.display().to_string(),
+        });
+    }
+    if !path.exists() {
+        return Err(Error::PathNotFound {
+            path: path.display().to_string(),
+        });
+    }
+
+    let mut f = tempfile::NamedTempFile::new_in(path.parent().ok_or(Error::NoParent {
+        path: path.display().to_string(),
+    })?)?;
+
+    f.write_all(data)?;
+    f.as_file().sync_all()?;
+    f.persist(path)?;
+
+    Ok(())
+}
 pub fn read_file_to_string(path: &Path) -> Result<String> {
     if !path.exists() {
         return Err(Error::PathNotFound {
