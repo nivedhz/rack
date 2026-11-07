@@ -1,15 +1,16 @@
-use anyhow::{Context, Result};
-use colored::*;
-use std::{
-    fs,
-    path::{Path, PathBuf},
+use std::env;
+
+use crate::{
+    domain::{
+        ignore::IgnoreEntries, index::IndexEntries, repo_path::RepoPath, repository::Repository,
+    },
+    error::Result,
+    storage::fsutil,
 };
 
-use crate::{hasher, repository};
-#[derive(Debug)]
-struct FileStatus {
-    file_path: PathBuf,
-    is_indexed: bool,
+pub struct StatusResult {
+    pub idx_entries: Vec<RepoPath>,
+    pub un_idx_entries: Vec<RepoPath>,
 }
 
 pub fn run() -> Result<()> {
