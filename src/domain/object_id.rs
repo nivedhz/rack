@@ -2,7 +2,7 @@ use std::fmt;
 
 use sha3::{Digest, Sha3_256};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectId {
     hash: String,
 }
