@@ -5,3 +5,4 @@ pub mod object;
 pub mod object_id;
 pub mod repo_path;
 pub mod repository;
+pub mod user;
