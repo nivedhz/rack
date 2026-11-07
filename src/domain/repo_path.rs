@@ -13,8 +13,10 @@ impl RepoPath {
         let path = path.into();
         RepoPath { path }
     }
-    pub fn strip_prefix(&self, pref: &Path) -> Result<PathBuf> {
-        Ok(self.path.strip_prefix(pref)?.to_path_buf())
+    pub fn strip_prefix(&self, pref: &Path) -> Result<Self> {
+        Ok(RepoPath {
+            path: self.path.strip_prefix(pref)?.to_path_buf(),
+        })
     }
 }
 impl fmt::Display for RepoPath {
