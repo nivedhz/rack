@@ -46,9 +46,25 @@ pub fn write_atomic(path: &Path, data: &[u8]) -> Result<()> {
 
     Ok(())
 }
-pub fn append_to_file(path: &Path, data: &[u8]) -> Result<()> {
-    let mut f = fs::File::options().append(true).create(true).open(path)?;
-    f.write_all(data)?;
+pub fn append_atomic(path: &Path, data: &[u8]) -> Result<()> {
+    if path.is_dir() {
+        return Err(Error::PathIsDir {
+            path: path.display().to_string(),
+        });
+    }
+
+    let mut tmp_f = tempfile::NamedTempFile::new_in(path.parent().ok_or(Error::NoParent {
+        path: path.display().to_string(),
+    })?)?;
+    if path.exists() {
+        let mut og_f = fs::File::open(path)?;
+        std::io::copy(&mut og_f, &mut tmp_f)?;
+    }
+
+    tmp_f.write_all(data)?;
+    tmp_f.flush()?;
+
+    tmp_f.persist(path)?;
 
     Ok(())
 }
