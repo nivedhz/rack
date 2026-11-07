@@ -105,6 +105,9 @@ impl IndexEntries {
             *e = modified.to_owned();
         }
     }
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
 }
 
 impl fmt::Display for IndexEntry {
