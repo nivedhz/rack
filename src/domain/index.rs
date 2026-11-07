@@ -35,7 +35,7 @@ impl IndexEntry {
     ) -> Result<IndexEntry> {
         let size: u64 = size.parse()?;
         let path = RepoPath::new(path);
-        let object_id = ObjectId::from_bytes(&object_id.to_string().into_bytes());
+        let object_id = ObjectId::new(object_id.to_string());
         let ctime: i64 = ctime.parse()?;
         let mtime: i64 = mtime.parse()?;
 
