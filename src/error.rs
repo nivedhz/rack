@@ -14,6 +14,8 @@ pub enum Error {
     InvalidConfig { message: String },
     #[error("fatal: config not found\n{message}")]
     ConfigNotFound { message: String },
+    #[error("fatal: no changes added to commit! ({message})")]
+    NoFileAdded { message: String },
 }
 impl From<toml::de::Error> for Error {
     fn from(err: toml::de::Error) -> Self {
