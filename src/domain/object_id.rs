@@ -26,9 +26,6 @@ impl ObjectId {
     pub fn rest(&self) -> String {
         self.hash[2..].to_string()
     }
-    pub fn short(&self) -> String {
-        self.hash[..10].to_string()
-    }
 }
 
 impl fmt::Display for ObjectId {
