@@ -1,7 +1,6 @@
-use anyhow::Result;
 use std::path::PathBuf;
 
-use crate::{domain::init_outcome::InitStatus, storage};
+use crate::{domain::init_outcome::InitStatus, error::Result, storage};
 
 pub fn run(dir_path: PathBuf) -> Result<()> {
     let result = storage::bootstrap::initialize(&dir_path)?;
