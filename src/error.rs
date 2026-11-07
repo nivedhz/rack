@@ -12,6 +12,8 @@ pub enum Error {
     PathIsDir { path: String },
     #[error("fatal: {message}\nvalid keys: user.name, user.email")]
     InvalidConfig { message: String },
+    #[error("fatal: config not found\n{message}")]
+    ConfigNotFound { message: String },
 }
 impl From<toml::de::Error> for Error {
     fn from(err: toml::de::Error) -> Self {
