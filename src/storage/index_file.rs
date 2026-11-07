@@ -17,7 +17,7 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
 
     let idx_content = fs::read_to_string(repo.index()).unwrap_or_default();
     let idx_entries = IndexEntries::parse(idx_content)?;
-    if idx_entries.contains(&rel_path) {
+    if idx_entries.contains(&rel_path).is_some() {
         return Ok(());
     }
 
