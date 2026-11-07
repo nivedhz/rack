@@ -96,6 +96,11 @@ impl IndexEntries {
     pub fn contains(&self, idx_path: &RepoPath) -> Option<IndexEntry> {
         self.entries.get(idx_path).cloned()
     }
+    pub fn modify(&mut self, modified: &IndexEntry) {
+        if let Some(e) = self.entries.get_mut(&modified.path) {
+            *e = modified.to_owned();
+        }
+    }
 }
 
 impl fmt::Display for IndexEntry {
