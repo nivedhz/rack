@@ -23,6 +23,12 @@ pub fn run() -> Result<StatusResult> {
     let ig_content = fsutil::read_file_to_string(&repo.ignore_file())?;
     let ig = IgnoreEntries::parse(ig_content);
 
+    if !repo.index().exists() {
+        return Ok(StatusResult {
+            idx_entries: Vec::new(),
+            un_idx_entries: Vec::new(),
+        });
+    }
     let idx_content = fsutil::read_file_to_string(&repo.index())?;
     let idx = IndexEntries::parse(idx_content)?;
 
