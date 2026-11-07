@@ -5,7 +5,6 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use serde::Deserialize;
 use zstd::Decoder;
 
 use crate::constants::DIR_PATH;
@@ -101,26 +100,6 @@ pub fn read_head_commit_entry() -> Result<Vec<String>> {
     } else {
         Ok(Vec::new())
     }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Config {
-    pub user: UserDetails,
-}
-#[derive(Deserialize, Debug)]
-pub struct UserDetails {
-    pub name: Option<String>,
-    pub email: Option<String>,
-}
-pub fn get_user_details() -> Result<UserDetails> {
-    let config_file_path = find_rack_dir()
-        .context("fatal: could not find rack repository")?
-        .join("config.toml");
-    let file_content =
-        fs::read_to_string(config_file_path).context("fatal: could not read config file")?;
-    let config: Config = toml::from_str(&file_content).context("fatal: could not parse config")?;
-
-    Ok(config.user)
 }
 
 pub fn find_file_entry_in_head(filename: &str) -> Result<String> {
