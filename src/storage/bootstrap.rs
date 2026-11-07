@@ -8,15 +8,15 @@ use crate::{
 };
 
 pub fn initialize(root: &Path) -> Result<InitOutcome> {
-    // Dynamic folder creation on init
     if !root.exists() {
-        fs::create_dir(root)?;
+        fs::create_dir_all(root)?;
     }
 
     let root = fs::canonicalize(root)?;
     if root.is_dir() && layout::rack_dir(&root).exists() {
         ensure_created(&root)?;
         seed_files(&root)?;
+
         return Ok(InitOutcome {
             repository: Repository::new(root.to_path_buf()),
             status: InitStatus::Reinitialized,
