@@ -13,123 +13,32 @@ pub struct StatusResult {
     pub un_idx_entries: Vec<RepoPath>,
 }
 
-pub fn run() -> Result<()> {
-    get_all_files()?;
-    Ok(())
-}
-fn get_all_files() -> Result<()> {
-    let rack_repo_root_path =
-        repository::find_repo_root().context("fatal: could not find rack repository")?;
+pub fn run() -> Result<StatusResult> {
+    let repo = Repository::discover(&env::current_dir()?)?;
 
-    let ignore_dirs: Vec<PathBuf> = repository::read_rack_ignore()?
-        .iter()
-        .map(PathBuf::from)
-        .collect();
+    let ig_content = fsutil::read_file_to_string(&repo.ignore_file())?;
+    let ig = IgnoreEntries::parse(ig_content);
 
-    let indexed_files: Vec<PathBuf> = get_indexed_files()?.iter().map(PathBuf::from).collect();
+    let idx_content = fsutil::read_file_to_string(&repo.index())?;
+    let idx = IndexEntries::parse(idx_content)?;
 
-    let files: Vec<FileStatus> =
-        get_file_recursively(&rack_repo_root_path, ignore_dirs, indexed_files)?;
+    let files = fsutil::collect_files(&repo.root(), &repo, &ig)?;
 
-    let (indexed_files, unindexed_files): (Vec<&FileStatus>, Vec<&FileStatus>) =
-        files.iter().partition(|f| f.is_indexed);
+    let mut idx_entries: Vec<RepoPath> = Vec::new();
+    let mut un_idx_entries: Vec<RepoPath> = Vec::new();
+    for f in &files {
+        let f = f.strip_prefix(&repo.root())?;
 
-    println!();
-    if indexed_files.is_empty() && unindexed_files.is_empty() {
-        println!("On branch 'bonkers'");
-        println!("Your branch is up to date with 'baby/bonkers'.");
-        println!("\nnothing to commit, working tree clean");
-        return Ok(());
-    }
-    if !indexed_files.is_empty() {
-        //TODO: Add rack restore docs
-        println!("Changes to be commited:");
-        for file in indexed_files {
-            println!(
-                "      {}    {}",
-                "modified:".green(),
-                file.file_path.display().to_string().green()
-            );
-        }
-        println!();
-    }
-    if !unindexed_files.is_empty() {
-        //TODO: Add rack restore docs
-        println!("Changes not staged for commit:");
-        println!("(use rack insert <file> to update what will be banged)");
-        for file in unindexed_files {
-            println!(
-                "      {}    {}",
-                "modified:".red(),
-                file.file_path.display().to_string().red()
-            );
-        }
-    }
-    Ok(())
-}
-fn get_file_recursively(
-    dir: &Path,
-    ignore_dirs: Vec<PathBuf>,
-    indexed_files: Vec<PathBuf>,
-) -> Result<Vec<FileStatus>> {
-    let entries = fs::read_dir(dir)?;
-    let mut files = Vec::new();
-    for entry in entries {
-        let entry = entry?.path();
-        let relative_path = repository::get_relative_path_from_root(&entry)?;
-        let prev_commit_entry: Vec<(String, String)> = repository::read_head_commit_entry()?
-            .iter()
-            .map(|e| {
-                (
-                    e.split_whitespace().nth(1).unwrap_or_default().to_string(),
-                    e.split_whitespace().nth(2).unwrap_or_default().to_string(),
-                )
-            })
-            .collect();
-        if let Some(path_name) = entry.file_name()
-            && (ignore_dirs.contains(&PathBuf::from(path_name))
-                || ignore_dirs.contains(&relative_path))
-        {
-            continue;
+        // TODO: take the current state of the file into consideration `idx.is_equal(lhs, rhs)`
+        if idx.contains(&f).is_some() {
+            idx_entries.push(f);
         } else {
-            if entry.is_dir() {
-                files.extend(get_file_recursively(
-                    &entry,
-                    ignore_dirs.clone(),
-                    indexed_files.clone(),
-                )?);
-            } else {
-                let file_content = fs::read(&entry).unwrap_or_default();
-                let hash = hasher::get_hash(&file_content);
-                let prev_commit_hash = prev_commit_entry
-                    .iter()
-                    .find(|e| e.0 == relative_path.display().to_string())
-                    .map(|e| e.1.to_owned())
-                    .unwrap_or_default();
-                if prev_commit_hash == hash {
-                    continue;
-                }
-                files.push(FileStatus {
-                    is_indexed: indexed_files.contains(&relative_path),
-                    file_path: relative_path,
-                });
-            }
+            un_idx_entries.push(f);
         }
     }
-    Ok(files)
-}
-fn get_indexed_files() -> Result<Vec<String>> {
-    let rack_dir = repository::find_rack_dir().context("fatal: could not find rack repository")?;
-    if !rack_dir.join("panty-list").exists() {
-        fs::File::create(rack_dir.join("panty-list"))?;
-        return Ok(Vec::new());
-    }
-    let entries = repository::read_panty_list_file()?;
-    if entries.is_empty() {
-        return Ok(Vec::new());
-    }
-    Ok(entries
-        .iter()
-        .map(|s| s.split(" ").collect::<Vec<&str>>()[1].to_string())
-        .collect::<Vec<String>>())
+
+    Ok(StatusResult {
+        idx_entries,
+        un_idx_entries,
+    })
 }
