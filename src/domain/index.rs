@@ -8,6 +8,7 @@ use crate::{
     error::Result,
 };
 
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct IndexEntry {
     pub size: u64,
     pub path: RepoPath,
@@ -62,6 +63,7 @@ impl IndexEntry {
         bytes
     }
 }
+#[derive(Debug)]
 pub struct IndexEntries {
     entries: BTreeMap<RepoPath, IndexEntry>,
 }
@@ -78,8 +80,9 @@ impl IndexEntries {
         }
         Ok(IndexEntries { entries })
     }
-    pub fn contains(&self, idx_path: &RepoPath) -> bool {
-        self.entries.contains_key(idx_path)
+    pub fn contains(&self, idx_path: &RepoPath) -> Option<IndexEntry> {
+        self.entries.get(idx_path).cloned()
+    }
     }
 }
 
