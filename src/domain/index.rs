@@ -62,6 +62,9 @@ impl IndexEntry {
 
         bytes
     }
+    pub fn is_equal(&self, other: &IndexEntry) -> bool {
+        self.path == other.path && self.object_id == other.object_id
+    }
 }
 #[derive(Debug)]
 pub struct IndexEntries {
