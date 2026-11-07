@@ -7,6 +7,9 @@ pub struct ObjectId {
     hash: String,
 }
 impl ObjectId {
+    pub fn new(hash: String) -> Self {
+        ObjectId { hash }
+    }
     pub fn from_bytes(bytes: &[u8]) -> Self {
         let mut hash = Sha3_256::new();
         hash.update(bytes);
