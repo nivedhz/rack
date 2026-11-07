@@ -10,6 +10,24 @@ pub enum Error {
     PathNotFound { path: String },
     #[error("fatal: path '{path}' is a dir and hence didn't match any files")]
     PathIsDir { path: String },
+    #[error("fatal: {message}")]
+    InvalidConfig { message: String },
+}
+impl From<toml::de::Error> for Error {
+    fn from(err: toml::de::Error) -> Self {
+        Error::IO {
+            path: err.to_string(),
+            src: err.to_string(),
+        }
+    }
+}
+impl From<toml::ser::Error> for Error {
+    fn from(err: toml::ser::Error) -> Self {
+        Error::IO {
+            path: err.to_string(),
+            src: err.to_string(),
+        }
+    }
 }
 
 impl From<std::io::Error> for Error {
