@@ -16,9 +16,18 @@ pub enum Error {
     ConfigNotFound { message: String },
     #[error("fatal: no changes added to commit! ({message})")]
     NoFileAdded { message: String },
+    #[error("fatal: {message}")]
+    Convert { message: String },
 }
 impl From<toml::de::Error> for Error {
     fn from(err: toml::de::Error) -> Self {
+        Error::Convert {
+            message: err.to_string(),
+        }
+    }
+}
+impl From<std::convert::Infallible> for Error {
+    fn from(err: std::convert::Infallible) -> Self {
         Error::IO {
             src: err.to_string(),
         }
