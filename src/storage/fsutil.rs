@@ -84,3 +84,10 @@ pub fn collect_files(root: &Path, repo: &Repository, ig: &IgnoreEntries) -> Resu
     }
     Ok(files)
 }
+pub fn empty_file(path: &Path) -> Result<()> {
+    let _ = std::fs::File::options()
+        .write(true)
+        .truncate(true)
+        .open(path)?;
+    Ok(())
+}
