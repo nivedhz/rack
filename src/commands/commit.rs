@@ -80,7 +80,7 @@ fn handle_parent(
         message,
         cfg.user,
         timestamp,
-        idx.extend(head_commit.entries()),
+        head_commit.entries().extend(idx),
     );
 
     fs::create_dir(repo.commit_entry_dir(&curr_commit_id))?;
