@@ -134,5 +134,7 @@ impl CommitEntry {
         bytes.extend_from_slice(&self.entries.serialize());
         bytes
     }
+    pub fn entries(&self) -> IndexEntries {
+        self.entries.clone()
     }
 }
