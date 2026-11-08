@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use crate::error::Result;
 
-#[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
 pub struct RepoPath {
     path: PathBuf,
 }

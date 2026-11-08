@@ -1,5 +1,5 @@
 use core::fmt;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 use itertools::Itertools;
 
@@ -69,14 +69,14 @@ impl IndexEntry {
 }
 #[derive(Debug)]
 pub struct IndexEntries {
-    entries: BTreeMap<RepoPath, IndexEntry>,
+    entries: HashMap<RepoPath, IndexEntry>,
 }
 impl IndexEntries {
-    pub fn entries(&self) -> BTreeMap<RepoPath, IndexEntry> {
+    pub fn entries(&self) -> HashMap<RepoPath, IndexEntry> {
         self.entries.clone()
     }
     pub fn parse(idx_content: String) -> Result<IndexEntries> {
-        let mut entries: BTreeMap<RepoPath, IndexEntry> = BTreeMap::new();
+        let mut entries: HashMap<RepoPath, IndexEntry> = HashMap::new();
 
         for entry in idx_content.lines() {
             let (size, path, object_id, ctime, mtime) =
