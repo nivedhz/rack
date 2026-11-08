@@ -41,7 +41,7 @@ pub fn run(message: String) -> Result<()> {
     let parent = CommitParent::new(head);
     match parent {
         CommitParent::Orphan => handle_orphan(&repo, message, cfg, idx)?,
-        CommitParent::Parent(commit_id) => handle_parent(&repo, message, commit_id, cfg, idx)?,
+        CommitParent::Parent(commit_id) => handle_parent(&repo, message, cfg, idx, commit_id)?,
     }
 
     fsutil::empty_file(&repo.index())?;
@@ -65,9 +65,9 @@ fn handle_orphan(repo: &Repository, message: String, cfg: Config, idx: IndexEntr
 fn handle_parent(
     repo: &Repository,
     message: String,
-    prev_commit_id: CommitId,
     cfg: Config,
     idx: IndexEntries,
+    prev_commit_id: CommitId,
 ) -> Result<()> {
     let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&prev_commit_id))?;
     let head_commit = CommitEntry::parse(head_content)?;
