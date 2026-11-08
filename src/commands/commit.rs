@@ -20,7 +20,7 @@ pub fn run(message: String) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
     let cfg_content = fsutil::read_file_to_string(&repo.config())?;
-    let cfg: Config = toml::from_str(&cfg_content)?;
+    let cfg = Config::parse(cfg_content)?;
     if !cfg.user.name.is_some() || !cfg.user.email.is_some() {
         return Err(Error::ConfigNotFound {
             message: String::from("use rack config <key> <value> to set config details!"),

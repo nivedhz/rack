@@ -10,6 +10,10 @@ pub struct Config {
     pub user: User,
 }
 impl Config {
+    pub fn parse(file_content: String) -> Result<Config> {
+        let cfg_toml: Config = toml::from_str(&file_content)?;
+        Ok(cfg_toml)
+    }
     pub fn change_config(&mut self, key: String, value: String) -> Result<()> {
         let (section, key) = key.split_once(".").unwrap_or((&key, &key));
         match section {

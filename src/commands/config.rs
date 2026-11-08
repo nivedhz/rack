@@ -9,10 +9,10 @@ use crate::{
 
 pub fn run(key: String, value: String) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
-    let conf_content = fsutil::read_file_to_string(&repo.config())?;
-    let mut conf_toml: Config = toml::from_str(&conf_content)?;
+    let cfg_content = fsutil::read_file_to_string(&repo.config())?;
+    let mut cfg = Config::parse(cfg_content)?;
 
-    conf_toml.change_config(key, value)?;
-    write_config(&repo, conf_toml)?;
+    cfg.change_config(key, value)?;
+    write_config(&repo, cfg)?;
     Ok(())
 }
