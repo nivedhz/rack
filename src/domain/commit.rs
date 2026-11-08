@@ -30,3 +30,16 @@ impl std::str::FromStr for CommitId {
         })
     }
 }
+pub enum CommitParent {
+    Orphan,
+    Parent(CommitId),
+}
+impl CommitParent {
+    fn get_hash(&self) -> String {
+        match self {
+            CommitParent::Orphan => String::new(),
+            CommitParent::Parent(commit_id) => commit_id.hash.clone(),
+        }
+    }
+}
+
