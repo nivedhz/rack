@@ -6,6 +6,12 @@ pub struct User {
     pub email: Option<String>,
 }
 impl User {
+    pub fn from_str(name: &str, email: &str) -> User {
+        User {
+            name: Some(name.to_string()),
+            email: Some(email.to_string()),
+        }
+    }
     pub fn set_name(&mut self, name: String) {
         self.name = Some(name);
     }
