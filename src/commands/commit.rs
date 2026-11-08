@@ -40,21 +40,15 @@ pub fn run(message: String) -> Result<()> {
     let head = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
     let parent = CommitParent::new(head);
     match parent {
-        CommitParent::Orphan => handle_orphan(&repo, message)?,
-        CommitParent::Parent(commit_id) => handle_parent(&repo, message, commit_id)?,
+        CommitParent::Orphan => handle_orphan(&repo, message, cfg, idx)?,
+        CommitParent::Parent(commit_id) => handle_parent(&repo, message, commit_id, cfg, idx)?,
     }
 
     fsutil::empty_file(&repo.index())?;
     Ok(())
 }
 
-fn handle_orphan(repo: &Repository, message: String) -> Result<()> {
-    let idx_content = fsutil::read_file_to_string(&repo.index())?;
-    let idx = IndexEntries::parse(idx_content)?;
-
-    let cfg_content = fsutil::read_file_to_string(&repo.config())?;
-    let cfg = Config::parse(cfg_content)?;
-
+fn handle_orphan(repo: &Repository, message: String, cfg: Config, idx: IndexEntries) -> Result<()> {
     let timestamp = Utc::now().timestamp();
     let commit_id = CommitId::random();
 
@@ -68,13 +62,13 @@ fn handle_orphan(repo: &Repository, message: String) -> Result<()> {
     Ok(())
 }
 
-fn handle_parent(repo: &Repository, message: String, prev_commit_id: CommitId) -> Result<()> {
-    let idx_content = fsutil::read_file_to_string(&repo.index())?;
-    let idx = IndexEntries::parse(idx_content)?;
-
-    let cfg_content = fsutil::read_file_to_string(&repo.config())?;
-    let cfg = Config::parse(cfg_content)?;
-
+fn handle_parent(
+    repo: &Repository,
+    message: String,
+    prev_commit_id: CommitId,
+    cfg: Config,
+    idx: IndexEntries,
+) -> Result<()> {
     let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&prev_commit_id))?;
     let head_commit = CommitEntry::parse(head_content)?;
 
