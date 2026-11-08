@@ -2,6 +2,7 @@ use std::{env, os::unix::fs::MetadataExt};
 
 use crate::{
     domain::{
+        commit::{CommitEntry, CommitId},
         ignore::IgnoreEntries,
         index::{IndexEntries, IndexEntry},
         object_id::ObjectId,
@@ -17,7 +18,6 @@ pub struct StatusResult {
     pub un_idx_entries: Vec<RepoPath>,
 }
 
-// TODO: take the HEAD commit entries into consideration
 pub fn run() -> Result<StatusResult> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
@@ -27,22 +27,36 @@ pub fn run() -> Result<StatusResult> {
     let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
     let idx = IndexEntries::parse(idx_content)?;
 
+    let head_content = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
+    let head_commit_id = CommitId::new(head_content);
+    let head_commit_content =
+        fsutil::read_file_to_string(&repo.commit_entry_file(&head_commit_id)).unwrap_or_default();
+    let head = CommitEntry::parse(head_commit_content)?;
+    let head_entries = head.entries();
+
     let files = fsutil::collect_files(&repo.root(), &repo, &ig)?;
 
     let mut idx_entries: Vec<RepoPath> = Vec::new();
     let mut un_idx_entries: Vec<RepoPath> = Vec::new();
     for f in &files {
         let f = f.strip_prefix(&repo.root())?;
+        let f_content = fsutil::read_file_to_string(&f.path())?;
+        let f_hash = ObjectId::from_bytes(&f_content.into_bytes());
+
+        if let Some(e) = head_entries.contains(&f)
+            && e.object_id == f_hash
+        {
+            continue;
+        }
 
         if let Some(e) = idx.contains(&f) {
             idx_entries.push(f.clone());
 
-            let f_content = fsutil::read_file_to_string(&f.path())?;
             let f_metadata = std::fs::File::open(f.path())?.metadata()?;
             let f_idx = IndexEntry::new(
                 f_metadata.size(),
                 f.clone(),
-                ObjectId::from_bytes(&f_content.into_bytes()),
+                f_hash,
                 f_metadata.ctime_nsec(),
                 f_metadata.mtime_nsec(),
             );
