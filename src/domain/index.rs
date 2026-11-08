@@ -67,7 +67,7 @@ impl IndexEntry {
         self.path == other.path && self.object_id == other.object_id
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IndexEntries {
     entries: HashMap<RepoPath, IndexEntry>,
 }
@@ -109,6 +109,16 @@ impl IndexEntries {
     }
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
+    }
+    pub fn extend(&self, other: IndexEntries) -> IndexEntries {
+        let extended: HashMap<RepoPath, IndexEntry> = self
+            .entries
+            .clone()
+            .into_iter()
+            .chain(other.entries)
+            .collect();
+
+        IndexEntries { entries: extended }
     }
 }
 
