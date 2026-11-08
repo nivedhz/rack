@@ -17,6 +17,7 @@ pub struct StatusResult {
     pub un_idx_entries: Vec<RepoPath>,
 }
 
+// TODO: take the HEAD commit entries into consideration
 pub fn run() -> Result<StatusResult> {
     let repo = Repository::discover(&env::current_dir()?)?;
 

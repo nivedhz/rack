@@ -1,5 +1,5 @@
 use std::{
-    fs,
+    env, fs,
     path::{Path, PathBuf},
 };
 
@@ -12,17 +12,20 @@ use crate::{
     storage::{fsutil, index_file, object_file},
 };
 
-pub fn run(path: PathBuf) -> Result<()> {
-    let repo = repository::Repository::discover(&path)?;
-    let path = fs::canonicalize(path)?;
+pub fn run(paths: Vec<PathBuf>) -> Result<()> {
+    let repo = repository::Repository::discover(&env::current_dir()?)?;
 
-    let ig_file_content = fsutil::read_file_to_string(&repo.ignore_file())?;
-    let ig = IgnoreEntries::parse(ig_file_content);
+    for path in paths {
+        let path = fs::canonicalize(path)?;
 
-    if path.is_dir() {
-        handle_dir(&path, &ig, &repo)?;
-    } else {
-        handle_file(&path, &ig, &repo)?;
+        let ig_file_content = fsutil::read_file_to_string(&repo.ignore_file())?;
+        let ig = IgnoreEntries::parse(ig_file_content);
+
+        if path.is_dir() {
+            handle_dir(&path, &ig, &repo)?;
+        } else {
+            handle_file(&path, &ig, &repo)?;
+        }
     }
 
     Ok(())
