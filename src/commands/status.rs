@@ -1,4 +1,4 @@
-use std::{env, os::unix::fs::MetadataExt};
+use std::{collections::HashMap, env, os::unix::fs::MetadataExt};
 
 use crate::{
     domain::{
@@ -28,11 +28,15 @@ pub fn run() -> Result<StatusResult> {
     let idx = IndexEntries::parse(idx_content)?;
 
     let head_content = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
-    let head_commit_id = CommitId::new(head_content);
-    let head_commit_content =
-        fsutil::read_file_to_string(&repo.commit_entry_file(&head_commit_id)).unwrap_or_default();
-    let head = CommitEntry::parse(head_commit_content)?;
-    let head_entries = head.entries();
+    let head_entries = if !head_content.trim().is_empty() {
+        let head_commit_id = CommitId::new(head_content);
+        let head_commit_content =
+            fsutil::read_file_to_string(&repo.commit_entry_file(&head_commit_id))
+                .unwrap_or_default();
+        CommitEntry::parse(head_commit_content)?.entries()
+    } else {
+        IndexEntries::new(HashMap::new())
+    };
 
     let files = fsutil::collect_files(&repo.root(), &repo, &ig)?;
 
@@ -41,10 +45,10 @@ pub fn run() -> Result<StatusResult> {
     for f in &files {
         let f = f.strip_prefix(&repo.root())?;
         let f_content = fsutil::read_file_to_string(&f.path())?;
-        let f_hash = ObjectId::from_bytes(&f_content.into_bytes());
+        let f_object_id = ObjectId::from_bytes(&f_content.into_bytes());
 
         if let Some(e) = head_entries.contains(&f)
-            && e.object_id == f_hash
+            && e.object_id.hash() == f_object_id.hash()
         {
             continue;
         }
@@ -56,7 +60,7 @@ pub fn run() -> Result<StatusResult> {
             let f_idx = IndexEntry::new(
                 f_metadata.size(),
                 f.clone(),
-                f_hash,
+                f_object_id,
                 f_metadata.ctime_nsec(),
                 f_metadata.mtime_nsec(),
             );
