@@ -40,11 +40,19 @@ impl std::str::FromStr for CommitId {
         })
     }
 }
+#[derive(Debug)]
 pub enum CommitParent {
     Orphan,
     Parent(CommitId),
 }
 impl CommitParent {
+    pub fn new(hash: String) -> CommitParent {
+        if hash.trim().is_empty() {
+            CommitParent::Orphan
+        } else {
+            CommitParent::Parent(CommitId::new(hash))
+        }
+    }
     fn get_hash(&self) -> String {
         match self {
             CommitParent::Orphan => String::new(),
