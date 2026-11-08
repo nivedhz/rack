@@ -40,15 +40,15 @@ pub fn run(message: String) -> Result<()> {
     let head = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
     let parent = CommitParent::new(head);
     match parent {
-        CommitParent::Orphan => handle_orphan(&repo, &message)?,
-        CommitParent::Parent(commit_id) => handle_parent(&repo, &message, &commit_id)?,
+        CommitParent::Orphan => handle_orphan(&repo, message)?,
+        CommitParent::Parent(commit_id) => handle_parent(&repo, message, &commit_id)?,
     }
 
     fsutil::empty_file(&repo.index())?;
     Ok(())
 }
 
-fn handle_orphan(repo: &Repository, message: &str) -> Result<()> {
+fn handle_orphan(repo: &Repository, message: String) -> Result<()> {
     let idx_content = fsutil::read_file_to_string(&repo.index())?;
     let idx = IndexEntries::parse(idx_content)?;
 
@@ -58,13 +58,7 @@ fn handle_orphan(repo: &Repository, message: &str) -> Result<()> {
     let timestamp = Utc::now().timestamp();
     let commit_id = CommitId::random();
 
-    let commit = CommitEntry::new(
-        CommitParent::Orphan,
-        message.to_string(),
-        cfg.user,
-        timestamp,
-        idx,
-    );
+    let commit = CommitEntry::new(CommitParent::Orphan, message, cfg.user, timestamp, idx);
 
     fs::create_dir(repo.commits_dir())?;
     fs::create_dir(repo.commit_entry_dir(&commit_id))?;
@@ -74,7 +68,7 @@ fn handle_orphan(repo: &Repository, message: &str) -> Result<()> {
     Ok(())
 }
 
-fn handle_parent(repo: &Repository, message: &str, prev_commit_id: &CommitId) -> Result<()> {
+fn handle_parent(repo: &Repository, message: String, prev_commit_id: &CommitId) -> Result<()> {
     let idx_content = fsutil::read_file_to_string(&repo.index())?;
     let idx = IndexEntries::parse(idx_content)?;
 
@@ -89,7 +83,7 @@ fn handle_parent(repo: &Repository, message: &str, prev_commit_id: &CommitId) ->
 
     let curr_commit = CommitEntry::new(
         CommitParent::Parent(prev_commit_id.clone()),
-        message.to_string(),
+        message,
         cfg.user,
         timestamp,
         idx.extend(head_commit.entries()),
