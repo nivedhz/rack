@@ -8,18 +8,28 @@ use crate::{
     error::Result,
 };
 
+#[derive(Debug, Clone)]
 pub struct CommitId {
     hash: String,
 }
 impl CommitId {
-    fn new(hash: String) -> CommitId {
+    pub fn new(hash: String) -> CommitId {
         CommitId { hash }
     }
-    fn random() -> CommitId {
+    pub fn hash(&self) -> String {
+        self.hash.clone()
+    }
+    pub fn random() -> CommitId {
         let mut bytes = [0u8; 32];
         rand::fill(&mut bytes);
         let hex = hex::encode(bytes);
         CommitId { hash: hex }
+    }
+    pub fn shard(&self) -> String {
+        self.hash[..2].to_string()
+    }
+    pub fn rest(&self) -> String {
+        self.hash[2..].to_string()
     }
 }
 impl std::str::FromStr for CommitId {
