@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    domain::object_id::ObjectId,
+    domain::{commit::CommitId, object_id::ObjectId},
     error::{self, Result},
     storage::layout,
 };
