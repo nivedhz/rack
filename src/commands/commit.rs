@@ -7,11 +7,12 @@ use crate::{
 };
 
 // TODO:
-// Ensure that index is not empty
-// Ensure that there is user info
-// Create a commit entry based on the indexed files
+// Ensure that index is not empty >>
+// Ensure that there is user info >>
+// Create a commit entry based on the indexed files and prev commit
 // Add those entries to the commit entry dir
-// - Header: <prev head hash>0x20<message>0x20<author name>0x20<author email>0x20<commit timestamp>\n
+// - Header: <parent hash>0x20<message>0x20<author name>0x20<author email>0x20<commit
+// timestamp>0x00\n
 // - Body: <prev commit panty-list entries> + <panty-list entries joined by \n>
 // Clear the panty-list
 // Update the current branch head
