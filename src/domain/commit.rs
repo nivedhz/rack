@@ -61,6 +61,7 @@ impl CommitParent {
     }
 }
 
+#[derive(Debug)]
 pub struct CommitEntry {
     hash: CommitId,
     parent: CommitParent,
@@ -89,9 +90,9 @@ impl CommitEntry {
         }
     }
     pub fn parse(file_content: String, hash: String) -> Result<CommitEntry> {
-        let (header, body) = file_content.split_once("\0").unwrap_or_default();
+        let (header, body) = file_content.rsplit_once("\0").unwrap_or_default();
         let (parent, message, author_name, author_email, timestamp) = header
-            .split_whitespace()
+            .split("\0")
             .map(String::from)
             .collect_tuple()
             .unwrap_or_default();
@@ -120,17 +121,18 @@ impl CommitEntry {
         // - Body: <prev commit panty-list entries> + <panty-list entries joined by \n>
         let mut bytes: Vec<u8> = Vec::new();
         bytes.extend_from_slice(&self.parent.get_hash().into_bytes());
-        bytes.push(0x20);
-        bytes.extend_from_slice(&self.message.to_string().into_bytes());
-        bytes.push(0x20);
-        bytes.extend_from_slice(&self.author.name.clone().unwrap_or_default().into_bytes());
-        bytes.push(0x20);
-        bytes.extend_from_slice(&self.author.email.clone().unwrap_or_default().into_bytes());
-        bytes.push(0x20);
-        bytes.extend_from_slice(&self.timestamp.to_string().into_bytes());
-        bytes.push(0x0A);
         bytes.push(0x00);
+        bytes.extend_from_slice(&self.message.to_string().into_bytes());
+        bytes.push(0x00);
+        bytes.extend_from_slice(&self.author.name.clone().unwrap_or_default().into_bytes());
+        bytes.push(0x00);
+        bytes.extend_from_slice(&self.author.email.clone().unwrap_or_default().into_bytes());
+        bytes.push(0x00);
+        bytes.extend_from_slice(&self.timestamp.to_string().into_bytes());
+        bytes.push(0x00);
+        bytes.push(0x0A);
         bytes.extend_from_slice(&self.entries.serialize());
-        todo!()
+        bytes
+    }
     }
 }
