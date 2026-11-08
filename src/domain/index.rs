@@ -48,6 +48,7 @@ impl IndexEntry {
         })
     }
     pub fn serialize(&self) -> Vec<u8> {
+        // <size> <relative path> <hash> <ctime nsec> <mtime nsec>\n
         let mut bytes: Vec<u8> = Vec::new();
         bytes.extend_from_slice(&self.size.to_string().into_bytes());
         bytes.push(0x20);
@@ -89,6 +90,7 @@ impl IndexEntries {
         Ok(IndexEntries { entries })
     }
     pub fn serialize(&self) -> Vec<u8> {
+        // <entries joined by \n>
         let mut bytes: Vec<u8> = Vec::new();
 
         for (_, e) in self.entries() {
