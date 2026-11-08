@@ -63,4 +63,10 @@ impl Repository {
     pub fn object_entry_file(&self, object_id: &ObjectId) -> PathBuf {
         self.object_entry_dir(object_id).join(object_id.rest())
     }
+    pub fn commit_entry_dir(&self, commit_id: &CommitId) -> PathBuf {
+        self.commits_dir().join(commit_id.shard())
+    }
+    pub fn commit_entry_file(&self, commit_id: &CommitId) -> PathBuf {
+        self.commit_entry_dir(commit_id).join(commit_id.rest())
+    }
 }
