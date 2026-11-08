@@ -16,14 +16,6 @@ pub struct StatusResult {
     pub idx_entries: Vec<RepoPath>,
     pub un_idx_entries: Vec<RepoPath>,
 }
-impl StatusResult {
-    fn default() -> Self {
-        StatusResult {
-            idx_entries: Vec::new(),
-            un_idx_entries: Vec::new(),
-        }
-    }
-}
 
 pub fn run() -> Result<StatusResult> {
     let repo = Repository::discover(&env::current_dir()?)?;
@@ -31,10 +23,7 @@ pub fn run() -> Result<StatusResult> {
     let ig_content = fsutil::read_file_to_string(&repo.ignore_file())?;
     let ig = IgnoreEntries::parse(ig_content);
 
-    if !repo.index().exists() {
-        return Ok(StatusResult::default());
-    }
-    let idx_content = fsutil::read_file_to_string(&repo.index())?;
+    let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
     let idx = IndexEntries::parse(idx_content)?;
 
     let files = fsutil::collect_files(&repo.root(), &repo, &ig)?;
