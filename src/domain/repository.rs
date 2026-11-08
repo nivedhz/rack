@@ -39,10 +39,13 @@ impl Repository {
     pub fn index(&self) -> PathBuf {
         layout::index(&self.root)
     }
-    pub fn head(&self) -> PathBuf {
+    pub fn head_dir(&self) -> PathBuf {
         layout::head(&self.root)
     }
-    pub fn baby(&self) -> PathBuf {
+    pub fn head_file(&self) -> PathBuf {
+        self.head_dir().join("bonkers")
+    }
+    pub fn _baby(&self) -> PathBuf {
         layout::baby(&self.root)
     }
     pub fn ignore_file(&self) -> PathBuf {
