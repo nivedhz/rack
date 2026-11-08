@@ -50,15 +50,15 @@ impl IndexEntry {
     pub fn serialize(&self) -> Vec<u8> {
         // <size> <relative path> <hash> <ctime nsec> <mtime nsec>\n
         let mut bytes: Vec<u8> = Vec::new();
-        bytes.extend_from_slice(&self.size.to_string().into_bytes());
+        bytes.extend_from_slice(self.size.to_string().as_bytes());
         bytes.push(0x20);
-        bytes.extend_from_slice(&self.path.to_string().into_bytes());
+        bytes.extend_from_slice(self.path.to_string().as_bytes());
         bytes.push(0x20);
-        bytes.extend_from_slice(&self.object_id.hash().into_bytes());
+        bytes.extend_from_slice(self.object_id.hash().as_bytes());
         bytes.push(0x20);
-        bytes.extend_from_slice(&self.ctime.to_string().into_bytes());
+        bytes.extend_from_slice(self.ctime.to_string().as_bytes());
         bytes.push(0x20);
-        bytes.extend_from_slice(&self.mtime.to_string().into_bytes());
+        bytes.extend_from_slice(self.mtime.to_string().as_bytes());
         bytes.push(0x0A);
 
         bytes

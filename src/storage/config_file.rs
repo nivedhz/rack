@@ -7,6 +7,6 @@ use crate::{
 pub fn write_config(repo: &Repository, conf: Config) -> Result<()> {
     let output = toml::to_string_pretty(&conf)?;
 
-    fsutil::write_atomic(&repo.config(), &output.into_bytes())?;
+    fsutil::write_atomic(&repo.config(), output.as_bytes())?;
     Ok(())
 }

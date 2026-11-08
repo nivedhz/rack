@@ -115,15 +115,15 @@ impl CommitEntry {
         // timestamp>0x00\n
         // - Body: <prev commit panty-list entries> + <panty-list entries joined by \n>
         let mut bytes: Vec<u8> = Vec::new();
-        bytes.extend_from_slice(&self.parent.get_hash().into_bytes());
+        bytes.extend_from_slice(self.parent.get_hash().as_bytes());
         bytes.push(0x00);
-        bytes.extend_from_slice(&self.message.to_string().into_bytes());
+        bytes.extend_from_slice(self.message.to_string().as_bytes());
         bytes.push(0x00);
-        bytes.extend_from_slice(&self.author.name.clone().unwrap_or_default().into_bytes());
+        bytes.extend_from_slice(self.author.name.clone().unwrap_or_default().as_bytes());
         bytes.push(0x00);
-        bytes.extend_from_slice(&self.author.email.clone().unwrap_or_default().into_bytes());
+        bytes.extend_from_slice(self.author.email.clone().unwrap_or_default().as_bytes());
         bytes.push(0x00);
-        bytes.extend_from_slice(&self.timestamp.to_string().into_bytes());
+        bytes.extend_from_slice(self.timestamp.to_string().as_bytes());
         bytes.push(0x00);
         bytes.push(0x0A);
         bytes.extend_from_slice(&self.entries.serialize());

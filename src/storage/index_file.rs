@@ -25,7 +25,7 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
         let f_idx = IndexEntry::new(
             f_metadata.size(),
             rel_path,
-            ObjectId::from_bytes(&f_content.into_bytes()),
+            ObjectId::from_bytes(f_content.as_bytes()),
             f_metadata.ctime_nsec(),
             f_metadata.mtime_nsec(),
         );
@@ -41,7 +41,7 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
 
     let f_content = fsutil::read_file_to_string(path)?;
     let f_metadata = fs::metadata(path)?;
-    let obj_id = ObjectId::from_bytes(&f_content.into_bytes());
+    let obj_id = ObjectId::from_bytes(f_content.as_bytes());
 
     let idx_entry = IndexEntry::new(
         f_metadata.size(),

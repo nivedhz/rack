@@ -57,7 +57,7 @@ fn handle_orphan(repo: &Repository, message: String, cfg: Config, idx: IndexEntr
     fs::create_dir(repo.commits_dir())?;
     fs::create_dir(repo.commit_entry_dir(&commit_id))?;
     fsutil::write_atomic(&repo.commit_entry_file(&commit_id), &commit.serialize())?;
-    fsutil::write_atomic(&repo.head_file(), &commit_id.hash().into_bytes())?;
+    fsutil::write_atomic(&repo.head_file(), commit_id.hash().as_bytes())?;
 
     Ok(())
 }
@@ -88,6 +88,6 @@ fn handle_parent(
         &repo.commit_entry_file(&curr_commit_id),
         &curr_commit.serialize(),
     )?;
-    fsutil::write_atomic(&repo.head_file(), &curr_commit_id.hash().into_bytes())?;
+    fsutil::write_atomic(&repo.head_file(), curr_commit_id.hash().as_bytes())?;
     Ok(())
 }

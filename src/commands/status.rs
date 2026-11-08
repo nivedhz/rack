@@ -45,7 +45,7 @@ pub fn run() -> Result<StatusResult> {
     for f in &files {
         let f = f.strip_prefix(&repo.root())?;
         let f_content = fsutil::read_file_to_string(&f.path())?;
-        let f_object_id = ObjectId::from_bytes(&f_content.into_bytes());
+        let f_object_id = ObjectId::from_bytes(f_content.as_bytes());
 
         if let Some(e) = head_entries.contains(&f)
             && e.object_id.hash() == f_object_id.hash()

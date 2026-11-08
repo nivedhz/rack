@@ -39,7 +39,8 @@ impl Object {
     }
     pub fn serialize(&self) -> Vec<u8> {
         // <object_type>\0<compressed file content>
-        let mut bytes = self.object_type.as_bytes().to_vec();
+        let mut bytes: Vec<u8> = Vec::new();
+        bytes.extend_from_slice(self.object_type.as_bytes());
         bytes.push(0x00);
         bytes.extend_from_slice(&self.data);
         bytes
