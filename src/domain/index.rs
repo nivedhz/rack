@@ -75,6 +75,9 @@ impl IndexEntries {
     pub fn entries(&self) -> HashMap<RepoPath, IndexEntry> {
         self.entries.clone()
     }
+    pub fn new(entries: HashMap<RepoPath, IndexEntry>) -> IndexEntries {
+        IndexEntries { entries }
+    }
     pub fn parse(idx_content: String) -> Result<IndexEntries> {
         let mut entries: HashMap<RepoPath, IndexEntry> = HashMap::new();
 
