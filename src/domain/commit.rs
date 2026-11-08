@@ -63,7 +63,6 @@ impl CommitParent {
 
 #[derive(Debug)]
 pub struct CommitEntry {
-    hash: CommitId,
     parent: CommitParent,
     message: String,
     author: User,
@@ -73,7 +72,6 @@ pub struct CommitEntry {
 
 impl CommitEntry {
     pub fn new(
-        hash: CommitId,
         parent: CommitParent,
         message: String,
         author: User,
@@ -81,7 +79,6 @@ impl CommitEntry {
         entries: IndexEntries,
     ) -> CommitEntry {
         CommitEntry {
-            hash,
             parent,
             message,
             author,
@@ -89,14 +86,13 @@ impl CommitEntry {
             entries,
         }
     }
-    pub fn parse(file_content: String, hash: String) -> Result<CommitEntry> {
+    pub fn parse(file_content: String) -> Result<CommitEntry> {
         let (header, body) = file_content.rsplit_once("\0").unwrap_or_default();
         let (parent, message, author_name, author_email, timestamp) = header
             .split("\0")
             .map(String::from)
             .collect_tuple()
             .unwrap_or_default();
-        let hash = CommitId::new(hash);
         let parent = if parent.trim().is_empty() {
             CommitParent::Orphan
         } else {
@@ -107,7 +103,6 @@ impl CommitEntry {
 
         let entries = IndexEntries::parse(body.trim().to_string())?;
         Ok(CommitEntry {
-            hash,
             parent,
             message,
             author,

@@ -59,7 +59,6 @@ fn handle_orphan(repo: &Repository, message: &str) -> Result<()> {
     let commit_id = CommitId::random();
 
     let commit = CommitEntry::new(
-        commit_id.clone(),
         CommitParent::Orphan,
         message.to_string(),
         cfg.user,
@@ -83,13 +82,12 @@ fn handle_parent(repo: &Repository, message: &str, prev_commit_id: &CommitId) ->
     let cfg = Config::parse(cfg_content)?;
 
     let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(prev_commit_id))?;
-    let head_commit = CommitEntry::parse(head_content, prev_commit_id.hash())?;
+    let head_commit = CommitEntry::parse(head_content)?;
 
     let timestamp = Utc::now().timestamp();
     let curr_commit_id = CommitId::random();
 
     let curr_commit = CommitEntry::new(
-        curr_commit_id.clone(),
         CommitParent::Parent(prev_commit_id.clone()),
         message.to_string(),
         cfg.user,
