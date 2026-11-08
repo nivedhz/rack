@@ -22,3 +22,11 @@ impl CommitId {
         CommitId { hash: hex }
     }
 }
+impl std::str::FromStr for CommitId {
+    type Err = ParseError;
+    fn from_str(s: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+        Ok(CommitId {
+            hash: s.to_string(),
+        })
+    }
+}
