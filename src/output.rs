@@ -1,8 +1,9 @@
-use crate::commands::status::StatusResult;
+use crate::commands::{diff::DiffedContent, status::StatusResult};
 use crate::domain::commit::CommitEntry;
 use crate::error::Result;
 use chrono::{Local, TimeZone};
 use colored::Colorize;
+use diffy::PatchFormatter;
 
 //TODO: Add rack restore docs
 pub fn status(status_res: StatusResult) -> Result<()> {
@@ -52,7 +53,11 @@ pub fn log(oneline: bool, entries: Vec<CommitEntry>) -> Result<()> {
     Ok(())
 }
 
-pub fn diff(entries: Vec<String>) -> Result<()> {
-    dbg!(entries);
+pub fn diff(entries: Vec<DiffedContent>) -> Result<()> {
+    let f = PatchFormatter::new().with_color();
+    for entry in entries {
+        let patch = diffy::create_patch(&entry.prev, &entry.curr);
+        println!("{}", f.fmt_patch(&patch))
+    }
     Ok(())
 }
