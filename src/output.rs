@@ -5,7 +5,6 @@ use chrono::{Local, TimeZone};
 use colored::Colorize;
 use diffy::PatchFormatter;
 
-//TODO: Add rack restore docs
 pub fn status(status_res: StatusResult) -> Result<()> {
     println!();
     if status_res.idx_entries.is_empty() && status_res.un_idx_entries.is_empty() {
@@ -17,17 +16,26 @@ pub fn status(status_res: StatusResult) -> Result<()> {
 
     if !status_res.idx_entries.is_empty() {
         println!("Changes to be commited:");
-        for file in status_res.idx_entries {
-            println!("      {}    {}", "modified:".green(), file);
+        println!("  (use 'rack restore --staged <file>...' unstage)");
+        for file in &status_res.idx_entries {
+            println!(
+                "      {}    {}",
+                "modified:".green(),
+                file.to_string().green()
+            );
         }
         println!();
     }
     if !status_res.un_idx_entries.is_empty() {
         println!("Changes not staged for commit:");
-        println!("(use rack insert <file> to update what will be banged)");
+        println!("  (use 'rack insert <file>...' to update what will be commited)");
+        println!("  (use 'rack restore <file>...' to discard changes in the working directory)");
         for file in status_res.un_idx_entries {
-            println!("      {}    {}", "modified:".red(), file);
+            println!("      {}    {}", "modified:".red(), file.to_string().red());
         }
+    }
+    if status_res.idx_entries.is_empty() {
+        println!("\nno changes added for commit (use 'rack add')")
     }
     Ok(())
 }
