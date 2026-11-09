@@ -31,7 +31,10 @@ pub fn run() -> Result<()> {
         // rack config <key> <value>
         cli::Commands::Config { key, value } => config::run(key, value)?,
         // rack log <--oneline>
-        cli::Commands::Log { oneline } => log::run(oneline)?,
+        cli::Commands::Log { oneline } => {
+            let log_res = log::run()?;
+            output::log(oneline, log_res)?;
+        }
         // rack diff
         cli::Commands::Diff { path } => diff::run(path)?,
         // rack restore <path>
