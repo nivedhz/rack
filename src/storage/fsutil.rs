@@ -66,6 +66,26 @@ pub fn read_file_to_string(path: &Path) -> Result<String> {
 
     Ok(buf)
 }
+pub fn read_file_to_bytes(path: &Path) -> Result<Vec<u8>> {
+    if !path.exists() {
+        return Err(Error::PathNotFound {
+            path: path.display().to_string(),
+        });
+    }
+    if path.is_dir() {
+        return Err(Error::PathIsDir {
+            path: path.display().to_string(),
+        });
+    }
+
+    let f = std::fs::File::open(path)?;
+    let mut buf_reader = std::io::BufReader::new(f);
+
+    let mut bytes: Vec<u8> = Vec::new();
+    buf_reader.read_to_end(&mut bytes)?;
+
+    Ok(bytes)
+}
 pub fn collect_files(root: &Path, repo: &Repository, ig: &IgnoreEntries) -> Result<Vec<RepoPath>> {
     let mut files: Vec<RepoPath> = Vec::new();
 
