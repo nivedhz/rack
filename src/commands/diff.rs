@@ -1,11 +1,62 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, env, fs, path::PathBuf};
 
-use crate::error::Result;
+use crate::{
+    domain::{
+        commit::{CommitEntry, CommitId},
+        index::IndexEntries,
+        object::ObjectEntry,
+        object_id::ObjectId,
+        repository::Repository,
+    },
+    error::Result,
+    storage::fsutil,
+};
 
-// TODO:
-// Get the diff of the current state of file with the latest change of the file (panty-list entries
-// have more priority over HEAD entries)
-pub fn run(path: PathBuf) -> Result<Vec<String>> {
-    dbg!(path);
-    Ok(Vec::new())
+#[derive(Debug)]
+pub struct DiffedContent {
+    pub prev: String,
+    pub curr: String,
+}
+
+pub fn run(path: PathBuf) -> Result<Vec<DiffedContent>> {
+    let repo = Repository::discover(&env::current_dir()?)?;
+
+    let head_entries = if let Ok(head_content) = fsutil::read_file_to_string(&repo.head_file()) {
+        let head_id = CommitId::new(head_content);
+        let head_commit_content = fsutil::read_file_to_string(&repo.commit_entry_file(&head_id))?;
+        let head = CommitEntry::parse(head_commit_content, head_id.hash())?;
+        head.entries()
+    } else {
+        IndexEntries::new(HashMap::default())
+    };
+
+    let idx_entries = if let Ok(idx_content) = fsutil::read_file_to_string(&repo.index()) {
+        IndexEntries::parse(idx_content)?
+    } else {
+        IndexEntries::new(HashMap::default())
+    };
+
+    let diff_entries = head_entries.extend(idx_entries.clone());
+    let mut entries: Vec<DiffedContent> = Vec::new();
+
+    for (e_path, entry) in diff_entries.entries() {
+        let curr_content = fsutil::read_file_to_string(&e_path.path())?;
+        let curr_id = ObjectId::from_bytes(curr_content.as_bytes());
+        let e_path = fs::canonicalize(e_path.path())?;
+
+        if curr_id == entry.object_id || !e_path.starts_with(fs::canonicalize(&path)?) {
+            continue;
+        }
+
+        let obj_content = fsutil::read_file_to_bytes(&repo.object_entry_file(&entry.object_id))?;
+        let obj = ObjectEntry::from_bytes(obj_content, entry.object_id)?;
+        let prev_content = String::from_utf8(obj.data).unwrap_or_default();
+
+        entries.push(DiffedContent {
+            prev: prev_content,
+            curr: curr_content,
+        });
+    }
+
+    Ok(entries)
 }
