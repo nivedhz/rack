@@ -2,7 +2,7 @@ use std::{fs, path::Path};
 
 use crate::{
     domain::{
-        object::{Object, ObjectType},
+        object::{ObjectEntry, ObjectType},
         object_id::ObjectId,
         repository::Repository,
     },
@@ -12,7 +12,7 @@ use crate::{
 
 pub fn write_blob(repo: &Repository, path: &Path) -> Result<()> {
     let file_contents = fsutil::read_file_to_string(path)?;
-    let object = Object::new(
+    let object = ObjectEntry::new(
         ObjectId::from_bytes(file_contents.as_bytes()),
         ObjectType::Blob,
         file_contents.into_bytes(),
