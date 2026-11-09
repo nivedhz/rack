@@ -2,8 +2,9 @@ use zstd::DEFAULT_COMPRESSION_LEVEL;
 
 use crate::{domain::object_id::ObjectId, error::Result};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum ObjectType {
+    #[default]
     Blob,
 }
 impl std::fmt::Display for ObjectType {
@@ -17,6 +18,12 @@ impl ObjectType {
     fn as_bytes(&self) -> &[u8] {
         match self {
             ObjectType::Blob => b"blob",
+        }
+    }
+    fn from_str(s: &str) -> Option<ObjectType> {
+        match s {
+            "blob" => Some(ObjectType::Blob),
+            _ => None,
         }
     }
 }
