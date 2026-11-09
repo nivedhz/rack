@@ -52,4 +52,19 @@ impl ObjectEntry {
         bytes.extend_from_slice(&self.data);
         bytes
     }
+    pub fn from_bytes(bytes: Vec<u8>, obj_id: ObjectId) -> Result<ObjectEntry> {
+        let idx = bytes.iter().position(|&b| b == 0x00).unwrap_or_default();
+        let (obj_type, obj_data) = (&bytes[..idx], &bytes[idx + 1..]);
+
+        let obj_type = String::from_utf8(obj_type.to_owned()).unwrap_or_default();
+        let obj_type = ObjectType::from_str(&obj_type).unwrap_or_default();
+
+        let obj_data = zstd::decode_all(obj_data)?;
+
+        Ok(ObjectEntry {
+            id: obj_id,
+            object_type: obj_type,
+            data: obj_data,
+        })
+    }
 }
