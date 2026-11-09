@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct User {
     pub name: Option<String>,
     pub email: Option<String>,
@@ -17,5 +17,16 @@ impl User {
     }
     pub fn set_email(&mut self, email: String) {
         self.email = Some(email);
+    }
+}
+
+impl std::fmt::Display for User {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} <{}>",
+            self.name.clone().unwrap_or_default(),
+            self.email.clone().unwrap_or_default()
+        )
     }
 }
