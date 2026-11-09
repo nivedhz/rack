@@ -29,16 +29,16 @@ impl ObjectType {
 }
 
 #[derive(Debug)]
-pub struct Object {
+pub struct ObjectEntry {
     pub id: ObjectId,
     pub object_type: ObjectType,
     pub data: Vec<u8>,
 }
 
-impl Object {
+impl ObjectEntry {
     pub fn new(id: ObjectId, object_type: ObjectType, data: Vec<u8>) -> Result<Self> {
         let data = zstd::encode_all(&data[..], DEFAULT_COMPRESSION_LEVEL)?;
-        Ok(Object {
+        Ok(ObjectEntry {
             id,
             object_type,
             data,
