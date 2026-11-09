@@ -31,6 +31,9 @@ impl CommitId {
     pub fn rest(&self) -> String {
         self.hash[2..].to_string()
     }
+    pub fn short(&self) -> String {
+        self.hash[..10].to_string()
+    }
 }
 impl std::str::FromStr for CommitId {
     type Err = ParseError;
