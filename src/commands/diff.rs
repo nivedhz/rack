@@ -36,7 +36,7 @@ pub fn run(path: PathBuf) -> Result<Vec<DiffedContent>> {
         IndexEntries::new(HashMap::default())
     };
 
-    let diff_entries = head_entries.extend(idx_entries.clone());
+    let diff_entries = head_entries.extend(idx_entries);
     let mut entries: Vec<DiffedContent> = Vec::new();
 
     for (e_path, entry) in diff_entries.entries() {
