@@ -16,6 +16,8 @@ pub enum Error {
     ConfigNotFound { message: String },
     #[error("fatal: no changes added to commit! ({message})")]
     NoFileAdded { message: String },
+    #[error("fatal: no commits found! ({message})")]
+    NoCommitsFound { message: String },
     #[error("fatal: {message}")]
     Convert { message: String },
 }
