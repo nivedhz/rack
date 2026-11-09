@@ -33,7 +33,7 @@ pub fn run() -> Result<StatusResult> {
         let head_commit_content =
             fsutil::read_file_to_string(&repo.commit_entry_file(&head_commit_id))
                 .unwrap_or_default();
-        CommitEntry::parse(head_commit_content)?.entries()
+        CommitEntry::parse(head_commit_content, head_commit_id.hash())?.entries()
     } else {
         IndexEntries::new(HashMap::new())
     };

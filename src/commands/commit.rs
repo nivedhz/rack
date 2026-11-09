@@ -52,7 +52,14 @@ fn handle_orphan(repo: &Repository, message: String, cfg: Config, idx: IndexEntr
     let timestamp = Utc::now().timestamp();
     let commit_id = CommitId::random();
 
-    let commit = CommitEntry::new(CommitParent::Orphan, message, cfg.user, timestamp, idx);
+    let commit = CommitEntry::new(
+        commit_id.clone(),
+        CommitParent::Orphan,
+        message,
+        cfg.user,
+        timestamp,
+        idx,
+    );
 
     fs::create_dir(repo.commits_dir())?;
     fs::create_dir(repo.commit_entry_dir(&commit_id))?;
@@ -70,12 +77,13 @@ fn handle_parent(
     prev_commit_id: CommitId,
 ) -> Result<()> {
     let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&prev_commit_id))?;
-    let head_commit = CommitEntry::parse(head_content)?;
+    let head_commit = CommitEntry::parse(head_content, prev_commit_id.hash())?;
 
     let timestamp = Utc::now().timestamp();
     let curr_commit_id = CommitId::random();
 
     let curr_commit = CommitEntry::new(
+        curr_commit_id.clone(),
         CommitParent::Parent(prev_commit_id.clone()),
         message,
         cfg.user,
