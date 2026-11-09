@@ -5,6 +5,7 @@ use chrono::{Local, TimeZone};
 use colored::Colorize;
 use diffy::PatchFormatter;
 
+// TODO: Add awareness for standalone local commits which are not pushed
 pub fn status(status_res: StatusResult) -> Result<()> {
     println!();
     if status_res.idx_entries.is_empty() && status_res.un_idx_entries.is_empty() {
