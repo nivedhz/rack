@@ -5,12 +5,9 @@ use crate::commands::{add, commit, config, diff, init, log, restore, status};
 
 mod cli;
 mod commands;
-mod constants;
 mod domain;
 mod error;
-mod hasher;
 mod output;
-mod repository;
 mod storage;
 
 pub fn run() -> Result<()> {
