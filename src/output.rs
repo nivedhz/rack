@@ -51,3 +51,8 @@ pub fn log(oneline: bool, entries: Vec<CommitEntry>) -> Result<()> {
     }
     Ok(())
 }
+
+pub fn diff(entries: Vec<String>) -> Result<()> {
+    dbg!(entries);
+    Ok(())
+}
