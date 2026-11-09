@@ -43,7 +43,7 @@ impl std::str::FromStr for CommitId {
         })
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CommitParent {
     Orphan,
     Parent(CommitId),
@@ -56,7 +56,7 @@ impl CommitParent {
             CommitParent::Parent(CommitId::new(hash))
         }
     }
-    fn get_hash(&self) -> String {
+    pub fn get_hash(&self) -> String {
         match self {
             CommitParent::Orphan => String::new(),
             CommitParent::Parent(commit_id) => commit_id.hash.clone(),
@@ -139,5 +139,20 @@ impl CommitEntry {
     }
     pub fn entries(&self) -> IndexEntries {
         self.entries.clone()
+    }
+    pub fn parent(&self) -> CommitParent {
+        self.parent.clone()
+    }
+    pub fn id(&self) -> CommitId {
+        self.id.clone()
+    }
+    pub fn author(&self) -> User {
+        self.author.clone()
+    }
+    pub fn timestamp(&self) -> i64 {
+        self.timestamp
+    }
+    pub fn message(&self) -> String {
+        self.message.to_string()
     }
 }
