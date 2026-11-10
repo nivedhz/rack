@@ -42,7 +42,7 @@ pub enum Commands {
         #[arg(long)]
         staged: bool,
         #[arg(long)]
-        commit: String,
+        commit: Option<String>,
         path: PathBuf,
     },
 }
