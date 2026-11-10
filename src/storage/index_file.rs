@@ -44,7 +44,11 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
         if e_idx.is_equal(&f_idx) {
             return Ok(());
         } else {
-            idx.modify(&f_idx);
+            if idx.contains(&e_idx.path).is_some() {
+                idx.modify(&f_idx);
+            } else {
+                idx.add(f_idx.clone().path, f_idx);
+            }
             fsutil::write_atomic(&repo.index(), &idx.serialize())?;
 
             return Ok(());
