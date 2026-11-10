@@ -18,6 +18,8 @@ pub enum Error {
     NoFileAdded { message: String },
     #[error("fatal: no commits found! ({message})")]
     NoCommitsFound { message: String },
+    #[error("fatal: commit '{commit}' did not match any commits.")]
+    CommitNotFound { commit: String },
     #[error("fatal: {message}")]
     Convert { message: String },
 }

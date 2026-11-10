@@ -41,6 +41,8 @@ pub enum Commands {
     Restore {
         #[arg(long)]
         staged: bool,
+        #[arg(long)]
+        commit: String,
         path: PathBuf,
     },
 }

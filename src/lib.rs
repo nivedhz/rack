@@ -38,7 +38,11 @@ pub fn run() -> Result<()> {
             output::diff(diff_res)?;
         }
         // rack restore <path>
-        cli::Commands::Restore { path, staged } => restore::run(path, staged)?,
+        cli::Commands::Restore {
+            path,
+            staged,
+            commit,
+        } => restore::run(path, staged, commit)?,
     }
     Ok(())
 }
