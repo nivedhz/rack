@@ -16,8 +16,10 @@ use crate::{
 pub struct StatusResult {
     pub idx_entries: Vec<RepoPath>,
     pub un_idx_entries: Vec<RepoPath>,
+    pub untracked_entries: Vec<RepoPath>,
 }
 
+// TODO: add support for untracked files rather than just displaying them as unindexed ones
 pub fn run() -> Result<StatusResult> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
@@ -38,10 +40,12 @@ pub fn run() -> Result<StatusResult> {
         IndexEntries::new(HashMap::new())
     };
 
+    let tracked_entries = head_entries.extend(idx.clone());
     let files = fsutil::collect_files(&repo.root(), &repo, &ig)?;
 
     let mut idx_entries: Vec<RepoPath> = Vec::new();
     let mut un_idx_entries: Vec<RepoPath> = Vec::new();
+    let mut untracked_entries: Vec<RepoPath> = Vec::new();
     for f in &files {
         let f = f.strip_prefix(&repo.root())?;
         let f_content = fsutil::read_file_to_string(&f.path())?;
@@ -67,6 +71,8 @@ pub fn run() -> Result<StatusResult> {
             if !e.is_equal(&f_idx) {
                 un_idx_entries.push(f);
             }
+        } else if !tracked_entries.contains(&f).is_some() {
+            untracked_entries.push(f);
         } else {
             un_idx_entries.push(f);
         }
@@ -75,5 +81,6 @@ pub fn run() -> Result<StatusResult> {
     Ok(StatusResult {
         idx_entries,
         un_idx_entries,
+        untracked_entries,
     })
 }

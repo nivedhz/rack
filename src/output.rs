@@ -35,6 +35,14 @@ pub fn status(status_res: StatusResult) -> Result<()> {
             println!("      {}    {}", "modified:".red(), file.to_string().red());
         }
     }
+    if !status_res.untracked_entries.is_empty() {
+        println!();
+        println!("Untracked files:");
+        println!("  (use 'rack add <file>...' to include what will be commited)");
+        for file in status_res.untracked_entries {
+            println!("      {}", file.to_string().red());
+        }
+    }
     if status_res.idx_entries.is_empty() {
         println!("\nno changes added for commit (use 'rack add')")
     }
