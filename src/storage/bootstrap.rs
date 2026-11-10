@@ -55,7 +55,7 @@ fn seed_files(root: &Path) -> Result<()> {
     const RACK_IGNORE_CONTENT: &[u8] = b"# Enter the relative or absolute paths of the files or directories you want to ignore.\ntmp/\ntarget\n.git/";
     const BABY_CONTENT: &[u8] = b"hump: hump/baby/bonkers";
     const BRANCH_INDEX_CONTENT: &[u8] =
-        b"0000000000000000000000000000000000000000000000000000000000000000 main\n";
+        b"0000000000000000000000000000000000000000000000000000000000000000 bonkers\n";
 
     fsutil::write_atomic(&layout::config(root), RACK_CONFIG_CONTENT)?;
     fsutil::write_atomic(&layout::ignore_file(root), RACK_IGNORE_CONTENT)?;
