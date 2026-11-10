@@ -19,7 +19,6 @@ pub struct StatusResult {
     pub untracked_entries: Vec<RepoPath>,
 }
 
-// TODO: add support for untracked files rather than just displaying them as unindexed ones
 pub fn run() -> Result<StatusResult> {
     let repo = Repository::discover(&env::current_dir()?)?;
 

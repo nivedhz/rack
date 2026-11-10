@@ -13,8 +13,7 @@ use crate::{
     storage::fsutil,
 };
 
-// TODO:add the stats of commit like this after success
-// [main 4c07b80] chore(`ObjectEntry::from_bytes()`): removed the `ObjectEntry::from_str()` method which is called uselessly when we can just compare the bytes and added in `ObjectEntry::from_bytes()`
+// TODO: add the stats for file diffs
 //  1 file changed, 3 insertions(+), 5 deletions(-)
 pub fn run(message: String) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
