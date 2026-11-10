@@ -17,7 +17,7 @@ pub fn status(status_res: StatusResult) -> Result<()> {
 
     if !status_res.idx_entries.is_empty() {
         println!("Changes to be commited:");
-        println!("  (use 'rack restore --staged <file>...' unstage)");
+        println!("  (use 'rack restore --staged <file>...' to unstage)");
         for file in &status_res.idx_entries {
             println!(
                 "      {}    {}",
