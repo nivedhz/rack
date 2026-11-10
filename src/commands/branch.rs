@@ -7,7 +7,7 @@ use crate::{
     storage::fsutil,
 };
 
-// TODO: refactor and cleanup, implemented the needed data structures.
+// TODO: refactor and cleanup, implement the needed data structures.
 pub fn run(name: Option<String>) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
