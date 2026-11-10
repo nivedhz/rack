@@ -32,3 +32,6 @@ pub fn commits_dir(root: &Path) -> PathBuf {
 pub fn config(root: &Path) -> PathBuf {
     rack_dir(root).join("config.toml")
 }
+pub fn branch_index(root: &Path) -> PathBuf {
+    rack_dir(root).join("BRANCHES")
+}
