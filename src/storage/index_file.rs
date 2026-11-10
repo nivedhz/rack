@@ -16,9 +16,9 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
     let rel_path = RepoPath::new(c_path.strip_prefix(repo.root())?);
 
     let idx_content = fs::read_to_string(repo.index()).unwrap_or_default();
-    let mut idx_entries = IndexEntries::parse(idx_content)?;
+    let mut idx = IndexEntries::parse(idx_content)?;
 
-    if let Some(e_idx) = idx_entries.contains(&rel_path) {
+    if let Some(e_idx) = idx.contains(&rel_path) {
         let f_content = fsutil::read_file_to_string(path)?;
         let f_metadata = fs::metadata(path)?;
 
@@ -32,8 +32,8 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
         if e_idx.is_equal(&f_idx) {
             return Ok(());
         } else {
-            idx_entries.modify(&f_idx);
-            fsutil::write_atomic(&repo.index(), &idx_entries.serialize())?;
+            idx.modify(&f_idx);
+            fsutil::write_atomic(&repo.index(), &idx.serialize())?;
 
             return Ok(());
         }

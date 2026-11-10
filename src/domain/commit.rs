@@ -108,14 +108,14 @@ impl CommitEntry {
         let author = User::from_str(&author_name, &author_email);
         let timestamp: i64 = timestamp.trim().parse()?;
 
-        let entries = IndexEntries::parse(body.trim().to_string())?;
+        let idx = IndexEntries::parse(body.trim().to_string())?;
         Ok(CommitEntry {
             id: hash,
             parent,
             message,
             author,
             timestamp,
-            entries,
+            entries: idx,
         })
     }
     pub fn serialize(&self) -> Vec<u8> {

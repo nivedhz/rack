@@ -30,13 +30,13 @@ pub fn run(path: PathBuf) -> Result<Vec<DiffedContent>> {
         IndexEntries::new(HashMap::default())
     };
 
-    let idx_entries = if let Ok(idx_content) = fsutil::read_file_to_string(&repo.index()) {
+    let idx = if let Ok(idx_content) = fsutil::read_file_to_string(&repo.index()) {
         IndexEntries::parse(idx_content)?
     } else {
         IndexEntries::new(HashMap::default())
     };
 
-    let diff_entries = head_entries.extend(idx_entries);
+    let diff_entries = head_entries.extend(idx);
     let mut entries: Vec<DiffedContent> = Vec::new();
 
     for (e_path, entry) in diff_entries.entries() {
