@@ -20,9 +20,9 @@ impl ObjectType {
             ObjectType::Blob => b"blob",
         }
     }
-    fn from_str(s: &str) -> Option<ObjectType> {
+    fn from_bytes(s: &[u8]) -> Option<ObjectType> {
         match s {
-            "blob" => Some(ObjectType::Blob),
+            b"blob" => Some(ObjectType::Blob),
             _ => None,
         }
     }
@@ -56,9 +56,7 @@ impl ObjectEntry {
         let idx = bytes.iter().position(|&b| b == 0x00).unwrap_or_default();
         let (obj_type, obj_data) = (&bytes[..idx], &bytes[idx + 1..]);
 
-        let obj_type = String::from_utf8(obj_type.to_owned()).unwrap_or_default();
-        let obj_type = ObjectType::from_str(&obj_type).unwrap_or_default();
-
+        let obj_type = ObjectType::from_bytes(obj_type).unwrap_or_default();
         let obj_data = zstd::decode_all(obj_data)?;
 
         Ok(ObjectEntry {
