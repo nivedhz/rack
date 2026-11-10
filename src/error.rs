@@ -21,6 +21,10 @@ pub enum Error {
     #[error("fatal: commit '{commit}' did not match any commits.")]
     CommitNotFound { commit: String },
     #[error("fatal: {message}")]
+    InvalidCommit { message: String },
+    #[error("fatal: {message}")]
+    InvalidObject { message: String },
+    #[error("fatal: {message}")]
     Convert { message: String },
 }
 impl From<toml::de::Error> for Error {
