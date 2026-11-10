@@ -45,7 +45,7 @@ impl Repository {
     pub fn head_file(&self) -> PathBuf {
         self.head_dir().join("bonkers")
     }
-    pub fn _baby(&self) -> PathBuf {
+    pub fn baby(&self) -> PathBuf {
         layout::baby(&self.root)
     }
     pub fn ignore_file(&self) -> PathBuf {
@@ -59,6 +59,9 @@ impl Repository {
     }
     pub fn config(&self) -> PathBuf {
         layout::config(&self.root)
+    }
+    pub fn branch_index(&self) -> PathBuf {
+        layout::branch_index(&self.root())
     }
     pub fn object_entry_dir(&self, object_id: &ObjectId) -> PathBuf {
         self.objects_dir().join(object_id.shard())
