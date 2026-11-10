@@ -29,7 +29,7 @@ pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
     }
 
     let commit_id = match commit {
-        Some(id) => CommitId::new(id),
+        Some(id) => CommitId::new(id)?,
         None => {
             let id = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
             if id.trim().is_empty() {
@@ -38,7 +38,7 @@ pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
                 });
             }
 
-            CommitId::new(id)
+            CommitId::new(id)?
         }
     };
 

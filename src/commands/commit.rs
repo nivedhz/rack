@@ -40,7 +40,7 @@ pub fn run(message: String) -> Result<()> {
     }
 
     let head = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
-    let parent = CommitParent::new(head);
+    let parent = CommitParent::new(head)?;
     match parent {
         CommitParent::Orphan => handle_orphan(&repo, message, cfg, idx)?,
         CommitParent::Parent(commit_id) => handle_parent(&repo, message, cfg, idx, commit_id)?,
