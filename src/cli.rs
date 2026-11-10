@@ -38,5 +38,9 @@ pub enum Commands {
         path: PathBuf,
     },
     /// Restore a file
-    Restore { path: PathBuf },
+    Restore {
+        #[arg(long)]
+        staged: bool,
+        path: PathBuf,
+    },
 }
