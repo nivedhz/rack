@@ -1,6 +1,45 @@
+use sha3::{Digest, Sha3_256};
+use std::fmt;
 use zstd::DEFAULT_COMPRESSION_LEVEL;
 
-use crate::{domain::object_id::ObjectId, error::Result};
+use crate::error::{Error, Result};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ObjectId {
+    hash: String,
+}
+impl ObjectId {
+    pub fn new(hash: String) -> Result<Self> {
+        if hash.len() != 64 {
+            return Err(Error::InvalidObject {
+                message: format!("'{hash}' invalid object id"),
+            });
+        }
+        Ok(ObjectId { hash })
+    }
+    pub fn from_bytes(bytes: &[u8]) -> Self {
+        let mut hash = Sha3_256::new();
+        hash.update(bytes);
+        let hash = hash.finalize();
+        let hex = hex::encode(hash);
+        ObjectId { hash: hex }
+    }
+    pub fn hash(&self) -> String {
+        self.hash.clone()
+    }
+    pub fn shard(&self) -> String {
+        self.hash[..2].to_string()
+    }
+    pub fn rest(&self) -> String {
+        self.hash[2..].to_string()
+    }
+}
+
+impl fmt::Display for ObjectId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.hash)
+    }
+}
 
 #[derive(Debug, Default)]
 pub enum ObjectType {
