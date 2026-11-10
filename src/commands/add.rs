@@ -4,16 +4,13 @@ use std::{
 };
 
 use crate::{
-    domain::{
-        ignore::IgnoreEntries,
-        repository::{self, Repository},
-    },
+    domain::{ignore::IgnoreEntries, repository::Repository},
     error::Result,
     storage::{fsutil, index_file, object_file},
 };
 
 pub fn run(paths: Vec<PathBuf>) -> Result<()> {
-    let repo = repository::Repository::discover(&env::current_dir()?)?;
+    let repo = Repository::discover(&env::current_dir()?)?;
 
     for path in paths {
         let path = fs::canonicalize(path)?;
