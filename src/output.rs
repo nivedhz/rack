@@ -7,8 +7,11 @@ use diffy::PatchFormatter;
 
 // TODO: Add awareness for standalone local commits which are not pushed
 pub fn status(status_res: StatusResult) -> Result<()> {
-    println!();
-    if status_res.idx_entries.is_empty() && status_res.un_idx_entries.is_empty() {
+    if status_res.idx_entries.is_empty()
+        && status_res.un_idx_entries.is_empty()
+        && status_res.untracked_entries.is_empty()
+    {
+        println!();
         println!("On branch 'bonkers'");
         println!("Your branch is up to date with 'baby/bonkers'.");
         println!("\nnothing to commit, working tree clean");
@@ -16,6 +19,7 @@ pub fn status(status_res: StatusResult) -> Result<()> {
     }
 
     if !status_res.idx_entries.is_empty() {
+        println!();
         println!("Changes to be commited:");
         println!("  (use 'rack restore --staged <file>...' to unstage)");
         for file in &status_res.idx_entries {
@@ -28,6 +32,7 @@ pub fn status(status_res: StatusResult) -> Result<()> {
         println!();
     }
     if !status_res.un_idx_entries.is_empty() {
+        println!();
         println!("Changes not staged for commit:");
         println!("  (use 'rack insert <file>...' to update what will be commited)");
         println!("  (use 'rack restore <file>...' to discard changes in the working directory)");
@@ -40,7 +45,7 @@ pub fn status(status_res: StatusResult) -> Result<()> {
         println!("Untracked files:");
         println!("  (use 'rack add <file>...' to include what will be commited)");
         for file in status_res.untracked_entries {
-            println!("      {}", file.to_string().red());
+            println!("    {}", file.to_string().red());
         }
     }
     if status_res.idx_entries.is_empty() {
