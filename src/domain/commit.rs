@@ -5,7 +5,7 @@ use itertools::Itertools;
 
 use crate::{
     domain::{index::IndexEntries, user::User},
-    error::Result,
+    error::{Error, Result},
 };
 
 #[derive(Debug, Clone)]
@@ -13,8 +13,14 @@ pub struct CommitId {
     hash: String,
 }
 impl CommitId {
-    pub fn new(hash: String) -> CommitId {
-        CommitId { hash }
+    pub fn new(hash: String) -> Result<CommitId> {
+        if hash.len() != 64 {
+            return Err(Error::InvalidCommit {
+                message: format!("'{hash}' invalid commit id"),
+            });
+        }
+
+        Ok(CommitId { hash })
     }
     pub fn hash(&self) -> String {
         self.hash.clone()
@@ -49,11 +55,11 @@ pub enum CommitParent {
     Parent(CommitId),
 }
 impl CommitParent {
-    pub fn new(hash: String) -> CommitParent {
+    pub fn new(hash: String) -> Result<CommitParent> {
         if hash.trim().is_empty() {
-            CommitParent::Orphan
+            Ok(CommitParent::Orphan)
         } else {
-            CommitParent::Parent(CommitId::new(hash))
+            Ok(CommitParent::Parent(CommitId::new(hash)?))
         }
     }
     pub fn get_hash(&self) -> String {
@@ -99,7 +105,7 @@ impl CommitEntry {
             .map(String::from)
             .collect_tuple()
             .unwrap_or_default();
-        let hash = CommitId::new(hash);
+        let hash = CommitId::new(hash)?;
         let parent = if parent.trim().is_empty() {
             CommitParent::Orphan
         } else {
