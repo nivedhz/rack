@@ -13,6 +13,9 @@ use crate::{
     storage::fsutil,
 };
 
+// TODO:add the stats of commit like this after success
+// [main 4c07b80] chore(`ObjectEntry::from_bytes()`): removed the `ObjectEntry::from_str()` method which is called uselessly when we can just compare the bytes and added in `ObjectEntry::from_bytes()`
+//  1 file changed, 3 insertions(+), 5 deletions(-)
 pub fn run(message: String) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
@@ -55,7 +58,7 @@ fn handle_orphan(repo: &Repository, message: String, cfg: Config, idx: IndexEntr
     let commit = CommitEntry::new(
         commit_id.clone(),
         CommitParent::Orphan,
-        message,
+        message.clone(),
         cfg.user,
         timestamp,
         idx,
@@ -65,6 +68,7 @@ fn handle_orphan(repo: &Repository, message: String, cfg: Config, idx: IndexEntr
     fs::create_dir(repo.commit_entry_dir(&commit_id))?;
     fsutil::write_atomic(&repo.commit_entry_file(&commit_id), &commit.serialize())?;
     fsutil::write_atomic(&repo.head_file(), commit_id.hash().as_bytes())?;
+    println!("[bonkers {}] {}", commit_id.short(), message);
 
     Ok(())
 }
@@ -85,7 +89,7 @@ fn handle_parent(
     let curr_commit = CommitEntry::new(
         curr_commit_id.clone(),
         CommitParent::Parent(prev_commit_id.clone()),
-        message,
+        message.clone(),
         cfg.user,
         timestamp,
         head_commit.entries().extend(idx),
@@ -97,5 +101,6 @@ fn handle_parent(
         &curr_commit.serialize(),
     )?;
     fsutil::write_atomic(&repo.head_file(), curr_commit_id.hash().as_bytes())?;
+    println!("[bonkers {}] {}", curr_commit_id.short(), message);
     Ok(())
 }
