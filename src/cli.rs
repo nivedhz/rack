@@ -17,7 +17,9 @@ pub enum Commands {
         dir_path: PathBuf,
     },
     /// Add file to the rack
-    Add { path: Vec<PathBuf> },
+    Add {
+        path: Vec<PathBuf>,
+    },
     /// View the current status of the rack repository
     Status,
     /// Commit the added files
@@ -26,7 +28,10 @@ pub enum Commands {
         message: String,
     },
     /// Set a config value
-    Config { key: String, value: String },
+    Config {
+        key: String,
+        value: String,
+    },
     /// Logs the commits
     Log {
         #[arg(long)]
@@ -44,5 +49,8 @@ pub enum Commands {
         #[arg(long)]
         commit: Option<String>,
         path: PathBuf,
+    },
+    Branch {
+        name: Option<String>,
     },
 }
