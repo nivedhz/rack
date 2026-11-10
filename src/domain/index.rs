@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use itertools::Itertools;
 
 use crate::{
-    domain::{object_id::ObjectId, repo_path::RepoPath},
+    domain::{object::ObjectId, repo_path::RepoPath},
     error::Result,
 };
 
@@ -35,7 +35,7 @@ impl IndexEntry {
     ) -> Result<IndexEntry> {
         let size: u64 = size.parse()?;
         let path = RepoPath::new(path);
-        let object_id = ObjectId::new(object_id.to_string());
+        let object_id = ObjectId::new(object_id.to_string())?;
         let ctime: i64 = ctime.parse()?;
         let mtime: i64 = mtime.parse()?;
 

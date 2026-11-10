@@ -5,7 +5,7 @@ use crate::{
         commit::{CommitEntry, CommitId},
         ignore::IgnoreEntries,
         index::{IndexEntries, IndexEntry},
-        object_id::ObjectId,
+        object::ObjectId,
         repo_path::RepoPath,
         repository::Repository,
     },
@@ -30,7 +30,7 @@ pub fn run() -> Result<StatusResult> {
 
     let head_content = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
     let head_entries = if !head_content.trim().is_empty() {
-        let head_commit_id = CommitId::new(head_content);
+        let head_commit_id = CommitId::new(head_content)?;
         let head_commit_content =
             fsutil::read_file_to_string(&repo.commit_entry_file(&head_commit_id))
                 .unwrap_or_default();

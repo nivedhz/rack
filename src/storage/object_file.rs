@@ -2,8 +2,7 @@ use std::{fs, path::Path};
 
 use crate::{
     domain::{
-        object::{ObjectEntry, ObjectType},
-        object_id::ObjectId,
+        object::{ObjectEntry, ObjectId, ObjectType},
         repository::Repository,
     },
     error::Result,

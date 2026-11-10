@@ -4,7 +4,7 @@ use crate::{
     domain::{
         commit::{CommitEntry, CommitId},
         index::{IndexEntries, IndexEntry},
-        object_id::ObjectId,
+        object::ObjectId,
         repo_path::RepoPath,
         repository::Repository,
     },
@@ -20,7 +20,7 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
     let mut idx = IndexEntries::parse(idx_content)?;
 
     let head_entries = if let Ok(id) = fsutil::read_file_to_string(&repo.head_file()) {
-        let head_id = CommitId::new(id);
+        let head_id = CommitId::new(id)?;
         let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&head_id))?;
         let head = CommitEntry::parse(head_content, head_id.hash())?;
         head.entries()
