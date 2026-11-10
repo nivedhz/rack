@@ -1,7 +1,8 @@
-use std::{fs, os::unix::fs::MetadataExt, path::Path};
+use std::{collections::HashMap, fs, os::unix::fs::MetadataExt, path::Path};
 
 use crate::{
     domain::{
+        commit::{CommitEntry, CommitId},
         index::{IndexEntries, IndexEntry},
         object_id::ObjectId,
         repo_path::RepoPath,
@@ -15,10 +16,21 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
     let c_path = fs::canonicalize(path)?;
     let rel_path = RepoPath::new(c_path.strip_prefix(repo.root())?);
 
-    let idx_content = fs::read_to_string(repo.index()).unwrap_or_default();
+    let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
     let mut idx = IndexEntries::parse(idx_content)?;
 
-    if let Some(e_idx) = idx.contains(&rel_path) {
+    let head_entries = if let Ok(id) = fsutil::read_file_to_string(&repo.head_file()) {
+        let head_id = CommitId::new(id);
+        let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&head_id))?;
+        let head = CommitEntry::parse(head_content, head_id.hash())?;
+        head.entries()
+    } else {
+        IndexEntries::new(HashMap::default())
+    };
+
+    let tracked_entries = head_entries.extend(idx.clone());
+
+    if let Some(e_idx) = tracked_entries.contains(&rel_path) {
         let f_content = fsutil::read_file_to_string(path)?;
         let f_metadata = fs::metadata(path)?;
 
