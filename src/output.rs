@@ -93,4 +93,5 @@ pub fn branch(baby: BabyEntry, branch_idx: BranchEntries) {
             print!("{}    ", path_name.name());
         }
     }
+    println!();
 }

@@ -43,7 +43,6 @@ pub fn run(name: Option<String>) -> Result<()> {
     }
 
     output::branch(baby, branch_idx);
-    println!();
 
     Ok(())
 }
