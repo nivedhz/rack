@@ -75,4 +75,10 @@ impl Repository {
     pub fn commit_entry_file(&self, commit_id: &CommitId) -> PathBuf {
         self.commit_entry_dir(commit_id).join(commit_id.rest())
     }
+    pub fn branch(&self, name: &Path) -> PathBuf {
+        self.head_dir().join(name)
+    }
+    pub fn head(&self, rel_name: &Path) -> PathBuf {
+        self.rack_dir().join(rel_name)
+    }
 }
