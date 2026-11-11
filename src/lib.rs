@@ -43,7 +43,9 @@ pub fn run() -> Result<()> {
             staged,
             commit,
         } => restore::run(path, staged, commit)?,
+        // rack branch |<name>|
         cli::Commands::Branch { name } => branch::run(name)?,
+        // rack switch |<-c>| <branch>
         cli::Commands::Switch { branch } => switch::run(branch)?,
     }
     Ok(())
