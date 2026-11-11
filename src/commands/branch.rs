@@ -1,4 +1,3 @@
-use colored::Colorize;
 use std::env;
 
 use crate::{
@@ -9,6 +8,7 @@ use crate::{
         repository::Repository,
     },
     error::{Error, Result},
+    output,
     storage::fsutil,
 };
 
@@ -42,13 +42,7 @@ pub fn run(name: Option<String>) -> Result<()> {
         return Ok(());
     }
 
-    for (path_name, _) in branch_idx.entries() {
-        if baby.name() == path_name.name() {
-            print!("* {}    ", path_name.name().to_string().green())
-        } else {
-            print!("{}    ", path_name.name());
-        }
-    }
+    output::branch(baby, branch_idx);
     println!();
 
     Ok(())
