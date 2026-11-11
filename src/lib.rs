@@ -10,6 +10,7 @@ mod error;
 mod output;
 mod storage;
 
+// TODO: Make the entire hard-coded hump/baby/bonkers as head file dynamic
 pub fn run() -> Result<()> {
     let args = cli::Cli::parse();
 
