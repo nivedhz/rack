@@ -61,7 +61,7 @@ pub fn log(oneline: bool, entries: Vec<CommitEntry>) -> Result<()> {
             let local_offset = *Local::now().offset();
             let formatted_timestamp =
                 match local_offset.timestamp_opt(entry.timestamp(), 0).single() {
-                    Some(dt) => dt.format("%a %b%e %H:%M:%S %Y %z").to_string(),
+                    Some(dt) => dt.format("%a %b %e %H:%M:%S %Y %z").to_string(),
                     None => String::new(),
                 };
 
