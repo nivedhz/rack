@@ -68,11 +68,15 @@ impl BranchIndexEntry {
     }
 }
 
+#[derive(Debug)]
 pub struct BabyEntry {
     path: RepoPath,
 }
 
 impl BabyEntry {
+    pub fn new(path: RepoPath) -> BabyEntry {
+        BabyEntry { path }
+    }
     pub fn parse(file_content: String) -> BabyEntry {
         let path = file_content
             .trim()
@@ -98,5 +102,12 @@ impl BabyEntry {
             .to_string();
 
         RepoPath::new(name)
+    }
+    pub fn serialize(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = Vec::new();
+        bytes.extend_from_slice(b"hump: ");
+        bytes.extend_from_slice(self.path_name().to_string().as_bytes());
+
+        bytes
     }
 }
