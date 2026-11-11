@@ -24,6 +24,8 @@ pub enum Error {
     InvalidCommit { message: String },
     #[error("fatal: {message}")]
     InvalidObject { message: String },
+    #[error("fatal: {name} is an invalid branch name!")]
+    InvalidBranch { name: String },
     #[error("fatal: {message}")]
     Convert { message: String },
     #[error("fatal: a branch named '{name}' already exists!")]

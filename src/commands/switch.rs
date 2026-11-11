@@ -15,12 +15,16 @@ use crate::{
 };
 
 pub fn run(branch: String, create: bool) -> Result<()> {
-    let branch = RepoPath::new(branch);
     let repo = Repository::discover(&env::current_dir()?)?;
     let ig_content = fsutil::read_file_to_string(&repo.ignore_file())?;
 
     let ig = IgnoreEntries::parse(ig_content);
 
+    if branch.trim().is_empty() {
+        return Err(Error::InvalidBranch { name: branch });
+    }
+
+    let branch = RepoPath::new(branch);
     if create {
         if repo.branch(&branch.path()).exists() {
             return Err(Error::BranchExists {
