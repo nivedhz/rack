@@ -2,41 +2,54 @@ use colored::Colorize;
 use std::env;
 
 use crate::{
-    domain::{repo_path::RepoPath, repository::Repository},
-    error::Result,
+    domain::{
+        branch::{BabyEntry, BranchEntries, BranchIndexEntry},
+        commit::CommitId,
+        repo_path::RepoPath,
+        repository::Repository,
+    },
+    error::{Error, Result},
     storage::fsutil,
 };
 
-// TODO: refactor and cleanup, implement the needed data structures.
 pub fn run(name: Option<String>) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
-    let baby = fsutil::read_file_to_string(&repo.baby())?;
-    let curr_head = baby.split_once(" ").unwrap_or_default().1.to_string();
-    let curr_head = RepoPath::new(repo.rack_dir().join(curr_head.trim()));
-    let head = fsutil::read_file_to_string(&curr_head.path()).unwrap_or_default();
+    let baby_content = fsutil::read_file_to_string(&repo.baby())?;
+    let baby = BabyEntry::parse(baby_content);
 
-    let branches: Vec<String> = fsutil::read_file_to_string(&repo.branch_index())?
-        .lines()
-        .map(|l| l.split_once(" ").unwrap_or_default().1.to_string())
-        .collect();
+    let head_content =
+        fsutil::read_file_to_string(&repo.head(&baby.path_name().path())).unwrap_or_default();
+    let head_commit = CommitId::new(head_content)?;
 
-    if let Some(name) = name {
-        fsutil::write_atomic(&repo.head_dir().join(&name), head.as_bytes())?;
-        fsutil::append_atomic(
-            &repo.branch_index(),
-            format!("{} {}\n", head, name).as_bytes(),
-        )?;
-    } else {
-        for branch in branches {
-            if RepoPath::new(&branch) == curr_head.strip_prefix(&repo.head_dir())? {
-                print!("* {}    ", branch.green());
-            } else {
-                print!("{}    ", branch);
-            }
+    let branch_idx_content = fsutil::read_file_to_string(&repo.branch_index()).unwrap_or_default();
+    let branch_idx = BranchEntries::parse(branch_idx_content)?;
+
+    if let Some(n) = name {
+        let name = RepoPath::new(n);
+        if repo.branch(&name.path()).exists() {
+            return Err(Error::BranchExists {
+                name: name.to_string(),
+            });
         }
-        println!();
+
+        let branch_entry = BranchIndexEntry::new(head_commit, name);
+        fsutil::write_atomic(
+            &repo.branch(&branch_entry.name().path()),
+            &branch_entry.head().serialize(),
+        )?;
+        fsutil::append_atomic(&repo.branch_index(), &branch_entry.serialize())?;
+        return Ok(());
     }
+
+    for (path_name, _) in branch_idx.entries() {
+        if baby.name() == path_name.name() {
+            print!("* {}    ", path_name.name().to_string().green())
+        } else {
+            print!("{}    ", path_name.name());
+        }
+    }
+    println!();
 
     Ok(())
 }
