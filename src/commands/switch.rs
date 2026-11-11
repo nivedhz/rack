@@ -1,6 +1,7 @@
 use std::{env, fs};
 
 use crate::{
+    commands::branch,
     domain::{
         branch::BabyEntry,
         commit::{CommitEntry, CommitId},
@@ -13,12 +14,22 @@ use crate::{
     storage::fsutil,
 };
 
-pub fn run(branch: String) -> Result<()> {
+pub fn run(branch: String, create: bool) -> Result<()> {
     let branch = RepoPath::new(branch);
     let repo = Repository::discover(&env::current_dir()?)?;
     let ig_content = fsutil::read_file_to_string(&repo.ignore_file())?;
 
     let ig = IgnoreEntries::parse(ig_content);
+
+    if create {
+        if repo.branch(&branch.path()).exists() {
+            return Err(Error::BranchExists {
+                name: branch.to_string(),
+            });
+        }
+
+        branch::run(Some(branch.to_string()))?;
+    }
 
     if !repo.branch(&branch.path()).exists() {
         return Err(Error::BranchNotExists {

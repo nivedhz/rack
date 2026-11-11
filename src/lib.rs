@@ -46,7 +46,7 @@ pub fn run() -> Result<()> {
         // rack branch |<name>|
         cli::Commands::Branch { name } => branch::run(name)?,
         // rack switch |<-c>| <branch>
-        cli::Commands::Switch { branch } => switch::run(branch)?,
+        cli::Commands::Switch { branch, create } => switch::run(branch, create)?,
     }
     Ok(())
 }

@@ -48,5 +48,9 @@ pub enum Commands {
     /// List all branches or create a branch
     Branch { name: Option<String> },
     /// Switch to another branch
-    Switch { branch: String },
+    Switch {
+        branch: String,
+        #[arg(short, long)]
+        create: bool,
+    },
 }
