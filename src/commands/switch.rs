@@ -2,6 +2,7 @@ use std::{env, fs};
 
 use crate::{
     domain::{
+        branch::BabyEntry,
         commit::{CommitEntry, CommitId},
         ignore::IgnoreEntries,
         object::{ObjectEntry, ObjectId},
@@ -24,6 +25,10 @@ pub fn run(branch: String) -> Result<()> {
             name: branch.to_string(),
         });
     }
+
+    let baby_entry =
+        BabyEntry::new(RepoPath::new(repo.branch(&branch.path())).strip_prefix(&repo.rack_dir())?);
+    fsutil::write_atomic(&repo.baby(), &baby_entry.serialize())?;
 
     let branch_content = fsutil::read_file_to_string(&repo.branch(&branch.path()))?;
     let branch_id = CommitId::new(branch_content)?;
