@@ -16,8 +16,8 @@ use crate::{
 
 pub fn run(branch: String, create: bool) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
-    let ig_content = fsutil::read_file_to_string(&repo.ignore_file())?;
 
+    let ig_content = fsutil::read_file_to_string(&repo.ignore_file())?;
     let ig = IgnoreEntries::parse(ig_content);
 
     if branch.trim().is_empty() {
