@@ -26,6 +26,8 @@ pub enum Error {
     InvalidObject { message: String },
     #[error("fatal: {message}")]
     Convert { message: String },
+    #[error("fatal: a branch named '{name}' already exists!")]
+    BranchExists { name: String },
 }
 impl From<toml::de::Error> for Error {
     fn from(err: toml::de::Error) -> Self {
