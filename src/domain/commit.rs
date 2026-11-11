@@ -40,6 +40,12 @@ impl CommitId {
     pub fn short(&self) -> String {
         self.hash[..10].to_string()
     }
+    pub fn serialize(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = Vec::new();
+        bytes.extend_from_slice(self.hash().as_bytes());
+
+        bytes
+    }
 }
 impl std::str::FromStr for CommitId {
     type Err = ParseError;
