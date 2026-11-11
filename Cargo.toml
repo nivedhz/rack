@@ -19,3 +19,4 @@ itertools = "0.15.0"
 diffy = { version = "0.5.2", features = ["color"] }
 thiserror = "2.0.21"
 tempfile = "3.27.0"
+indexmap = "2.14.2"
