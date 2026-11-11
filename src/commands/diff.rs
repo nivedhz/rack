@@ -39,7 +39,11 @@ pub fn run(path: PathBuf) -> Result<Vec<DiffedContent>> {
     let mut entries: Vec<DiffedContent> = Vec::new();
 
     for (e_path, entry) in diff_entries.entries() {
-        let curr_content = fsutil::read_file_to_string(&e_path.path())?;
+        let curr_content = fsutil::read_file_to_string(&e_path.path()).unwrap_or_default();
+        if curr_content.trim().is_empty() {
+            continue;
+        }
+
         let curr_id = ObjectId::from_bytes(curr_content.as_bytes());
         let e_path = fs::canonicalize(e_path.path())?;
 
