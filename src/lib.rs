@@ -32,7 +32,7 @@ pub fn run() -> Result<()> {
             let log_res = log::run()?;
             output::log(oneline, log_res)?;
         }
-        // rack diff
+        // rack diff |path|
         cli::Commands::Diff { path } => {
             let diff_res = diff::run(path)?;
             output::diff(diff_res)?;
