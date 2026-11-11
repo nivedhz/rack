@@ -28,6 +28,8 @@ pub enum Error {
     Convert { message: String },
     #[error("fatal: a branch named '{name}' already exists!")]
     BranchExists { name: String },
+    #[error("fatal: branch named '{name}' doesn't exist!")]
+    BranchNotExists { name: String },
 }
 impl From<toml::de::Error> for Error {
     fn from(err: toml::de::Error) -> Self {
