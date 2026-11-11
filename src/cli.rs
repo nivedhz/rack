@@ -53,4 +53,7 @@ pub enum Commands {
     Branch {
         name: Option<String>,
     },
+    Switch {
+        branch: String,
+    },
 }
