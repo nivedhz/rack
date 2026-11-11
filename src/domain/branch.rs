@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use crate::{
     domain::{commit::CommitId, repo_path::RepoPath},
@@ -20,13 +20,13 @@ impl BranchEntry {
 
 #[derive(Debug)]
 pub struct BranchEntries {
-    entries: HashMap<BranchEntry, CommitId>,
+    entries: IndexMap<BranchEntry, CommitId>,
 }
 
 impl BranchEntries {
     pub fn parse(file_content: String) -> Result<BranchEntries> {
         let lines = file_content.lines();
-        let mut entries: HashMap<BranchEntry, CommitId> = HashMap::new();
+        let mut entries: IndexMap<BranchEntry, CommitId> = IndexMap::new();
 
         for l in lines {
             let (tail, name) = l.split_once(" ").unwrap_or_default();
@@ -38,7 +38,7 @@ impl BranchEntries {
 
         Ok(BranchEntries { entries })
     }
-    pub fn entries(&self) -> HashMap<BranchEntry, CommitId> {
+    pub fn entries(&self) -> IndexMap<BranchEntry, CommitId> {
         self.entries.clone()
     }
 }
