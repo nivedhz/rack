@@ -21,6 +21,12 @@ impl RepoPath {
             path: self.path.strip_prefix(pref)?.to_path_buf(),
         })
     }
+    pub fn serialize(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = Vec::new();
+        bytes.extend_from_slice(self.to_string().as_bytes());
+
+        bytes
+    }
 }
 impl fmt::Display for RepoPath {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
