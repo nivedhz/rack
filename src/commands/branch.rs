@@ -1,7 +1,11 @@
-use std::env;
+use std::{env, fs};
 
 use crate::{
-    domain::{branch::BranchIndexEntry, repo_path::RepoPath, repository::Repository},
+    domain::{
+        branch::{BranchEntry, BranchIndexEntry},
+        repo_path::RepoPath,
+        repository::Repository,
+    },
     error::{Error, Result},
     output,
     storage::{baby_file, branch_index, fsutil, head_file},
@@ -9,12 +13,27 @@ use crate::{
 
 pub fn run(name: Option<String>, delete: Option<String>) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
-
     let baby = baby_file::get_baby(&repo);
-
     let head_commit = head_file::get_commit(&repo.head(&baby.path_name().path()))?;
-
     let branch_idx = branch_index::get_entries(&repo)?;
+
+    if let Some(n) = delete {
+        let name = RepoPath::new(n);
+        if !repo.branch(&name.path()).exists() {
+            return Err(Error::BranchNotExists {
+                name: name.to_string(),
+            });
+        }
+        if baby.name() == name {
+            return Err(Error::BranchInUse {
+                name: name.to_string(),
+            });
+        }
+
+        fs::remove_file(repo.branch(&name.path()))?;
+        branch_index::remove_entry(&repo, BranchEntry::new(name))?;
+        return Ok(());
+    }
 
     if let Some(n) = name {
         let name = RepoPath::new(n);
