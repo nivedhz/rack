@@ -14,7 +14,7 @@ pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
 
     if staged {
         if idx.contains(&repo_path).is_some() {
-            idx.remove(repo_path);
+            idx.remove(&repo_path);
             fsutil::write_atomic(&repo.index(), &idx.serialize())?;
         }
 

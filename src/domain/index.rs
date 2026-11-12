@@ -123,8 +123,8 @@ impl IndexEntries {
 
         IndexEntries { entries: extended }
     }
-    pub fn remove(&mut self, path: RepoPath) {
-        self.entries.remove(&path);
+    pub fn remove(&mut self, path: &RepoPath) {
+        self.entries.remove(path);
     }
     pub fn add(&mut self, path: RepoPath, entry: IndexEntry) {
         self.entries.insert(path, entry);
