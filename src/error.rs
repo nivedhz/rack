@@ -32,6 +32,8 @@ pub enum Error {
     BranchExists { name: String },
     #[error("fatal: branch named '{name}' doesn't exist!")]
     BranchNotExists { name: String },
+    #[error("fatal: branch '{name}' is currently in use!")]
+    BranchInUse { name: String },
 }
 impl From<toml::de::Error> for Error {
     fn from(err: toml::de::Error) -> Self {
