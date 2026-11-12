@@ -38,13 +38,14 @@ pub fn run(branch: String, create: bool) -> Result<()> {
     fsutil::write_atomic(&repo.baby(), &baby_entry.serialize())?;
 
     let branch_id = head_file::get_commit(&repo.branch(&branch.path()))?;
-    let branch_head_entry = commit_file::get_entry(&repo, &branch_id)?.entries();
+    let mut branch_head_entry = commit_file::get_entry(&repo, &branch_id)?.entries();
 
     let curr_file_state: Vec<RepoPath> = fsutil::collect_files(&repo.root(), &repo, &ig)?;
 
     for file in &curr_file_state {
         if let Some(e) = branch_head_entry.contains(&file.strip_prefix(&repo.root())?) {
             let f_obj_id = object_file::get_object_id(&file.path())?;
+            branch_head_entry.remove(&e.path);
 
             if e.object_id == f_obj_id {
                 continue;
@@ -57,6 +58,11 @@ pub fn run(branch: String, create: bool) -> Result<()> {
         } else {
             fs::remove_file(file.path())?;
         }
+    }
+
+    for (repo_path, entry) in branch_head_entry.entries() {
+        let object = object_file::get_object_entry(&repo, entry.object_id)?;
+        fsutil::write_atomic(&repo_path.path(), &object.data)?;
     }
 
     Ok(())
