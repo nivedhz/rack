@@ -10,7 +10,7 @@ pub struct BranchEntry {
     name: RepoPath,
 }
 impl BranchEntry {
-    fn new(name: RepoPath) -> Self {
+    pub fn new(name: RepoPath) -> Self {
         BranchEntry { name }
     }
     pub fn name(&self) -> RepoPath {
@@ -40,6 +40,20 @@ impl BranchEntries {
     }
     pub fn entries(&self) -> IndexMap<BranchEntry, CommitId> {
         self.entries.clone()
+    }
+    pub fn remove(&mut self, entry: BranchEntry) -> Option<CommitId> {
+        self.entries.shift_remove(&entry)
+    }
+    pub fn serialize(&self) -> Vec<u8> {
+        let mut bytes: Vec<u8> = Vec::new();
+
+        for (entry, id) in self.entries() {
+            bytes.extend_from_slice(&id.serialize());
+            bytes.push(0x20);
+            bytes.extend_from_slice(entry.name().to_string().as_bytes());
+            bytes.push(0x0A);
+        }
+        bytes
     }
 }
 
