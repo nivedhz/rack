@@ -26,7 +26,7 @@ impl IndexEntry {
             mtime,
         }
     }
-    pub fn parse(
+    pub fn from_str(
         size: &str,
         path: &str,
         object_id: &str,
@@ -78,7 +78,7 @@ impl IndexEntries {
     pub fn new(entries: HashMap<RepoPath, IndexEntry>) -> IndexEntries {
         IndexEntries { entries }
     }
-    pub fn parse(idx_content: String) -> Result<IndexEntries> {
+    pub fn from_string(idx_content: String) -> Result<IndexEntries> {
         let mut entries: HashMap<RepoPath, IndexEntry> = HashMap::new();
 
         for entry in idx_content.lines() {
@@ -87,7 +87,7 @@ impl IndexEntries {
 
             entries.insert(
                 RepoPath::new(path),
-                IndexEntry::parse(size, path, object_id, ctime, mtime)?,
+                IndexEntry::from_str(size, path, object_id, ctime, mtime)?,
             );
         }
         Ok(IndexEntries { entries })

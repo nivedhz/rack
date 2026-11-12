@@ -13,5 +13,5 @@ pub fn write_config(repo: &Repository, conf: Config) -> Result<()> {
 pub fn get_confit(repo: &Repository) -> Result<Config> {
     let cfg_content = fsutil::read_file_to_string(&repo.config())?;
 
-    Config::parse(cfg_content)
+    Config::from_string(cfg_content)
 }

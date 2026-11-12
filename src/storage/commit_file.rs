@@ -13,7 +13,7 @@ pub fn get_entry(repo: &Repository, commit: &CommitId) -> Result<CommitEntry> {
     let commit_content =
         fsutil::read_file_to_string(&repo.commit_entry_file(commit)).unwrap_or_default();
 
-    CommitEntry::parse(commit_content, commit.hash())
+    CommitEntry::from_string(commit_content, commit.hash())
 }
 
 pub fn write_commit(

@@ -16,7 +16,7 @@ pub struct IgnoreEntries {
 }
 
 impl IgnoreEntries {
-    pub fn parse(file_content: String) -> IgnoreEntries {
+    pub fn from_string(file_content: String) -> IgnoreEntries {
         // The entries starting with # are comments and are thus ignored
         let mut entries: HashSet<PathBuf> = file_content
             .lines()

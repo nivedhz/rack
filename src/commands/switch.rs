@@ -60,6 +60,7 @@ pub fn run(branch: String, create: bool) -> Result<()> {
         }
     }
 
+    // the entries in `branch_head_entry` but not in `curr_file_state` will be dealt with in here
     for (repo_path, entry) in branch_head_entry.entries() {
         let object = object_file::get_object_entry(&repo, entry.object_id)?;
         fsutil::write_atomic(&repo_path.path(), &object.data)?;

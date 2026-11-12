@@ -18,16 +18,16 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
     let rel_path = RepoPath::new(c_path.strip_prefix(repo.root())?);
 
     let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
-    let mut idx = IndexEntries::parse(idx_content)?;
+    let mut idx = IndexEntries::from_string(idx_content)?;
 
     let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
-    let baby = BabyEntry::parse(baby_content);
+    let baby = BabyEntry::from_string(baby_content);
 
     let head_entries =
         if let Ok(id) = fsutil::read_file_to_string(&repo.head(&baby.path_name().path())) {
             let head_id = CommitId::new(id)?;
             let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&head_id))?;
-            let head = CommitEntry::parse(head_content, head_id.hash())?;
+            let head = CommitEntry::from_string(head_content, head_id.hash())?;
             head.entries()
         } else {
             IndexEntries::new(HashMap::default())
@@ -79,5 +79,5 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
 
 pub fn get_index(repo: &Repository) -> Result<IndexEntries> {
     let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
-    IndexEntries::parse(idx_content)
+    IndexEntries::from_string(idx_content)
 }

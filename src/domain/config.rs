@@ -10,7 +10,7 @@ pub struct Config {
     pub user: User,
 }
 impl Config {
-    pub fn parse(file_content: String) -> Result<Config> {
+    pub fn from_string(file_content: String) -> Result<Config> {
         let cfg_toml: Config = toml::from_str(&file_content)?;
         Ok(cfg_toml)
     }

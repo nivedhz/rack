@@ -24,7 +24,7 @@ pub struct BranchEntries {
 }
 
 impl BranchEntries {
-    pub fn parse(file_content: String) -> Result<BranchEntries> {
+    pub fn from_string(file_content: String) -> Result<BranchEntries> {
         let lines = file_content.lines();
         let mut entries: IndexMap<BranchEntry, CommitId> = IndexMap::new();
 
@@ -77,7 +77,7 @@ impl BabyEntry {
     pub fn new(path: RepoPath) -> BabyEntry {
         BabyEntry { path }
     }
-    pub fn parse(file_content: String) -> BabyEntry {
+    pub fn from_string(file_content: String) -> BabyEntry {
         let path = file_content
             .trim()
             .split_once(" ")

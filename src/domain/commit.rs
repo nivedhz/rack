@@ -104,7 +104,7 @@ impl CommitEntry {
             entries,
         }
     }
-    pub fn parse(file_content: String, hash: String) -> Result<CommitEntry> {
+    pub fn from_string(file_content: String, hash: String) -> Result<CommitEntry> {
         let (header, body) = file_content.rsplit_once("\0").unwrap_or_default();
         let (parent, message, author_name, author_email, timestamp) = header
             .split("\0")
@@ -120,7 +120,7 @@ impl CommitEntry {
         let author = User::from_str(&author_name, &author_email);
         let timestamp: i64 = timestamp.trim().parse()?;
 
-        let idx = IndexEntries::parse(body.trim().to_string())?;
+        let idx = IndexEntries::from_string(body.trim().to_string())?;
         Ok(CommitEntry {
             id: hash,
             parent,

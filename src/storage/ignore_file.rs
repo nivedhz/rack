@@ -6,5 +6,5 @@ use crate::{
 
 pub fn get_ignored(repo: &Repository) -> Result<IgnoreEntries> {
     let ig_file_content = fsutil::read_file_to_string(&repo.ignore_file())?;
-    Ok(IgnoreEntries::parse(ig_file_content))
+    Ok(IgnoreEntries::from_string(ig_file_content))
 }
