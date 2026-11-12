@@ -9,6 +9,7 @@ use crate::{
     storage::layout,
 };
 
+#[derive(Debug)]
 pub struct Repository {
     root: PathBuf,
 }
@@ -41,9 +42,6 @@ impl Repository {
     }
     pub fn head_dir(&self) -> PathBuf {
         layout::head(&self.root)
-    }
-    pub fn head_file(&self) -> PathBuf {
-        self.head_dir().join("bonkers")
     }
     pub fn baby(&self) -> PathBuf {
         layout::baby(&self.root)

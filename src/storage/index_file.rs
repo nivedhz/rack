@@ -2,6 +2,7 @@ use std::{collections::HashMap, fs, os::unix::fs::MetadataExt, path::Path};
 
 use crate::{
     domain::{
+        branch::BabyEntry,
         commit::{CommitEntry, CommitId},
         index::{IndexEntries, IndexEntry},
         object::ObjectId,
@@ -19,14 +20,18 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
     let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
     let mut idx = IndexEntries::parse(idx_content)?;
 
-    let head_entries = if let Ok(id) = fsutil::read_file_to_string(&repo.head_file()) {
-        let head_id = CommitId::new(id)?;
-        let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&head_id))?;
-        let head = CommitEntry::parse(head_content, head_id.hash())?;
-        head.entries()
-    } else {
-        IndexEntries::new(HashMap::default())
-    };
+    let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
+    let baby = BabyEntry::parse(baby_content);
+
+    let head_entries =
+        if let Ok(id) = fsutil::read_file_to_string(&repo.head(&baby.path_name().path())) {
+            let head_id = CommitId::new(id)?;
+            let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&head_id))?;
+            let head = CommitEntry::parse(head_content, head_id.hash())?;
+            head.entries()
+        } else {
+            IndexEntries::new(HashMap::default())
+        };
 
     let tracked_entries = head_entries.extend(idx.clone());
 

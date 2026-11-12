@@ -2,6 +2,7 @@ use std::{collections::HashMap, env, fs, path::PathBuf};
 
 use crate::{
     domain::{
+        branch::BabyEntry,
         commit::{CommitEntry, CommitId},
         index::IndexEntries,
         object::{ObjectEntry, ObjectId},
@@ -20,7 +21,12 @@ pub struct DiffedContent {
 pub fn run(path: PathBuf) -> Result<Vec<DiffedContent>> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
-    let head_entries = if let Ok(head_content) = fsutil::read_file_to_string(&repo.head_file()) {
+    let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
+    let baby = BabyEntry::parse(baby_content);
+
+    let head_entries = if let Ok(head_content) =
+        fsutil::read_file_to_string(&repo.head(&baby.path_name().path()))
+    {
         let head_id = CommitId::new(head_content)?;
         let head_commit_content = fsutil::read_file_to_string(&repo.commit_entry_file(&head_id))?;
         let head = CommitEntry::parse(head_commit_content, head_id.hash())?;

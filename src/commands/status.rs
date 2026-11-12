@@ -2,6 +2,7 @@ use std::{collections::HashMap, env, os::unix::fs::MetadataExt};
 
 use crate::{
     domain::{
+        branch::BabyEntry,
         commit::{CommitEntry, CommitId},
         ignore::IgnoreEntries,
         index::{IndexEntries, IndexEntry},
@@ -28,7 +29,11 @@ pub fn run() -> Result<StatusResult> {
     let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
     let idx = IndexEntries::parse(idx_content)?;
 
-    let head_content = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
+    let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
+    let baby = BabyEntry::parse(baby_content);
+
+    let head_content =
+        fsutil::read_file_to_string(&repo.head(&baby.path_name().path())).unwrap_or_default();
     let head_entries = if !head_content.trim().is_empty() {
         let head_commit_id = CommitId::new(head_content)?;
         let head_commit_content =

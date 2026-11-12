@@ -2,6 +2,7 @@ use std::env;
 
 use crate::{
     domain::{
+        branch::BabyEntry,
         commit::{CommitEntry, CommitId},
         repository::Repository,
     },
@@ -11,12 +12,16 @@ use crate::{
 
 pub fn run() -> Result<Vec<CommitEntry>> {
     let repo = Repository::discover(&env::current_dir()?)?;
-    if !repo.head_file().exists() {
+
+    let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
+    let baby = BabyEntry::parse(baby_content);
+
+    if !repo.head(&baby.path_name().path()).exists() {
         return Err(Error::NoCommitsFound {
             message: String::from("use rack commit to add commits!"),
         });
     }
-    let mut curr_head = fsutil::read_file_to_string(&repo.head_file())?;
+    let mut curr_head = fsutil::read_file_to_string(&repo.head(&baby.path_name().path()))?;
 
     let mut entries: Vec<CommitEntry> = Vec::new();
 

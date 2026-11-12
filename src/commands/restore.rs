@@ -2,6 +2,7 @@ use std::{env, fs, path::PathBuf};
 
 use crate::{
     domain::{
+        branch::BabyEntry,
         commit::{CommitEntry, CommitId},
         index::IndexEntries,
         object::ObjectEntry,
@@ -31,7 +32,11 @@ pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
     let commit_id = match commit {
         Some(id) => CommitId::new(id)?,
         None => {
-            let id = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
+            let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
+            let baby = BabyEntry::parse(baby_content);
+
+            let id = fsutil::read_file_to_string(&repo.head(&baby.path_name().path()))
+                .unwrap_or_default();
             if id.trim().is_empty() {
                 return Err(Error::NoCommitsFound {
                     message: String::from("use rack commit to add commits!"),

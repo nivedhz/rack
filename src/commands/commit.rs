@@ -1,9 +1,10 @@
-use std::{env, fs};
+use std::{env, fs, path::Path};
 
 use chrono::Utc;
 
 use crate::{
     domain::{
+        branch::BabyEntry,
         commit::{CommitEntry, CommitId, CommitParent},
         config::Config,
         index::IndexEntries,
@@ -39,18 +40,31 @@ pub fn run(message: String) -> Result<()> {
         });
     }
 
-    let head = fsutil::read_file_to_string(&repo.head_file()).unwrap_or_default();
+    let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
+    let baby = BabyEntry::parse(baby_content);
+
+    let head_file = repo.head(&baby.path_name().path());
+
+    let head = fsutil::read_file_to_string(&head_file).unwrap_or_default();
     let parent = CommitParent::new(head)?;
     match parent {
-        CommitParent::Orphan => handle_orphan(&repo, message, cfg, idx)?,
-        CommitParent::Parent(commit_id) => handle_parent(&repo, message, cfg, idx, commit_id)?,
+        CommitParent::Orphan => handle_orphan(&repo, message, cfg, idx, &head_file)?,
+        CommitParent::Parent(commit_id) => {
+            handle_parent(&repo, message, cfg, idx, commit_id, &head_file)?
+        }
     }
 
     fsutil::empty_file(&repo.index())?;
     Ok(())
 }
 
-fn handle_orphan(repo: &Repository, message: String, cfg: Config, idx: IndexEntries) -> Result<()> {
+fn handle_orphan(
+    repo: &Repository,
+    message: String,
+    cfg: Config,
+    idx: IndexEntries,
+    head_file: &Path,
+) -> Result<()> {
     let timestamp = Utc::now().timestamp();
     let commit_id = CommitId::random();
 
@@ -66,7 +80,7 @@ fn handle_orphan(repo: &Repository, message: String, cfg: Config, idx: IndexEntr
     fs::create_dir(repo.commits_dir())?;
     fs::create_dir(repo.commit_entry_dir(&commit_id))?;
     fsutil::write_atomic(&repo.commit_entry_file(&commit_id), &commit.serialize())?;
-    fsutil::write_atomic(&repo.head_file(), commit_id.hash().as_bytes())?;
+    fsutil::write_atomic(head_file, commit_id.hash().as_bytes())?;
     println!("[bonkers {}] {}", commit_id.short(), message);
 
     Ok(())
@@ -78,6 +92,7 @@ fn handle_parent(
     cfg: Config,
     idx: IndexEntries,
     prev_commit_id: CommitId,
+    head_file: &Path,
 ) -> Result<()> {
     let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&prev_commit_id))?;
     let head_commit = CommitEntry::parse(head_content, prev_commit_id.hash())?;
@@ -99,7 +114,7 @@ fn handle_parent(
         &repo.commit_entry_file(&curr_commit_id),
         &curr_commit.serialize(),
     )?;
-    fsutil::write_atomic(&repo.head_file(), curr_commit_id.hash().as_bytes())?;
+    fsutil::write_atomic(head_file, curr_commit_id.hash().as_bytes())?;
     println!("[bonkers {}] {}", curr_commit_id.short(), message);
     Ok(())
 }
