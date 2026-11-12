@@ -46,7 +46,11 @@ pub enum Commands {
         path: PathBuf,
     },
     /// List all branches or create a branch
-    Branch { name: Option<String> },
+    Branch {
+        name: Option<String>,
+        #[arg(short, long)]
+        delete: Option<String>,
+    },
     /// Switch to another branch
     Switch {
         branch: String,
