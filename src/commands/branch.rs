@@ -1,29 +1,20 @@
 use std::env;
 
 use crate::{
-    domain::{
-        branch::{BabyEntry, BranchEntries, BranchIndexEntry},
-        commit::CommitId,
-        repo_path::RepoPath,
-        repository::Repository,
-    },
+    domain::{branch::BranchIndexEntry, repo_path::RepoPath, repository::Repository},
     error::{Error, Result},
     output,
-    storage::fsutil,
+    storage::{baby_file, branch_index, fsutil, head_file},
 };
 
 pub fn run(name: Option<String>) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
-    let baby_content = fsutil::read_file_to_string(&repo.baby())?;
-    let baby = BabyEntry::parse(baby_content);
+    let baby = baby_file::get_baby(&repo);
 
-    let head_content =
-        fsutil::read_file_to_string(&repo.head(&baby.path_name().path())).unwrap_or_default();
-    let head_commit = CommitId::new(head_content)?;
+    let head_commit = head_file::get_commit(&repo.head(&baby.path_name().path()))?;
 
-    let branch_idx_content = fsutil::read_file_to_string(&repo.branch_index()).unwrap_or_default();
-    let branch_idx = BranchEntries::parse(branch_idx_content)?;
+    let branch_idx = branch_index::get_entries(&repo)?;
 
     if let Some(n) = name {
         let name = RepoPath::new(n);

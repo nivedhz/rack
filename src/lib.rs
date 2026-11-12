@@ -11,7 +11,6 @@ mod output;
 mod storage;
 
 // TODO: Add the delete functionality for branch
-// Use the Storage options where storage is necessary.
 pub fn run() -> Result<()> {
     let args = cli::Cli::parse();
 

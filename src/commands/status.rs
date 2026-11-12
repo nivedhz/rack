@@ -2,16 +2,12 @@ use std::{collections::HashMap, env, os::unix::fs::MetadataExt};
 
 use crate::{
     domain::{
-        branch::BabyEntry,
-        commit::{CommitEntry, CommitId},
-        ignore::IgnoreEntries,
         index::{IndexEntries, IndexEntry},
-        object::ObjectId,
         repo_path::RepoPath,
         repository::Repository,
     },
     error::Result,
-    storage::fsutil,
+    storage::{baby_file, commit_file, fsutil, head_file, ignore_file, index_file, object_file},
 };
 
 pub struct StatusResult {
@@ -22,24 +18,16 @@ pub struct StatusResult {
 
 pub fn run() -> Result<StatusResult> {
     let repo = Repository::discover(&env::current_dir()?)?;
+    let ig = ignore_file::get_ignored(&repo)?;
+    let idx = index_file::get_index(&repo)?;
+    let baby = baby_file::get_baby(&repo);
 
-    let ig_content = fsutil::read_file_to_string(&repo.ignore_file())?;
-    let ig = IgnoreEntries::parse(ig_content);
+    let head_file = repo.head(&baby.path_name().path());
+    let head_entries = if head_file.exists() {
+        let head_commit_id = head_file::get_commit(&head_file)?;
+        let commit_entry = commit_file::get_entry(&repo, &head_commit_id)?;
 
-    let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
-    let idx = IndexEntries::parse(idx_content)?;
-
-    let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
-    let baby = BabyEntry::parse(baby_content);
-
-    let head_content =
-        fsutil::read_file_to_string(&repo.head(&baby.path_name().path())).unwrap_or_default();
-    let head_entries = if !head_content.trim().is_empty() {
-        let head_commit_id = CommitId::new(head_content)?;
-        let head_commit_content =
-            fsutil::read_file_to_string(&repo.commit_entry_file(&head_commit_id))
-                .unwrap_or_default();
-        CommitEntry::parse(head_commit_content, head_commit_id.hash())?.entries()
+        commit_entry.entries()
     } else {
         IndexEntries::new(HashMap::new())
     };
@@ -52,8 +40,7 @@ pub fn run() -> Result<StatusResult> {
     let mut untracked_entries: Vec<RepoPath> = Vec::new();
     for f in &files {
         let f = f.strip_prefix(&repo.root())?;
-        let f_content = fsutil::read_file_to_string(&f.path())?;
-        let f_object_id = ObjectId::from_bytes(f_content.as_bytes());
+        let f_object_id = object_file::get_object_id(&f.path())?;
 
         if let Some(e) = head_entries.contains(&f)
             && e.object_id.hash() == f_object_id.hash()

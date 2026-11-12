@@ -76,3 +76,8 @@ pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
 
     Ok(())
 }
+
+pub fn get_index(repo: &Repository) -> Result<IndexEntries> {
+    let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
+    IndexEntries::parse(idx_content)
+}

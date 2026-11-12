@@ -2,19 +2,17 @@ use std::env;
 
 use crate::{
     domain::{
-        branch::BabyEntry,
         commit::{CommitEntry, CommitId},
         repository::Repository,
     },
     error::{Error, Result},
-    storage::fsutil,
+    storage::{baby_file, commit_file, fsutil},
 };
 
 pub fn run() -> Result<Vec<CommitEntry>> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
-    let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
-    let baby = BabyEntry::parse(baby_content);
+    let baby = baby_file::get_baby(&repo);
 
     if !repo.head(&baby.path_name().path()).exists() {
         return Err(Error::NoCommitsFound {
@@ -28,8 +26,7 @@ pub fn run() -> Result<Vec<CommitEntry>> {
     while !curr_head.trim().is_empty() {
         let curr_head_id = CommitId::new(curr_head)?;
 
-        let commit_content = fsutil::read_file_to_string(&repo.commit_entry_file(&curr_head_id))?;
-        let commit_entry = CommitEntry::parse(commit_content, curr_head_id.hash())?;
+        let commit_entry = commit_file::get_entry(&repo, &curr_head_id)?;
 
         curr_head = commit_entry.parent().get_hash();
         entries.push(commit_entry);

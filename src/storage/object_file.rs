@@ -24,3 +24,14 @@ pub fn write_blob(repo: &Repository, path: &Path) -> Result<()> {
 
     Ok(())
 }
+
+pub fn get_object_id(path: &Path) -> Result<ObjectId> {
+    let f_content = fsutil::read_file_to_string(path)?;
+
+    Ok(ObjectId::from_bytes(f_content.as_bytes()))
+}
+
+pub fn get_object_entry(repo: &Repository, object_id: ObjectId) -> Result<ObjectEntry> {
+    let obj_content = fsutil::read_file_to_bytes(&repo.object_entry_file(&object_id))?;
+    ObjectEntry::from_bytes(obj_content, object_id)
+}

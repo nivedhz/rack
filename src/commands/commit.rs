@@ -4,14 +4,13 @@ use chrono::Utc;
 
 use crate::{
     domain::{
-        branch::BabyEntry,
         commit::{CommitEntry, CommitId, CommitParent},
         config::Config,
         index::IndexEntries,
         repository::Repository,
     },
     error::{Error, Result},
-    storage::fsutil,
+    storage::{baby_file, commit_file, config_file, fsutil, index_file},
 };
 
 // TODO: add the stats for file diffs
@@ -19,8 +18,7 @@ use crate::{
 pub fn run(message: String) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
-    let cfg_content = fsutil::read_file_to_string(&repo.config())?;
-    let cfg = Config::parse(cfg_content)?;
+    let cfg = config_file::get_confit(&repo)?;
     if !cfg.user.name.is_some() || !cfg.user.email.is_some() {
         return Err(Error::ConfigNotFound {
             message: String::from("use rack config <key> <value> to set config details!"),
@@ -32,16 +30,14 @@ pub fn run(message: String) -> Result<()> {
             message: String::from("use rack add <file> to insert a file"),
         });
     }
-    let idx_content = fsutil::read_file_to_string(&repo.index())?;
-    let idx = IndexEntries::parse(idx_content)?;
+    let idx = index_file::get_index(&repo)?;
     if idx.is_empty() {
         return Err(Error::NoFileAdded {
             message: String::from("use rack add <file> to insert a file"),
         });
     }
 
-    let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
-    let baby = BabyEntry::parse(baby_content);
+    let baby = baby_file::get_baby(&repo);
 
     let head_file = repo.head(&baby.path_name().path());
 
@@ -78,9 +74,7 @@ fn handle_orphan(
     );
 
     fs::create_dir(repo.commits_dir())?;
-    fs::create_dir(repo.commit_entry_dir(&commit_id))?;
-    fsutil::write_atomic(&repo.commit_entry_file(&commit_id), &commit.serialize())?;
-    fsutil::write_atomic(head_file, commit_id.hash().as_bytes())?;
+    commit_file::write_commit(repo, &commit, &commit_id, head_file)?;
     println!("[bonkers {}] {}", commit_id.short(), message);
 
     Ok(())
@@ -94,8 +88,7 @@ fn handle_parent(
     prev_commit_id: CommitId,
     head_file: &Path,
 ) -> Result<()> {
-    let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&prev_commit_id))?;
-    let head_commit = CommitEntry::parse(head_content, prev_commit_id.hash())?;
+    let head_commit = commit_file::get_entry(repo, &prev_commit_id)?;
 
     let timestamp = Utc::now().timestamp();
     let curr_commit_id = CommitId::random();
@@ -109,12 +102,7 @@ fn handle_parent(
         head_commit.entries().extend(idx),
     );
 
-    fs::create_dir(repo.commit_entry_dir(&curr_commit_id))?;
-    fsutil::write_atomic(
-        &repo.commit_entry_file(&curr_commit_id),
-        &curr_commit.serialize(),
-    )?;
-    fsutil::write_atomic(head_file, curr_commit_id.hash().as_bytes())?;
+    commit_file::write_commit(repo, &curr_commit, &curr_commit_id, head_file)?;
     println!("[bonkers {}] {}", curr_commit_id.short(), message);
     Ok(())
 }

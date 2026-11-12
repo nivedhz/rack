@@ -1,24 +1,16 @@
 use std::{env, fs, path::PathBuf};
 
 use crate::{
-    domain::{
-        branch::BabyEntry,
-        commit::{CommitEntry, CommitId},
-        index::IndexEntries,
-        object::ObjectEntry,
-        repo_path::RepoPath,
-        repository::Repository,
-    },
+    domain::{commit::CommitId, repo_path::RepoPath, repository::Repository},
     error::{Error, Result},
-    storage::fsutil,
+    storage::{baby_file, commit_file, fsutil, index_file, object_file},
 };
 
 pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
     let repo_path = RepoPath::new(&path);
     let repo = Repository::discover(&env::current_dir()?)?;
 
-    let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
-    let mut idx = IndexEntries::parse(idx_content)?;
+    let mut idx = index_file::get_index(&repo)?;
 
     if staged {
         if idx.contains(&repo_path).is_some() {
@@ -32,18 +24,17 @@ pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
     let commit_id = match commit {
         Some(id) => CommitId::new(id)?,
         None => {
-            let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
-            let baby = BabyEntry::parse(baby_content);
+            let baby = baby_file::get_baby(&repo);
 
-            let id = fsutil::read_file_to_string(&repo.head(&baby.path_name().path()))
+            let commit_id = fsutil::read_file_to_string(&repo.head(&baby.path_name().path()))
                 .unwrap_or_default();
-            if id.trim().is_empty() {
+            if commit_id.trim().is_empty() {
                 return Err(Error::NoCommitsFound {
                     message: String::from("use rack commit to add commits!"),
                 });
             }
 
-            CommitId::new(id)?
+            CommitId::new(commit_id)?
         }
     };
 
@@ -52,12 +43,10 @@ pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
             commit: commit_id.hash(),
         });
     }
-    let commit_content = fsutil::read_file_to_string(&repo.commit_entry_file(&commit_id))?;
-    let commit = CommitEntry::parse(commit_content, commit_id.hash())?.entries();
+    let commit = commit_file::get_entry(&repo, &commit_id)?.entries();
 
     if let Some(e) = commit.contains(&repo_path) {
-        let obj_content = fsutil::read_file_to_bytes(&repo.object_entry_file(&e.object_id))?;
-        let obj = ObjectEntry::from_bytes(obj_content, e.object_id)?;
+        let obj = object_file::get_object_entry(&repo, e.object_id)?;
 
         fsutil::write_atomic(&repo_path.path(), &obj.data)?;
     } else {

@@ -6,7 +6,7 @@ use std::{
 use crate::{
     domain::{ignore::IgnoreEntries, repository::Repository},
     error::Result,
-    storage::{fsutil, index_file, object_file},
+    storage::{ignore_file, index_file, object_file},
 };
 
 pub fn run(paths: Vec<PathBuf>) -> Result<()> {
@@ -15,8 +15,7 @@ pub fn run(paths: Vec<PathBuf>) -> Result<()> {
     for path in paths {
         let path = fs::canonicalize(path)?;
 
-        let ig_file_content = fsutil::read_file_to_string(&repo.ignore_file())?;
-        let ig = IgnoreEntries::parse(ig_file_content);
+        let ig = ignore_file::get_ignored(&repo)?;
 
         if path.is_dir() {
             handle_dir(&path, &ig, &repo)?;

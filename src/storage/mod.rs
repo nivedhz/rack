@@ -1,6 +1,11 @@
+pub mod baby_file;
 pub mod bootstrap;
+pub mod branch_index;
+pub mod commit_file;
 pub mod config_file;
 pub mod fsutil;
+pub mod head_file;
+pub mod ignore_file;
 pub mod index_file;
 pub mod layout;
 pub mod object_file;

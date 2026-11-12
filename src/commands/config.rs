@@ -1,16 +1,14 @@
 use std::env;
 
 use crate::{
-    domain::{config::Config, repository::Repository},
+    domain::repository::Repository,
     error::Result,
-    storage::config_file::write_config,
-    storage::fsutil,
+    storage::config_file::{self, write_config},
 };
 
 pub fn run(key: String, value: String) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
-    let cfg_content = fsutil::read_file_to_string(&repo.config())?;
-    let mut cfg = Config::parse(cfg_content)?;
+    let mut cfg = config_file::get_confit(&repo)?;
 
     cfg.change_config(key, value)?;
     write_config(&repo, cfg)?;

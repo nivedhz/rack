@@ -1,15 +1,9 @@
 use std::{collections::HashMap, env, fs, path::PathBuf};
 
 use crate::{
-    domain::{
-        branch::BabyEntry,
-        commit::{CommitEntry, CommitId},
-        index::IndexEntries,
-        object::{ObjectEntry, ObjectId},
-        repository::Repository,
-    },
+    domain::{index::IndexEntries, object::ObjectId, repository::Repository},
     error::Result,
-    storage::fsutil,
+    storage::{baby_file, commit_file, fsutil, head_file, index_file, object_file},
 };
 
 #[derive(Debug)]
@@ -21,25 +15,19 @@ pub struct DiffedContent {
 pub fn run(path: PathBuf) -> Result<Vec<DiffedContent>> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
-    let baby_content = fsutil::read_file_to_string(&repo.baby()).unwrap_or_default();
-    let baby = BabyEntry::parse(baby_content);
+    let baby = baby_file::get_baby(&repo);
 
-    let head_entries = if let Ok(head_content) =
-        fsutil::read_file_to_string(&repo.head(&baby.path_name().path()))
-    {
-        let head_id = CommitId::new(head_content)?;
-        let head_commit_content = fsutil::read_file_to_string(&repo.commit_entry_file(&head_id))?;
-        let head = CommitEntry::parse(head_commit_content, head_id.hash())?;
-        head.entries()
+    let head_file = repo.head(&baby.path_name().path());
+    let head_entries = if head_file.exists() {
+        let head_commit_id = head_file::get_commit(&head_file)?;
+        let commit_entry = commit_file::get_entry(&repo, &head_commit_id)?;
+
+        commit_entry.entries()
     } else {
-        IndexEntries::new(HashMap::default())
+        IndexEntries::new(HashMap::new())
     };
 
-    let idx = if let Ok(idx_content) = fsutil::read_file_to_string(&repo.index()) {
-        IndexEntries::parse(idx_content)?
-    } else {
-        IndexEntries::new(HashMap::default())
-    };
+    let idx = index_file::get_index(&repo)?;
 
     let diff_entries = head_entries.extend(idx);
     let mut entries: Vec<DiffedContent> = Vec::new();
@@ -57,8 +45,7 @@ pub fn run(path: PathBuf) -> Result<Vec<DiffedContent>> {
             continue;
         }
 
-        let obj_content = fsutil::read_file_to_bytes(&repo.object_entry_file(&entry.object_id))?;
-        let obj = ObjectEntry::from_bytes(obj_content, entry.object_id)?;
+        let obj = object_file::get_object_entry(&repo, entry.object_id)?;
         let prev_content = String::from_utf8(obj.data).unwrap_or_default();
 
         entries.push(DiffedContent {
