@@ -24,7 +24,7 @@ pub fn run(branch: String, create: bool) -> Result<()> {
             });
         }
 
-        branch::run(Some(branch.to_string()))?;
+        branch::run(Some(branch.to_string()), None)?;
     }
 
     if !repo.branch(&branch.path()).exists() {

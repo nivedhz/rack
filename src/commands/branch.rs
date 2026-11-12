@@ -7,7 +7,7 @@ use crate::{
     storage::{baby_file, branch_index, fsutil, head_file},
 };
 
-pub fn run(name: Option<String>) -> Result<()> {
+pub fn run(name: Option<String>, delete: Option<String>) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
     let baby = baby_file::get_baby(&repo);
