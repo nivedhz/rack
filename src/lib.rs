@@ -10,7 +10,6 @@ mod error;
 mod output;
 mod storage;
 
-// TODO: Add the delete functionality for branch
 pub fn run() -> Result<()> {
     let args = cli::Cli::parse();
 
