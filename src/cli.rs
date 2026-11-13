@@ -11,33 +11,33 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Initilalize a new rack repository
+    /// Create an empty repository or reinitialize an existing one
     Init {
         #[arg(default_value = ".")]
         dir_path: PathBuf,
     },
-    /// Add file to the rack
+    /// Add the file to staging area
     Add { path: Vec<PathBuf> },
-    /// View the current status of the rack repository
+    /// Show the working tree status
     Status,
-    /// Commit the added files
+    /// Record changes to the repository
     Commit {
         #[arg(short, long)]
         message: String,
     },
-    /// Set a config value
+    /// Set repository config options
     Config { key: String, value: String },
-    /// Logs the commits
+    /// Show commit logs
     Log {
         #[arg(long)]
         oneline: bool,
     },
-    /// Show the diff
+    /// Show changes between HEAD and current state
     Diff {
         #[arg(default_value = ".")]
         path: PathBuf,
     },
-    /// Restore a file
+    /// Restore working tree files
     Restore {
         #[arg(long)]
         staged: bool,
@@ -45,7 +45,7 @@ pub enum Commands {
         commit: Option<String>,
         path: PathBuf,
     },
-    /// List all branches or create a branch
+    /// List, create, or delete branches
     Branch {
         name: Option<String>,
         #[arg(short, long)]
