@@ -22,6 +22,12 @@ pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
     for p in path {
         let repo_path = RepoPath::new(p);
 
+        if repo_path.path().is_dir() {
+            return Err(Error::PathIsDir {
+                path: repo_path.to_string(),
+            });
+        }
+
         if !repo_path.path().exists() || !tracked_entries.contains(&repo_path).is_some() {
             return Err(Error::PathNotFound {
                 path: repo_path.to_string(),
@@ -39,12 +45,7 @@ pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
             continue;
         }
 
-        if repo_path.path().is_dir() {
-            fs::remove_dir(repo_path.path())?;
-        } else {
-            fs::remove_file(repo_path.path())?;
-        }
-
+        fs::remove_file(repo_path.path())?;
         println!("rm '{}'", repo_path);
     }
 
