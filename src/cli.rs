@@ -36,6 +36,8 @@ pub enum Commands {
     Diff {
         #[arg(default_value = ".")]
         path: PathBuf,
+        #[arg(long)]
+        cached: bool,
     },
     /// Restore working tree files
     Restore {
