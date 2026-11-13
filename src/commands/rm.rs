@@ -6,7 +6,6 @@ use crate::{
     storage::{baby_file, commit_file, fsutil, head_file, index_file},
 };
 
-// TODO: refactor and make it logically correct
 pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
     let mut idx = index_file::get_index(&repo)?;
@@ -22,6 +21,7 @@ pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
     for p in path {
         let repo_path = RepoPath::new(p);
 
+        // directories are currently not handled
         if repo_path.path().is_dir() {
             return Err(Error::PathIsDir {
                 path: repo_path.to_string(),
