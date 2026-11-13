@@ -34,15 +34,9 @@ pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
             });
         }
 
-        if cached {
-            if idx.contains(&repo_path).is_some() {
-                idx.remove(&repo_path);
-                fsutil::write_atomic(&repo.index(), &idx.serialize())?;
-
-                println!("rm '{}'", repo_path);
-            }
-
-            continue;
+        if cached && idx.contains(&repo_path).is_some() {
+            idx.remove(&repo_path);
+            fsutil::write_atomic(&repo.index(), &idx.serialize())?;
         }
 
         fs::remove_file(repo_path.path())?;
