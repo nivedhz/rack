@@ -52,6 +52,6 @@ fn handle_file(path: &Path, ig: &IgnoreEntries, repo: &Repository) -> Result<()>
     }
 
     object_file::write_blob(repo, path)?;
-    index_file::write_index(repo, path)?;
+    index_file::add_to_index(repo, path)?;
     Ok(())
 }

@@ -13,7 +13,7 @@ use crate::{
     storage::fsutil,
 };
 
-pub fn write_index(repo: &Repository, path: &Path) -> Result<()> {
+pub fn add_to_index(repo: &Repository, path: &Path) -> Result<()> {
     let c_path = fs::canonicalize(path)?;
     let rel_path = RepoPath::new(c_path.strip_prefix(repo.root())?);
 
