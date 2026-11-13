@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
-const LONG_ABOUT: &str = "A dirtier version of git which is sure to get you fired.";
+const LONG_ABOUT: &str = "A VCS, but in Rust. So automatically 1000x better than Git.";
 #[derive(Parser)]
 #[command(author, version, about, long_about = LONG_ABOUT)]
 pub struct Cli {
