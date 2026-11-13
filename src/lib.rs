@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::commands::{add, branch, commit, config, diff, init, log, restore, status, switch};
+use crate::commands::{add, branch, commit, config, diff, init, log, restore, rm, status, switch};
 
 mod cli;
 mod commands;
@@ -47,6 +47,7 @@ pub fn run() -> Result<()> {
         cli::Commands::Branch { name, delete } => branch::run(name, delete)?,
         // rack switch |<-c>| <branch>
         cli::Commands::Switch { branch, create } => switch::run(branch, create)?,
+        cli::Commands::Rm { path, cached } => rm::run(path, cached)?,
     }
     Ok(())
 }

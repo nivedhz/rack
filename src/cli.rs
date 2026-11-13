@@ -57,4 +57,10 @@ pub enum Commands {
         #[arg(short, long)]
         create: bool,
     },
+    /// Remove files from the working tree
+    Rm {
+        path: Vec<PathBuf>,
+        #[arg(long)]
+        cached: bool,
+    },
 }

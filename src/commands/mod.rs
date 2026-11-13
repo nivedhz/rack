@@ -6,5 +6,6 @@ pub mod diff;
 pub mod init;
 pub mod log;
 pub mod restore;
+pub mod rm;
 pub mod status;
 pub mod switch;
