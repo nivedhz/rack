@@ -32,7 +32,7 @@ pub enum Commands {
         #[arg(long)]
         oneline: bool,
     },
-    /// Show changes between HEAD and current state
+    /// Show changes between HEAD and the index or current state
     Diff {
         #[arg(default_value = ".")]
         path: PathBuf,
