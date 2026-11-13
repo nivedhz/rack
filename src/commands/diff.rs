@@ -12,6 +12,7 @@ pub struct DiffedContent {
     pub curr: String,
 }
 
+// TODO: refactor and clean up
 pub fn run(path: PathBuf, cached: bool) -> Result<Vec<DiffedContent>> {
     let repo = Repository::discover(&env::current_dir()?)?;
     let baby = baby_file::get_baby(&repo);
@@ -36,8 +37,11 @@ pub fn run(path: PathBuf, cached: bool) -> Result<Vec<DiffedContent>> {
 
             if let Some(prev_obj_entry) = head_entries.contains(&e_path) {
                 let prev_obj = object_file::get_object_entry(&repo, prev_obj_entry.object_id)?;
-                let prev_content = String::from_utf8(prev_obj.data).unwrap_or_default();
+                if prev_obj.id == obj.id {
+                    continue;
+                }
 
+                let prev_content = String::from_utf8(prev_obj.data).unwrap_or_default();
                 entries.push(DiffedContent {
                     prev: prev_content,
                     curr: curr_content,
