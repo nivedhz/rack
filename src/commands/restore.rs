@@ -7,14 +7,21 @@ use crate::{
 };
 
 pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
-    let repo_path = RepoPath::new(&path);
-    let repo = Repository::discover(&env::current_dir()?)?;
+    if !path.exists() {
+        return Err(Error::PathNotFound {
+            path: path.display().to_string(),
+        });
+    }
 
+    let repo = Repository::discover(&env::current_dir()?)?;
     let mut idx = index_file::get_index(&repo)?;
 
+    let repo_path = RepoPath::new(&path);
+    let rel_path = RepoPath::new(fs::canonicalize(repo_path.path())?).strip_prefix(&repo.root())?;
+
     if staged {
-        if idx.contains(&repo_path).is_some() {
-            idx.remove(&repo_path);
+        if idx.contains(&rel_path).is_some() {
+            idx.remove(&rel_path);
             fsutil::write_atomic(&repo.index(), &idx.serialize())?;
         }
 
@@ -45,7 +52,7 @@ pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
     }
     let commit = commit_file::get_entry(&repo, &commit_id)?.entries();
 
-    if let Some(e) = commit.contains(&repo_path) {
+    if let Some(e) = commit.contains(&rel_path) {
         let obj = object_file::get_object_entry(&repo, e.object_id)?;
 
         fsutil::write_atomic(&repo_path.path(), &obj.data)?;
