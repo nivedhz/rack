@@ -38,34 +38,34 @@ pub fn run() -> Result<StatusResult> {
     let mut idx_entries: Vec<RepoPath> = Vec::new();
     let mut un_idx_entries: Vec<RepoPath> = Vec::new();
     let mut untracked_entries: Vec<RepoPath> = Vec::new();
-    for f in &files {
-        let f = f.strip_prefix(&repo.root())?;
+    for f in files {
         let f_object_id = object_file::get_object_id(&f.path())?;
 
-        if let Some(e) = head_entries.contains(&f)
+        let rel_f = f.strip_prefix(&repo.root())?;
+        if let Some(e) = head_entries.contains(&rel_f)
             && e.object_id.hash() == f_object_id.hash()
         {
             continue;
         }
 
-        if let Some(e) = idx.contains(&f) {
-            idx_entries.push(f.clone());
+        if let Some(e) = idx.contains(&rel_f) {
+            idx_entries.push(rel_f.clone());
 
             let f_metadata = std::fs::File::open(f.path())?.metadata()?;
             let f_idx = IndexEntry::new(
                 f_metadata.size(),
-                f.clone(),
+                rel_f,
                 f_object_id,
                 f_metadata.ctime_nsec(),
                 f_metadata.mtime_nsec(),
             );
             if !e.is_equal(&f_idx) {
-                un_idx_entries.push(f);
+                un_idx_entries.push(f_idx.path);
             }
-        } else if !tracked_entries.contains(&f).is_some() {
-            untracked_entries.push(f);
+        } else if !tracked_entries.contains(&rel_f).is_some() {
+            untracked_entries.push(rel_f);
         } else {
-            un_idx_entries.push(f);
+            un_idx_entries.push(rel_f);
         }
     }
 
