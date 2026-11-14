@@ -2,7 +2,7 @@ use std::{collections::HashMap, env, fs, path::PathBuf};
 
 use crate::{
     domain::{index::IndexEntries, object::ObjectId, repository::Repository},
-    error::Result,
+    error::{Error, Result},
     storage::{baby_file, commit_file, fsutil, head_file, index_file, object_file},
 };
 
@@ -51,14 +51,20 @@ pub fn run(path: PathBuf, cached: bool) -> Result<Vec<DiffedContent>> {
     } else {
         let diff_entries = head_entries.extend(idx);
         for (e_path, entry) in diff_entries.entries() {
-            let curr_content = fsutil::read_file_to_string(&e_path.path()).unwrap_or_default();
+            let e_path = repo.root().join(e_path.path());
+
+            let curr_content = fsutil::read_file_to_string(&e_path).unwrap_or_default();
             if curr_content.trim().is_empty() {
                 continue;
             }
 
-            let curr_id = ObjectId::from_bytes(curr_content.as_bytes());
-            let e_path = fs::canonicalize(e_path.path())?;
+            if !path.exists() {
+                return Err(Error::PathNotFound {
+                    path: path.display().to_string(),
+                });
+            }
 
+            let curr_id = ObjectId::from_bytes(curr_content.as_bytes());
             if curr_id == entry.object_id || !e_path.starts_with(fs::canonicalize(&path)?) {
                 continue;
             }
