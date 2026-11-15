@@ -32,7 +32,7 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
     }
 
     if !tracked_entries.contains(&src).is_some() {
-        return Err(Error::PathNotFound {
+        return Err(Error::PathNotVersionControlled {
             path: src.to_string(),
         });
     }

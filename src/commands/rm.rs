@@ -43,7 +43,7 @@ pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
         }
 
         if !tracked_entries.contains(&rel_path).is_some() {
-            return Err(Error::PathNotFound {
+            return Err(Error::PathNotVersionControlled {
                 path: repo_path.to_string(),
             });
         }
