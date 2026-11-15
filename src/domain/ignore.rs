@@ -44,8 +44,11 @@ impl IgnoreEntries {
         };
 
         for ancestor in path.ancestors() {
-            let ancestor = fs::canonicalize(ancestor)?;
-            let ancestor = match ancestor.strip_prefix(repository.root()) {
+            if self.entries.contains(ancestor) {
+                return Ok(true);
+            }
+
+            let rel_ancestor = match ancestor.strip_prefix(repository.root()) {
                 Ok(ancestor) => ancestor,
                 // Every error in strip_prefix prefix is of type std::path::StripPrefixError which
                 // usually occurs when the path is in a higher hierarchy than the given path which
@@ -53,8 +56,7 @@ impl IgnoreEntries {
                 // return of false
                 Err(_) => return Ok(false),
             };
-
-            if self.entries.contains(ancestor) {
+            if self.entries.contains(rel_ancestor) {
                 return Ok(true);
             }
         }
