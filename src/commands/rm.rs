@@ -10,8 +10,9 @@ pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
     let mut idx = index_file::get_index(&repo)?;
     let baby = baby_file::get_baby(&repo);
+    let head = repo.head(&baby.path_name().path());
 
-    let commit_entries = if let Ok(head) = head_file::get_commit(&baby.path_name().path()) {
+    let commit_entries = if let Ok(head) = head_file::get_commit(&head) {
         commit_file::get_entry(&repo, &head)?.entries()
     } else {
         IndexEntries::new(HashMap::default())
@@ -19,7 +20,16 @@ pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
     let tracked_entries = commit_entries.extend(idx.clone());
 
     for p in path {
-        let repo_path = RepoPath::new(p);
+        if !p.exists() {
+            return Err(Error::PathNotFound {
+                path: p.display().to_string(),
+            });
+        }
+
+        let repo_path = RepoPath::new(&p);
+
+        let path = fs::canonicalize(&p)?;
+        let rel_path = RepoPath::new(&path).strip_prefix(&repo.root())?;
 
         // directories are currently not handled
         if repo_path.path().is_dir() {
@@ -28,14 +38,14 @@ pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
             });
         }
 
-        if !repo_path.path().exists() || !tracked_entries.contains(&repo_path).is_some() {
+        if !tracked_entries.contains(&rel_path).is_some() {
             return Err(Error::PathNotFound {
                 path: repo_path.to_string(),
             });
         }
 
-        if cached && idx.contains(&repo_path).is_some() {
-            idx.remove(&repo_path);
+        if cached && idx.contains(&rel_path).is_some() {
+            idx.remove(&rel_path);
             fsutil::write_atomic(&repo.index(), &idx.serialize())?;
         }
 
