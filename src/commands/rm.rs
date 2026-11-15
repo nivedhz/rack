@@ -7,6 +7,10 @@ use crate::{
 };
 
 pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
+    if path.is_empty() {
+        return Err(Error::NoPathProvided);
+    }
+
     let repo = Repository::discover(&env::current_dir()?)?;
     let mut idx = index_file::get_index(&repo)?;
     let baby = baby_file::get_baby(&repo);

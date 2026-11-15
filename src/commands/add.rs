@@ -5,11 +5,15 @@ use std::{
 
 use crate::{
     domain::{ignore::IgnoreEntries, repository::Repository},
-    error::Result,
+    error::{Error, Result},
     storage::{ignore_file, index_file, object_file},
 };
 
 pub fn run(paths: Vec<PathBuf>) -> Result<()> {
+    if paths.is_empty() {
+        return Err(Error::NoPathProvided);
+    }
+
     let repo = Repository::discover(&env::current_dir()?)?;
 
     for path in paths {
