@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env, path::PathBuf};
+use std::{collections::HashMap, env, fs, path::PathBuf};
 
 use crate::{
     domain::{index::IndexEntries, repo_path::RepoPath, repository::Repository},
@@ -6,6 +6,7 @@ use crate::{
     storage::{baby_file, commit_file, head_file, index_file},
 };
 
+// TODO: refactor and cleanup
 pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
     let src = RepoPath::new(src);
@@ -37,7 +38,20 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
         });
     }
 
-    dbg!(tracked_entries);
-    dbg!(src, dst);
+    // TODO:
+    // we need to handle paths which doesn't exist and edit the IndexEntries to the new path
+    let dst_canonical = fs::canonicalize(dst.path())?;
+    if dst_canonical.starts_with(repo.root()) {
+        if dst_canonical.is_dir() {
+            fs::rename(src.path(), dst.path().join(src.file_name()))?;
+        } else {
+            fs::rename(src.path(), dst.path())?;
+        }
+    } else {
+        return Err(Error::PathNotInRepo {
+            path: dst.to_string(),
+        });
+    }
+
     Ok(())
 }
