@@ -14,9 +14,9 @@ pub fn run() -> Result<()> {
     let args = cli::Cli::parse();
 
     match args.command {
-        // rack init <path | .>
+        // rack init <path>
         cli::Commands::Init { dir_path } => init::run(dir_path)?,
-        // rack add <file | dir>
+        // rack add <path>
         cli::Commands::Add { path } => add::run(path)?,
         // rack status
         cli::Commands::Status => {
@@ -27,12 +27,12 @@ pub fn run() -> Result<()> {
         cli::Commands::Commit { message } => commit::run(message)?,
         // rack config <key> <value>
         cli::Commands::Config { key, value } => config::run(key, value)?,
-        // rack log <--oneline>
+        // rack log |--oneline|
         cli::Commands::Log { oneline } => {
             let log_res = log::run()?;
             output::log(oneline, log_res)?;
         }
-        // rack diff |path|
+        // rack diff |<path>|
         cli::Commands::Diff { path, cached } => {
             let diff_res = diff::run(path, cached)?;
             output::diff(diff_res)?;
@@ -45,8 +45,9 @@ pub fn run() -> Result<()> {
         } => restore::run(path, staged, commit)?,
         // rack branch |-d| |<name>|
         cli::Commands::Branch { name, delete } => branch::run(name, delete)?,
-        // rack switch |<-c>| <branch>
+        // rack switch |-c| <branch>
         cli::Commands::Switch { branch, create } => switch::run(branch, create)?,
+        // rack rm <path> |--cached|
         cli::Commands::Rm { path, cached } => rm::run(path, cached)?,
     }
     Ok(())
