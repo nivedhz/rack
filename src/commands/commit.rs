@@ -77,7 +77,6 @@ fn handle_orphan(
 
     fs::create_dir(repo.commits_dir())?;
     commit_file::write_commit(repo, &commit, &commit_id, head_file)?;
-    // TODO: display current HEAD rather than hard-coded bonkers
     println!("[{} {}] {}", baby.name(), commit_id.short(), message);
 
     Ok(())
