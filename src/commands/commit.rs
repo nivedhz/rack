@@ -72,12 +72,21 @@ fn handle_orphan(
         message.clone(),
         cfg.user,
         timestamp,
-        idx,
+        idx.clone(),
     );
 
     fs::create_dir(repo.commits_dir())?;
     commit_file::write_commit(repo, &commit, &commit_id, head_file)?;
     println!("[{} {}] {}", baby.name(), commit_id.short(), message);
+    println!(
+        "{} {} changed",
+        idx.entries().len(),
+        if idx.entries().len() == 1 {
+            "file"
+        } else {
+            "files"
+        }
+    );
 
     Ok(())
 }
@@ -102,10 +111,19 @@ fn handle_parent(
         message.clone(),
         cfg.user,
         timestamp,
-        head_commit.entries().extend(idx),
+        head_commit.entries().extend(idx.clone()),
     );
 
     commit_file::write_commit(repo, &curr_commit, &curr_commit_id, head_file)?;
     println!("[{} {}] {}", baby.name(), curr_commit_id.short(), message);
+    println!(
+        "{} {} changed",
+        idx.entries().len(),
+        if idx.entries().len() == 1 {
+            "file"
+        } else {
+            "files"
+        }
+    );
     Ok(())
 }

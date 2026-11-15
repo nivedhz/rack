@@ -13,8 +13,11 @@ pub fn status(status_res: StatusResult) -> Result<()> {
         && status_res.untracked_entries.is_empty()
     {
         println!();
-        println!("On branch 'bonkers'");
-        println!("Your branch is up to date with 'baby/bonkers'.");
+        println!("On branch '{}'", status_res.baby.name());
+        println!(
+            "Your branch is up to date with '{}'.",
+            status_res.baby.path_name()
+        );
         println!("\nnothing to commit, working tree clean");
         return Ok(());
     }

@@ -2,6 +2,7 @@ use std::{collections::HashMap, env, os::unix::fs::MetadataExt};
 
 use crate::{
     domain::{
+        branch::BabyEntry,
         index::{IndexEntries, IndexEntry},
         repo_path::RepoPath,
         repository::Repository,
@@ -14,6 +15,7 @@ pub struct StatusResult {
     pub idx_entries: Vec<RepoPath>,
     pub un_idx_entries: Vec<RepoPath>,
     pub untracked_entries: Vec<RepoPath>,
+    pub baby: BabyEntry,
 }
 
 pub fn run() -> Result<StatusResult> {
@@ -73,5 +75,6 @@ pub fn run() -> Result<StatusResult> {
         idx_entries,
         un_idx_entries,
         untracked_entries,
+        baby,
     })
 }
