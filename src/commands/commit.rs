@@ -4,6 +4,7 @@ use chrono::Utc;
 
 use crate::{
     domain::{
+        branch::BabyEntry,
         commit::{CommitEntry, CommitId, CommitParent},
         config::Config,
         index::IndexEntries,
@@ -44,9 +45,9 @@ pub fn run(message: String) -> Result<()> {
     let head = fsutil::read_file_to_string(&head_file).unwrap_or_default();
     let parent = CommitParent::new(head)?;
     match parent {
-        CommitParent::Orphan => handle_orphan(&repo, message, cfg, idx, &head_file)?,
+        CommitParent::Orphan => handle_orphan(&repo, message, cfg, idx, &head_file, &baby)?,
         CommitParent::Parent(commit_id) => {
-            handle_parent(&repo, message, cfg, idx, commit_id, &head_file)?
+            handle_parent(&repo, message, cfg, idx, commit_id, &head_file, &baby)?
         }
     }
 
@@ -60,6 +61,7 @@ fn handle_orphan(
     cfg: Config,
     idx: IndexEntries,
     head_file: &Path,
+    baby: &BabyEntry,
 ) -> Result<()> {
     let timestamp = Utc::now().timestamp();
     let commit_id = CommitId::random();
@@ -75,7 +77,8 @@ fn handle_orphan(
 
     fs::create_dir(repo.commits_dir())?;
     commit_file::write_commit(repo, &commit, &commit_id, head_file)?;
-    println!("[bonkers {}] {}", commit_id.short(), message);
+    // TODO: display current HEAD rather than hard-coded bonkers
+    println!("[{} {}] {}", baby.name(), commit_id.short(), message);
 
     Ok(())
 }
@@ -87,6 +90,7 @@ fn handle_parent(
     idx: IndexEntries,
     prev_commit_id: CommitId,
     head_file: &Path,
+    baby: &BabyEntry,
 ) -> Result<()> {
     let head_commit = commit_file::get_entry(repo, &prev_commit_id)?;
 
@@ -95,7 +99,7 @@ fn handle_parent(
 
     let curr_commit = CommitEntry::new(
         curr_commit_id.clone(),
-        CommitParent::Parent(prev_commit_id.clone()),
+        CommitParent::Parent(prev_commit_id),
         message.clone(),
         cfg.user,
         timestamp,
@@ -103,6 +107,6 @@ fn handle_parent(
     );
 
     commit_file::write_commit(repo, &curr_commit, &curr_commit_id, head_file)?;
-    println!("[bonkers {}] {}", curr_commit_id.short(), message);
+    println!("[{} {}] {}", baby.name(), curr_commit_id.short(), message);
     Ok(())
 }
