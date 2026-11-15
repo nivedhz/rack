@@ -65,4 +65,6 @@ pub enum Commands {
         #[arg(long)]
         cached: bool,
     },
+    /// Move file to another destination
+    Mv { src: PathBuf, dst: PathBuf },
 }
