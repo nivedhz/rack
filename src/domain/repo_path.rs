@@ -27,6 +27,14 @@ impl RepoPath {
 
         bytes
     }
+    pub fn file_name(&self) -> String {
+        self.path()
+            .file_name()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap_or_default()
+            .to_string()
+    }
 }
 impl fmt::Display for RepoPath {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
