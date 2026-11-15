@@ -12,7 +12,6 @@ pub struct DiffedContent {
     pub curr: String,
 }
 
-// TODO: refactor and clean up
 pub fn run(path: PathBuf, cached: bool) -> Result<Vec<DiffedContent>> {
     let repo = Repository::discover(&env::current_dir()?)?;
     let baby = baby_file::get_baby(&repo);
