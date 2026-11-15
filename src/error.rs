@@ -4,6 +4,8 @@ pub enum Error {
     IO { src: String },
     #[error("fatal: {path} has no parent")]
     NoParent { path: String },
+    #[error("fatal: {path} is not inside repository")]
+    PathNotInRepo { path: String },
     #[error("fatal: not a rack repository (or any parent up to mount point /)")]
     NotInRackRepo,
     #[error("fatal: path '{path}' is not under version control!")]
