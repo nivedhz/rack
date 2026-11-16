@@ -69,6 +69,7 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
     } else {
         return Err(Error::PathNotInRepo {
             path: dst.to_string(),
+            repo: repo.root().to_str().unwrap_or_default().to_string(),
         });
     }
 
