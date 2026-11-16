@@ -38,18 +38,31 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
         });
     }
 
-    // TODO:
-    // we need to handle paths which doesn't exist and edit the IndexEntries to the new path
-    // A lot of fucking improvement is needed here as `is_dir()` check doesn't work on paths that
-    // doesn't exist and every single path from `fsutil::get_canonical(&dst.path())` returns with '/' at the end so we cannot check if '/' is at the end to determine if it's directory or a file
-    // Git handles it the same way so we ain't gotta worry about whether it is a directory or not
-    // if we pass in a directory name in Git then it would make that the name of the file rather
-    // than a 'dirname/curr_filename'
+    // this is a very sloppy implementation and I don't know if it will work properly in every
+    // condition
     let dst_canonical = fsutil::get_canonical(&dst.path())?;
     if dst_canonical.starts_with(repo.root()) {
         if dst.path().is_dir() {
+            if !dst.path().exists() {
+                return Err(Error::PathNotFound {
+                    path: dst.to_string(),
+                });
+            }
             fs::rename(src.path(), dst.path().join(src.file_name()))?;
         } else {
+            let dst_parent = dst
+                .path()
+                .parent()
+                .ok_or(Error::NoParent {
+                    path: dst.to_string(),
+                })?
+                .to_path_buf();
+
+            if !dst_parent.exists() {
+                return Err(Error::PathNotFound {
+                    path: dst.to_string(),
+                });
+            }
             fs::rename(src.path(), dst.path())?;
         }
     } else {
