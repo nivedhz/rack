@@ -67,4 +67,6 @@ pub enum Commands {
     },
     /// Move file to another destination
     Mv { src: PathBuf, dst: PathBuf },
+    /// View commit object
+    Show { commit: Option<String> },
 }

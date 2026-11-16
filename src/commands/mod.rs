@@ -8,5 +8,6 @@ pub mod log;
 pub mod mv;
 pub mod restore;
 pub mod rm;
+pub mod show;
 pub mod status;
 pub mod switch;
