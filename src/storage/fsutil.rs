@@ -123,5 +123,5 @@ pub fn get_canonical(path: &Path) -> Result<PathBuf> {
         }
     }
 
-    Ok(result)
+    Ok(result.components().collect())
 }
