@@ -1,7 +1,7 @@
 use std::{
     fs,
     io::{Read, Write},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 use crate::{
@@ -110,4 +110,18 @@ pub fn empty_file(path: &Path) -> Result<()> {
         .truncate(true)
         .open(path)?;
     Ok(())
+}
+pub fn get_canonical(path: &Path) -> Result<PathBuf> {
+    let mut result = PathBuf::new();
+
+    for path in path.ancestors() {
+        if path.exists() {
+            result = fs::canonicalize(path)?.join(result);
+            break;
+        } else {
+            result = PathBuf::from(path.file_name().unwrap_or_default()).join(result)
+        }
+    }
+
+    Ok(result)
 }

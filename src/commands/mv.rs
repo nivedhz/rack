@@ -3,7 +3,7 @@ use std::{collections::HashMap, env, fs, path::PathBuf};
 use crate::{
     domain::{index::IndexEntries, repo_path::RepoPath, repository::Repository},
     error::{Error, Result},
-    storage::{baby_file, commit_file, head_file, index_file},
+    storage::{baby_file, commit_file, fsutil, head_file, index_file},
 };
 
 // TODO: refactor and cleanup
@@ -40,7 +40,7 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
 
     // TODO:
     // we need to handle paths which doesn't exist and edit the IndexEntries to the new path
-    let dst_canonical = fs::canonicalize(dst.path())?;
+    let dst_canonical = fsutil::get_canonical(&dst.path())?;
     if dst_canonical.starts_with(repo.root()) {
         if dst_canonical.is_dir() {
             fs::rename(src.path(), dst.path().join(src.file_name()))?;
