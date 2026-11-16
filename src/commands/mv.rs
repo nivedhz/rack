@@ -7,6 +7,7 @@ use crate::{
 };
 
 // TODO: refactor and cleanup
+// This is a very sloppy impelemntation of `mv` and we need to work on everything once again
 pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
     let src = RepoPath::new(src);
