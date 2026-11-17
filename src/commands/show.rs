@@ -6,7 +6,7 @@ use crate::{
         commit::{CommitEntry, CommitId, CommitParent},
         repository::Repository,
     },
-    error::{Error, Result},
+    error::Result,
     storage::{baby_file, commit_file, head_file, object_file},
 };
 
@@ -22,13 +22,7 @@ pub fn run(commit_id: Option<String>) -> Result<ShowResult> {
     let head_path = repo.head(&baby.path_name().path());
     let head = head_file::get_commit(&head_path)?;
 
-    let commit_id = commit_id.unwrap_or(head.hash());
-    if commit_id.trim().is_empty() {
-        return Err(Error::NoCommitsFound {
-            message: String::from("use rack commit to add commits!"),
-        });
-    }
-    let commit_id = CommitId::new(commit_id)?;
+    let commit_id = CommitId::new(commit_id.unwrap_or(head.hash()))?;
     let commit = commit_file::get_entry(&repo, &commit_id)?;
 
     let diff = match commit.parent() {
