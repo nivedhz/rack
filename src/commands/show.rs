@@ -7,12 +7,15 @@ use crate::{
         repository::Repository,
     },
     error::{Error, Result},
-    output,
     storage::{baby_file, commit_file, head_file, object_file},
 };
 
 // TODO: clean this shi up
-pub fn run(commit_id: Option<String>) -> Result<()> {
+pub struct ShowResult {
+    pub log: Vec<CommitEntry>,
+    pub diff: Vec<DiffedContent>,
+}
+pub fn run(commit_id: Option<String>) -> Result<ShowResult> {
     let repo = Repository::discover(&env::current_dir()?)?;
     let baby = baby_file::get_baby(&repo);
 
@@ -36,9 +39,10 @@ pub fn run(commit_id: Option<String>) -> Result<()> {
         CommitParent::Orphan => get_diff_with_orphan(&commit, &repo)?,
     };
 
-    output::log(false, vec![commit])?;
-    output::diff(diff)?;
-    Ok(())
+    Ok(ShowResult {
+        log: vec![commit],
+        diff,
+    })
 }
 
 fn get_diff_with_orphan(
@@ -51,8 +55,8 @@ fn get_diff_with_orphan(
 
         let curr_data = String::from_utf8(curr_obj.data).unwrap_or_default();
         diff_entries.push(DiffedContent {
-            curr: curr_data,
             prev: String::new(),
+            curr: curr_data,
         });
     }
 

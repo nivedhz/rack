@@ -23,6 +23,7 @@ pub fn run() -> Result<()> {
         // rack status
         cli::Commands::Status => {
             let status_res = status::run()?;
+
             output::status(status_res)?;
         }
         // rack commit -m <message>
@@ -32,11 +33,13 @@ pub fn run() -> Result<()> {
         // rack log |--oneline|
         cli::Commands::Log { oneline } => {
             let log_res = log::run()?;
+
             output::log(oneline, log_res)?;
         }
         // rack diff |<path>|
         cli::Commands::Diff { path, cached } => {
             let diff_res = diff::run(path, cached)?;
+
             output::diff(diff_res)?;
         }
         // rack restore <path>
@@ -52,7 +55,12 @@ pub fn run() -> Result<()> {
         // rack rm <path> |--cached|
         cli::Commands::Rm { path, cached } => rm::run(path, cached)?,
         cli::Commands::Mv { src, dst } => mv::run(src, dst)?,
-        cli::Commands::Show { commit } => show::run(commit)?,
+        cli::Commands::Show { commit } => {
+            let show_res = show::run(commit)?;
+
+            output::log(false, show_res.log)?;
+            output::diff(show_res.diff)?;
+        }
     }
     Ok(())
 }
