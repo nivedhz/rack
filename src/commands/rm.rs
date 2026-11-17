@@ -17,7 +17,7 @@ pub fn run(path: Vec<PathBuf>, cached: bool) -> Result<()> {
     let head_path = repo.head(&baby.path_name().path());
 
     let commit_entries = if let Ok(head) = head_file::get_commit(&head_path) {
-        commit_file::get_entry(&repo, &head)?.entries()
+        commit_file::get_entry(&repo, &head)?.idx()
     } else {
         IndexEntries::new(HashMap::default())
     };

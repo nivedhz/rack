@@ -111,7 +111,7 @@ fn handle_parent(
         message.clone(),
         cfg.user,
         timestamp,
-        head_commit.entries().extend(idx.clone()),
+        head_commit.idx().extend(idx.clone()),
     );
 
     commit_file::write_commit(repo, &curr_commit, &curr_commit_id, head_file)?;

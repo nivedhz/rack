@@ -83,7 +83,7 @@ pub struct CommitEntry {
     message: String,
     author: User,
     timestamp: i64,
-    entries: IndexEntries,
+    idx: IndexEntries,
 }
 
 impl CommitEntry {
@@ -93,7 +93,7 @@ impl CommitEntry {
         message: String,
         author: User,
         timestamp: i64,
-        entries: IndexEntries,
+        idx: IndexEntries,
     ) -> CommitEntry {
         CommitEntry {
             id,
@@ -101,7 +101,7 @@ impl CommitEntry {
             message,
             author,
             timestamp,
-            entries,
+            idx,
         }
     }
     pub fn from_string(file_content: String, hash: String) -> Result<CommitEntry> {
@@ -127,7 +127,7 @@ impl CommitEntry {
             message,
             author,
             timestamp,
-            entries: idx,
+            idx,
         })
     }
     pub fn serialize(&self) -> Vec<u8> {
@@ -146,11 +146,11 @@ impl CommitEntry {
         bytes.extend_from_slice(self.timestamp.to_string().as_bytes());
         bytes.push(0x00);
         bytes.push(0x0A);
-        bytes.extend_from_slice(&self.entries.serialize());
+        bytes.extend_from_slice(&self.idx.serialize());
         bytes
     }
-    pub fn entries(&self) -> IndexEntries {
-        self.entries.clone()
+    pub fn idx(&self) -> IndexEntries {
+        self.idx.clone()
     }
     pub fn parent(&self) -> CommitParent {
         self.parent.clone()

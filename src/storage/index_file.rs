@@ -28,7 +28,7 @@ pub fn add_to_index(repo: &Repository, path: &Path) -> Result<()> {
             let head_id = CommitId::new(id)?;
             let head_content = fsutil::read_file_to_string(&repo.commit_entry_file(&head_id))?;
             let head = CommitEntry::from_string(head_content, head_id.hash())?;
-            head.entries()
+            head.idx()
         } else {
             IndexEntries::new(HashMap::default())
         };

@@ -38,7 +38,7 @@ pub fn run(branch: String, create: bool) -> Result<()> {
     fsutil::write_atomic(&repo.baby(), &baby_entry.serialize())?;
 
     let branch_id = head_file::get_commit(&repo.branch(&branch.path()))?;
-    let mut branch_head_entry = commit_file::get_entry(&repo, &branch_id)?.entries();
+    let mut branch_head_entry = commit_file::get_entry(&repo, &branch_id)?.idx();
 
     let curr_file_state: Vec<RepoPath> = fsutil::collect_files(&repo.root(), &repo, &ig)?;
 

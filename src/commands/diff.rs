@@ -22,7 +22,7 @@ pub fn run(path: PathBuf, cached: bool) -> Result<Vec<DiffedContent>> {
         let head_commit_id = head_file::get_commit(&head_file)?;
         let commit_entry = commit_file::get_entry(&repo, &head_commit_id)?;
 
-        commit_entry.entries()
+        commit_entry.idx()
     } else {
         IndexEntries::new(HashMap::new())
     };

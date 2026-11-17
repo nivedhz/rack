@@ -20,7 +20,7 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
 
     let head_entries = if let Ok(head_commit) = head_file::get_commit(head_path) {
         let head = commit_file::get_entry(&repo, &head_commit)?;
-        head.entries()
+        head.idx()
     } else {
         IndexEntries::new(HashMap::default())
     };

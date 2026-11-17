@@ -50,7 +50,7 @@ pub fn run(path: PathBuf, staged: bool, commit: Option<String>) -> Result<()> {
             commit: commit_id.hash(),
         });
     }
-    let commit = commit_file::get_entry(&repo, &commit_id)?.entries();
+    let commit = commit_file::get_entry(&repo, &commit_id)?.idx();
 
     if let Some(e) = commit.contains(&rel_path) {
         let obj = object_file::get_object_entry(&repo, e.object_id)?;
