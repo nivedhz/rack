@@ -10,7 +10,7 @@ pub enum Error {
     NotInRackRepo,
     #[error("fatal: path '{path}' is not under version control!")]
     PathNotVersionControlled { path: String },
-    #[error("fatal: path '{path}' did not match any files")]
+    #[error("fatal: path '{path}' did not match any path")]
     PathNotFound { path: String },
     #[error("fatal: path '{path}' is a dir and hence didn't match any files")]
     PathIsDir { path: String },
