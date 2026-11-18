@@ -12,7 +12,7 @@ use crate::{
 
 // TODO: clean this shi up
 pub struct ShowResult {
-    pub log: Vec<CommitEntry>,
+    pub log: CommitEntry,
     pub diff: Vec<DiffedContent>,
 }
 pub fn run(commit_id: Option<String>) -> Result<ShowResult> {
@@ -33,10 +33,7 @@ pub fn run(commit_id: Option<String>) -> Result<ShowResult> {
         CommitParent::Orphan => get_diff_with_orphan(&commit, &repo)?,
     };
 
-    Ok(ShowResult {
-        log: vec![commit],
-        diff,
-    })
+    Ok(ShowResult { log: commit, diff })
 }
 
 fn get_diff_with_orphan(

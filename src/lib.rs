@@ -58,7 +58,7 @@ pub fn run() -> Result<()> {
         cli::Commands::Show { commit } => {
             let show_res = show::run(commit)?;
 
-            output::log(false, show_res.log)?;
+            output::log(false, vec![show_res.log])?;
             output::diff(show_res.diff)?;
         }
     }
