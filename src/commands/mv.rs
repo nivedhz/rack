@@ -51,8 +51,7 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
             }
             fs::rename(src.path(), dst.path().join(src.file_name()))?;
         } else {
-            let dst_parent = dst
-                .path()
+            let dst_parent = dst_canonical
                 .parent()
                 .ok_or(Error::NoParent {
                     path: dst.to_string(),
@@ -61,7 +60,7 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
 
             if !dst_parent.exists() {
                 return Err(Error::PathNotFound {
-                    path: dst.to_string(),
+                    path: dst_parent.display().to_string(),
                 });
             }
             fs::rename(src.path(), dst.path())?;
