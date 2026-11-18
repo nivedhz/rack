@@ -10,7 +10,6 @@ use crate::{
     storage::{baby_file, commit_file, head_file, object_file},
 };
 
-// TODO: clean this shi up
 pub struct ShowResult {
     pub log: CommitEntry,
     pub diff: Vec<DiffedContent>,
