@@ -13,7 +13,7 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
     let src = RepoPath::new(src);
     let dst = RepoPath::new(dst);
 
-    let idx = index_file::get_index(&repo)?;
+    let mut idx = index_file::get_index(&repo)?;
 
     let baby = baby_file::get_baby(&repo);
     let head_path = &repo.head(&baby.path_name().path());
@@ -24,7 +24,7 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
     } else {
         IndexEntries::new(HashMap::default())
     };
-    let tracked_entries = head_entries.extend(idx);
+    let tracked_entries = head_entries.extend(idx.clone());
 
     // not handling dirs currently
     if src.path().is_dir() {
@@ -41,7 +41,6 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
 
     // TODO:
     // - return error on same dst and src - rack mv README.md . should return SamePathError
-    // - Update the IndexEntries after changing path
     let dst_canonical = if dst.path().is_absolute() {
         fsutil::get_canonical(&dst.path())?
     } else {
@@ -49,28 +48,54 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
     };
     dbg!(&dst_canonical);
     if dst_canonical.starts_with(repo.root()) {
+        let dst_parent = dst_canonical
+            .parent()
+            .ok_or(Error::NoParent {
+                path: dst.to_string(),
+            })?
+            .to_path_buf();
+
+        if !dst_parent.exists() {
+            return Err(Error::PathNotFound {
+                path: dst_parent.display().to_string(),
+            });
+        }
+
+        let entry_path = RepoPath::new(fs::canonicalize(src.path())?.strip_prefix(repo.root())?);
+        let mut prev_entry = match tracked_entries.contains(&entry_path) {
+            Some(e) => e,
+            None => {
+                return Err(Error::PathNotVersionControlled {
+                    path: dst.to_string(),
+                });
+            }
+        };
+
         if dst.path().is_dir() {
             if !dst.path().exists() {
                 return Err(Error::PathNotFound {
                     path: dst.to_string(),
                 });
             }
-            fs::rename(src.path(), dst.path().join(src.file_name()))?;
+            let new_path = dst.path().join(src.file_name());
+            fs::rename(src.path(), &new_path)?;
+            prev_entry.modify_path(
+                RepoPath::new(fs::canonicalize(new_path)?).strip_prefix(&repo.root())?,
+            );
         } else {
-            let dst_parent = dst_canonical
-                .parent()
-                .ok_or(Error::NoParent {
-                    path: dst.to_string(),
-                })?
-                .to_path_buf();
-
-            if !dst_parent.exists() {
-                return Err(Error::PathNotFound {
-                    path: dst_parent.display().to_string(),
-                });
-            }
             fs::rename(src.path(), dst.path())?;
+            prev_entry.modify_path(
+                RepoPath::new(fs::canonicalize(dst.path())?).strip_prefix(&repo.root())?,
+            );
         }
+
+        if idx.contains(&entry_path).is_some() {
+            idx.modify(&prev_entry);
+        } else {
+            idx.add(prev_entry.path.clone(), prev_entry);
+        }
+
+        fsutil::write_atomic(&repo.index(), &idx.serialize())?;
     } else {
         return Err(Error::PathNotInRepo {
             path: dst.to_string(),
