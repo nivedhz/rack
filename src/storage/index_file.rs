@@ -81,3 +81,8 @@ pub fn get_index(repo: &Repository) -> Result<IndexEntries> {
     let idx_content = fsutil::read_file_to_string(&repo.index()).unwrap_or_default();
     IndexEntries::from_string(idx_content)
 }
+
+pub fn change_index(repo: &Repository, idx: IndexEntries) -> Result<()> {
+    fsutil::write_atomic(&repo.index(), &idx.serialize())?;
+    Ok(())
+}

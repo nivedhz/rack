@@ -105,7 +105,7 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
             idx.add(prev_entry.path.clone(), prev_entry);
         }
 
-        fsutil::write_atomic(&repo.index(), &idx.serialize())?;
+        index_file::change_index(&repo, idx)?;
     } else {
         return Err(Error::PathNotInRepo {
             path: dst.to_string(),
