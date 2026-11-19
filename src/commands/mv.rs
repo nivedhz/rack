@@ -40,12 +40,11 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
     }
 
     // TODO:
-    // - handle renaming files to same dir - rack mv README.md LICENSE should rename README.md to
-    // LICENSE
     // - handle moving from deeper levels of repo to current dir while renaming - rack mv src/main.rs
     // main.rs should move src/main.rs into main.rs
     // - return error on same dst and src - rack mv README.md . should return SamePathError
     // - Update the IndexEntries after changing path
+    let dst_canonical = fsutil::get_canonical(&env::current_dir()?.join(dst.path()))?;
     if dst_canonical.starts_with(repo.root()) {
         if dst.path().is_dir() {
             if !dst.path().exists() {
