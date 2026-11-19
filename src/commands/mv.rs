@@ -44,7 +44,11 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
     // main.rs should move src/main.rs into main.rs
     // - return error on same dst and src - rack mv README.md . should return SamePathError
     // - Update the IndexEntries after changing path
-    let dst_canonical = fsutil::get_canonical(&env::current_dir()?.join(dst.path()))?;
+    let dst_canonical = if dst.path().is_absolute() {
+        fsutil::get_canonical(&dst.path())?
+    } else {
+        fsutil::get_canonical(&env::current_dir()?.join(dst.path()))?
+    };
     if dst_canonical.starts_with(repo.root()) {
         if dst.path().is_dir() {
             if !dst.path().exists() {
