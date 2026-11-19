@@ -66,6 +66,9 @@ impl IndexEntry {
     pub fn is_equal(&self, other: &IndexEntry) -> bool {
         self.path == other.path && self.object_id == other.object_id
     }
+    pub fn modify_path(&mut self, path: RepoPath) {
+        self.path = path;
+    }
 }
 #[derive(Debug, Clone)]
 pub struct IndexEntries {
