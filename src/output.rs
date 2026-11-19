@@ -38,7 +38,7 @@ pub fn status(status_res: StatusResult) -> Result<()> {
     if !status_res.un_idx_entries.is_empty() {
         println!();
         println!("Changes not staged for commit:");
-        println!("  (use 'rack insert <file>...' to update what will be commited)");
+        println!("  (use 'rack add <file>...' to update what will be commited)");
         println!("  (use 'rack restore <file>...' to discard changes in the working directory)");
         for file in status_res.un_idx_entries {
             println!("      {}    {}", "modified:".red(), file.to_string().red());
