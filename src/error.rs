@@ -4,6 +4,8 @@ pub enum Error {
     IO { src: String },
     #[error("fatal: {path} has no parent")]
     NoParent { path: String },
+    #[error("fatal: cannot perform changes as 'README.md' and 'README.md' are the same!")]
+    PathIsSame { path: String },
     #[error("fatal: '{path}' is not inside repository '{repo}'")]
     PathNotInRepo { path: String, repo: String },
     #[error("fatal: not a rack repository (or any parent up to mount point /)")]

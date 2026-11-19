@@ -39,14 +39,11 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
         });
     }
 
-    // TODO:
-    // - return error on same dst and src - rack mv README.md . should return SamePathError
     let dst_canonical = if dst.path().is_absolute() {
         fsutil::get_canonical(&dst.path())?
     } else {
         fsutil::get_canonical(&env::current_dir()?.join(dst.path()))?
     };
-    dbg!(&dst_canonical);
     if dst_canonical.starts_with(repo.root()) {
         let dst_parent = dst_canonical
             .parent()
@@ -72,17 +69,30 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
         };
 
         if dst.path().is_dir() {
+            let new_path = dst.path().join(src.file_name());
+
             if !dst.path().exists() {
                 return Err(Error::PathNotFound {
                     path: dst.to_string(),
                 });
             }
-            let new_path = dst.path().join(src.file_name());
+            if dst_canonical.join(src.file_name()) == fs::canonicalize(src.path())? {
+                return Err(Error::PathIsSame {
+                    path: src.to_string(),
+                });
+            }
+
             fs::rename(src.path(), &new_path)?;
             prev_entry.modify_path(
                 RepoPath::new(fs::canonicalize(new_path)?).strip_prefix(&repo.root())?,
             );
         } else {
+            if dst_canonical == fs::canonicalize(src.path())? {
+                return Err(Error::PathIsSame {
+                    path: src.to_string(),
+                });
+            }
+
             fs::rename(src.path(), dst.path())?;
             prev_entry.modify_path(
                 RepoPath::new(fs::canonicalize(dst.path())?).strip_prefix(&repo.root())?,
