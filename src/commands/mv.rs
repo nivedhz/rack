@@ -39,8 +39,11 @@ pub fn run(src: PathBuf, dst: PathBuf) -> Result<()> {
         });
     }
 
-    // this is a very sloppy implementation and I don't know if it will work properly in every
-    // condition
+    // TODO:
+    // - handle renaming files to same dir - rack mv README.md LICENSE
+    // - handle moving from deeper levels of repo to current dir while renaming - rack mv src/main.rs
+    // main.rs
+    // - return error on same dst and src
     let dst_canonical = fsutil::get_canonical(&dst.path())?;
     if dst_canonical.starts_with(repo.root()) {
         if dst.path().is_dir() {
