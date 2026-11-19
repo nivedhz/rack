@@ -36,13 +36,13 @@ pub fn run() -> Result<()> {
 
             output::log(oneline, log_res)?;
         }
-        // rack diff |<path>|
+        // rack diff |<path>| |--cached|
         cli::Commands::Diff { path, cached } => {
             let diff_res = diff::run(path, cached)?;
 
             output::diff(diff_res)?;
         }
-        // rack restore <path>
+        // rack restore <path> |--staged | --commit|
         cli::Commands::Restore {
             path,
             staged,
@@ -54,7 +54,9 @@ pub fn run() -> Result<()> {
         cli::Commands::Switch { branch, create } => switch::run(branch, create)?,
         // rack rm <path> |--cached|
         cli::Commands::Rm { path, cached } => rm::run(path, cached)?,
+        // rack mv <src> <dst>
         cli::Commands::Mv { src, dst } => mv::run(src, dst)?,
+        // rack show |commit|
         cli::Commands::Show { commit } => {
             let show_res = show::run(commit)?;
 
