@@ -5,8 +5,11 @@ use std::{
 };
 
 use crate::{
-    domain::{ignore::IgnoreEntries, repo_path::RepoPath, repository::Repository},
+    domain::{
+        commit::CommitId, ignore::IgnoreEntries, repo_path::RepoPath, repository::Repository,
+    },
     error::{Error, Result},
+    storage::{commit_file, object_file},
 };
 
 pub fn write_atomic(path: &Path, data: &[u8]) -> Result<()> {
@@ -130,4 +133,34 @@ pub fn get_canonical(path: &Path) -> Result<PathBuf> {
     }
 
     Ok(result.components().collect())
+}
+pub fn materialize_commit(id: &CommitId, repo: &Repository, ig: &IgnoreEntries) -> Result<()> {
+    let curr_file_state = collect_files(&repo.root(), repo, ig)?;
+    let mut branch_head_entry = commit_file::get_entry(repo, id)?.idx();
+
+    for file in &curr_file_state {
+        if let Some(e) = branch_head_entry.contains(&file.strip_prefix(&repo.root())?) {
+            let f_obj_id = object_file::get_object_id(&file.path())?;
+            branch_head_entry.remove(&e.path);
+
+            if e.object_id == f_obj_id {
+                continue;
+            } else {
+                let prev_obj = object_file::get_object_entry(repo, e.object_id)?;
+                let prev_content = String::from_utf8(prev_obj.data).unwrap_or_default();
+
+                write_atomic(&file.path(), prev_content.as_bytes())?;
+            }
+        } else {
+            fs::remove_file(file.path())?;
+        }
+    }
+
+    // the entries in `branch_head_entry` but not in `curr_file_state` will be dealt with in here
+    for (repo_path, entry) in branch_head_entry.entries() {
+        let object = object_file::get_object_entry(repo, entry.object_id)?;
+        write_atomic(&repo_path.path(), &object.data)?;
+    }
+
+    Ok(())
 }
