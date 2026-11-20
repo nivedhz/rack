@@ -17,7 +17,9 @@ pub enum Commands {
         dir_path: PathBuf,
     },
     /// Add the file to staging area
-    Add { path: Vec<PathBuf> },
+    Add {
+        path: Vec<PathBuf>,
+    },
     /// Show the working tree status
     Status,
     /// Record changes to the repository
@@ -26,7 +28,10 @@ pub enum Commands {
         message: String,
     },
     /// Set repository config options
-    Config { key: String, value: String },
+    Config {
+        key: String,
+        value: String,
+    },
     /// Show commit logs
     Log {
         #[arg(long)]
@@ -66,7 +71,15 @@ pub enum Commands {
         cached: bool,
     },
     /// Move file to another destination
-    Mv { src: PathBuf, dst: PathBuf },
+    Mv {
+        src: PathBuf,
+        dst: PathBuf,
+    },
     /// View commit object
-    Show { commit: Option<String> },
+    Show {
+        commit: Option<String>,
+    },
+    Merge {
+        branch: String,
+    },
 }

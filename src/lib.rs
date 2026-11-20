@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::Parser;
 
 use crate::commands::{
-    add, branch, commit, config, diff, init, log, mv, restore, rm, show, status, switch,
+    add, branch, commit, config, diff, init, log, merge, mv, restore, rm, show, status, switch,
 };
 
 mod cli;
@@ -63,6 +63,7 @@ pub fn run() -> Result<()> {
             output::log(false, vec![show_res.log])?;
             output::diff(show_res.diff)?;
         }
+        cli::Commands::Merge { branch } => merge::run(branch)?,
     }
     Ok(())
 }
