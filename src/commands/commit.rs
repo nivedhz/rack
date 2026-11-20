@@ -14,8 +14,6 @@ use crate::{
     storage::{baby_file, commit_file, config_file, fsutil, index_file},
 };
 
-// TODO: add the stats for file diffs
-//  1 file changed, 3 insertions(+), 5 deletions(-)
 pub fn run(message: String) -> Result<()> {
     let repo = Repository::discover(&env::current_dir()?)?;
 
