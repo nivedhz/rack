@@ -1,5 +1,5 @@
 use crate::commands::{diff::DiffedContent, status::StatusResult};
-use crate::domain::branch::{BabyEntry, BranchEntries};
+use crate::domain::branch::{BabyEntry, BranchIndexEntries};
 use crate::domain::commit::CommitEntry;
 use crate::error::Result;
 use chrono::{Local, TimeZone};
@@ -87,7 +87,7 @@ pub fn diff(entries: Vec<DiffedContent>) -> Result<()> {
     Ok(())
 }
 
-pub fn branch(baby: BabyEntry, branch_idx: BranchEntries) {
+pub fn branch(baby: BabyEntry, branch_idx: BranchIndexEntries) {
     for (path_name, _) in branch_idx.entries() {
         if baby.name() == path_name.name() {
             print!("* {}    ", path_name.name().to_string().green())

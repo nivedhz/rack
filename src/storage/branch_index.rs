@@ -1,16 +1,16 @@
 use crate::{
     domain::{
-        branch::{BranchEntries, BranchEntry},
+        branch::{BranchEntry, BranchIndexEntries},
         repository::Repository,
     },
     error::Result,
     storage::fsutil,
 };
 
-pub fn get_entries(repo: &Repository) -> Result<BranchEntries> {
+pub fn get_entries(repo: &Repository) -> Result<BranchIndexEntries> {
     let branch_idx_content = fsutil::read_file_to_string(&repo.branch_index()).unwrap_or_default();
 
-    BranchEntries::from_string(branch_idx_content)
+    BranchIndexEntries::from_string(branch_idx_content)
 }
 
 pub fn remove_entry(repo: &Repository, entry: BranchEntry) -> Result<()> {

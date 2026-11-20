@@ -19,12 +19,12 @@ impl BranchEntry {
 }
 
 #[derive(Debug)]
-pub struct BranchEntries {
+pub struct BranchIndexEntries {
     entries: IndexMap<BranchEntry, CommitId>,
 }
 
-impl BranchEntries {
-    pub fn from_string(file_content: String) -> Result<BranchEntries> {
+impl BranchIndexEntries {
+    pub fn from_string(file_content: String) -> Result<BranchIndexEntries> {
         let lines = file_content.lines();
         let mut entries: IndexMap<BranchEntry, CommitId> = IndexMap::new();
 
@@ -36,7 +36,7 @@ impl BranchEntries {
             entries.insert(BranchEntry::new(name), tail);
         }
 
-        Ok(BranchEntries { entries })
+        Ok(BranchIndexEntries { entries })
     }
     pub fn entries(&self) -> IndexMap<BranchEntry, CommitId> {
         self.entries.clone()
