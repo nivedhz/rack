@@ -41,6 +41,9 @@ impl BranchIndexEntries {
     pub fn entries(&self) -> IndexMap<BranchEntry, CommitId> {
         self.entries.clone()
     }
+    pub fn get(&self, entry: BranchEntry) -> Option<CommitId> {
+        self.entries.get(&entry).cloned()
+    }
     pub fn remove(&mut self, entry: BranchEntry) -> Option<CommitId> {
         self.entries.shift_remove(&entry)
     }
