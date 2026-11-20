@@ -15,11 +15,17 @@ pub fn write_atomic(path: &Path, data: &[u8]) -> Result<()> {
             path: path.display().to_string(),
         });
     }
+    let parent = path
+        .parent()
+        .ok_or(Error::NoParent {
+            path: path.display().to_string(),
+        })?
+        .to_path_buf();
+    if !parent.exists() {
+        fs::create_dir_all(&parent)?;
+    }
 
-    let mut f = tempfile::NamedTempFile::new_in(path.parent().ok_or(Error::NoParent {
-        path: path.display().to_string(),
-    })?)?;
-
+    let mut f = tempfile::NamedTempFile::new_in(parent)?;
     f.write_all(data)?;
     f.as_file().sync_all()?;
     f.persist(path)?;
