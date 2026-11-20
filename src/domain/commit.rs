@@ -8,7 +8,7 @@ use crate::{
     error::{Error, Result},
 };
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct CommitId {
     hash: String,
 }
