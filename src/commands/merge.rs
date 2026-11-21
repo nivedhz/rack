@@ -43,6 +43,7 @@ pub fn run(branch: String) -> Result<()> {
         fsutil::materialize_commit(&branch_head, &repo, &ig)?;
         return Ok(());
     }
+    // TODO: implemente three-way merge
     println!("performing tw merge");
 
     Ok(())
