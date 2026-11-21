@@ -82,4 +82,7 @@ pub enum Commands {
     Merge {
         branch: String,
     },
+    Revert {
+        commit: String,
+    },
 }
