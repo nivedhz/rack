@@ -33,6 +33,11 @@ pub fn run(branch: String) -> Result<()> {
     let branch_head = head_file::get_commit(&repo.branch(&branch.path()))?;
     let branch_anc = branch_idx.get(BranchEntry::new(branch)).unwrap_or_default();
 
+    if branch_head == curr_head {
+        println!("info: already up-to date");
+        return Ok(());
+    }
+
     if curr_head == branch_anc {
         fsutil::write_atomic(&repo.branch(&baby.name().path()), &branch_head.serialize())?;
         fsutil::materialize_commit(&branch_head, &repo, &ig)?;
