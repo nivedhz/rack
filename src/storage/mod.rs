@@ -9,3 +9,4 @@ pub mod ignore_file;
 pub mod index_file;
 pub mod layout;
 pub mod object_file;
+pub mod repository;
