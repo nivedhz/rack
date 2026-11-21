@@ -95,6 +95,25 @@ pub fn read_file_to_bytes(path: &Path) -> Result<Vec<u8>> {
 
     Ok(bytes)
 }
+pub fn collect_paths(root: &Path, repo: &Repository, ig: &IgnoreEntries) -> Result<Vec<RepoPath>> {
+    let mut paths: Vec<RepoPath> = Vec::new();
+
+    let dirs = fs::read_dir(root)?;
+    for dir in dirs {
+        let rec_path = dir?.path();
+
+        if ig.is_ignored(repo, &rec_path)? {
+            continue;
+        }
+        if rec_path.is_dir() {
+            paths.push(RepoPath::new(&rec_path));
+            paths.extend(collect_files(&rec_path, repo, ig)?);
+        } else {
+            paths.push(RepoPath::new(&rec_path));
+        }
+    }
+    Ok(paths)
+}
 pub fn collect_files(root: &Path, repo: &Repository, ig: &IgnoreEntries) -> Result<Vec<RepoPath>> {
     let mut files: Vec<RepoPath> = Vec::new();
 
